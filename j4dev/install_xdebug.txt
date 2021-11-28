@@ -23,3 +23,14 @@ xdebug.remote_autostart = off
 xdebug.remote_host = 172.18.16.1
 ; xdebug.remote_log=/var/www/html/administrator/logs/xdebug.remote_log.log  
 EOD
+
+
+v3 xdebug
+    cat > /usr/local/etc/php/conf.d/xdebg.ini << EOD
+[xdebug]
+; WSL2 export WSL_HOST=$(tail -1 /etc/resolv.conf | cut -d' ' -f2)
+xdebug.mode=debug
+xdebug.start_with_request=no
+xdebug.client_host=172.18.16.1
+; xdebug.log=/var/www/html/administrator/logs/xdebug.remote_log.log
+EOD
