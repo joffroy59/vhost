@@ -1,0 +1,25 @@
+go to joomla container with bash 
+    pecl install xdebug
+
+    # this will resukt in something like 
+    # You should add "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20190902/xdebug.o" to php.ini
+    # the next command will take care of that
+    docker-php-ext-enable xdebug
+
+    # root@.... :/var/www/html/# cat /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    # zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20190902/xdebug.o
+
+
+To get the remote_host ip adress for the xdebug.ini
+tail -1 /etc/resolv.conf | cut -d' ' -f2
+
+Create xdebug.ini
+go to joomla container with bash
+    cat > /usr/local/etc/php/conf.d/xdebg.ini << EOD
+[xdebug]
+; WSL2 export WSL_HOST=$(tail -1 /etc/resolv.conf | cut -d' ' -f2)
+xdebug.remote_enable = on
+xdebug.remote_autostart = off
+xdebug.remote_host = 172.18.16.1
+; xdebug.remote_log=/var/www/html/administrator/logs/xdebug.remote_log.log  
+EOD
