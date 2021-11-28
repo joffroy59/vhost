@@ -1,0 +1,41 @@
+version: '3.8'
+
+networks:
+  data: {}
+
+services:
+  joomla:
+    image: joomla:3.9.18-php7.4
+    restart: always
+    links:
+      - joomladb:mysql
+    ports:
+      - 9080:80
+    volumes:
+      - /home/joffroy/vhost/j4dev/NEW_joomla3_helixultimate_stater/uploads.ini:/usr/local/etc/php/conf.d/upload-limit.ini
+      - /home/joffroy/vhost/j4dev/NEW_joomla3_helixultimate_stater/www:/var/www/html:rw
+    environment:
+      JOOMLA_DB_HOST: joomladb
+      JOOMLA_DB_PASSWORD: example
+    networks:
+      - data
+
+  joomladb:
+    image: mysql:5.6
+    restart: always
+    volumes:
+      - /home/joffroy/vhost/j4dev/NEW_joomla3_helixultimate_stater/db:/var/lib/mysql:rw
+
+    networks:
+      - data
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - joomladb
+    ports:
+      - "90:80"
+    environment:
+      PMA_HOST: joomladb
