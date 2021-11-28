@@ -12,5 +12,6 @@ services:
       - '80:80'
     volumes:
         - './index.php:/var/www/html/index.php'
+        - './test.php:/var/www/html/test.php'
     environment:
       XDEBUG_CONFIG: remote_host=host.docker.internal remote_port=9000 remote_enable=1
