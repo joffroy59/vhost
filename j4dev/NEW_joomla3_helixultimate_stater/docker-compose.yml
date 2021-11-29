@@ -8,7 +8,7 @@ services:
     #image: joomla:3.9.18-php7.4
     build:
       context: /home/joffroy/vhost/j4dev/NEW_joomla3_helixultimate_stater/
-      dockerfile: /home/joffroy/vhost/j4dev/NEW_joomla3_helixultimate_stater/dockerfile
+      dockerfile: ./dockerfile
     restart: always
     links:
       - joomladb:mysql

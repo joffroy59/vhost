@@ -10,7 +10,7 @@
             "request": "launch",
             "port": 9003,
             "pathMappings": {
-                "/var/www/html": "${workspaceFolder}/j4dev/simple_php"
+                "/var/www/html": "${workspaceFolder}/j4dev/NEW_joomla3_helixultimate_stater/www"
             },
             "xdebugSettings": {
                 "max_data": 65535,
