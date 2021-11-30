@@ -2,19 +2,20 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\MVC\Controller\AdminController;
+
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
-jimport('joomla.application.component.controlleradmin');
 
-class SppagebuilderControllerPages extends JControllerAdmin
+class SppagebuilderControllerPages extends AdminController
 {
-	public function getModel($name = 'Page', $prefix = 'SppagebuilderModel')
+	public function getModel($name = 'Page', $prefix = 'SppagebuilderModel', $config = array('ignore_request' => true))
 	{
-		$model = parent::getModel($name, $prefix, array('ignore_request' => true));
-        return $model;
+		return parent::getModel($name, $prefix, $config);
 	}
 }

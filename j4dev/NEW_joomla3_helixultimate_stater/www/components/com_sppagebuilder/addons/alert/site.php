@@ -2,22 +2,23 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+defined ('_JEXEC') or die ('Restricted access');
 
 class SppagebuilderAddonAlert extends SppagebuilderAddons{
 
 	public function render() {
-
-		$class = (isset($this->addon->settings->class) && $this->addon->settings->class) ? $this->addon->settings->class : '';
-		$type = (isset($this->addon->settings->alrt_type) && $this->addon->settings->alrt_type) ? ' sppb-alert-' . $this->addon->settings->alrt_type : '';
-		$title = (isset($this->addon->settings->title) && $this->addon->settings->title) ? $this->addon->settings->title : '';
-		$heading_selector = (isset($this->addon->settings->heading_selector) && $this->addon->settings->heading_selector) ? $this->addon->settings->heading_selector : '';
-		$close = (isset($this->addon->settings->close) && $this->addon->settings->close) ? $this->addon->settings->close : 0;
-		$text = (isset($this->addon->settings->text) && $this->addon->settings->text) ? $this->addon->settings->text : '';
+		$settings = $this->addon->settings;
+		
+		$class = (isset($settings->class) && $settings->class) ? $settings->class : '';
+		$type = (isset($settings->alrt_type) && $settings->alrt_type) ? ' sppb-alert-' . $settings->alrt_type : '';
+		$title = (isset($settings->title) && $settings->title) ? $settings->title : '';
+		$heading_selector = (isset($settings->heading_selector) && $settings->heading_selector) ? $settings->heading_selector : '';
+		$close = (isset($settings->close) && $settings->close) ? $settings->close : 0;
+		$text = (isset($settings->text) && $settings->text) ? $settings->text : '';
 
 		if($text) {
 			
@@ -25,7 +26,7 @@ class SppagebuilderAddonAlert extends SppagebuilderAddons{
 			$output .= (!empty($title)) ? '<' . $heading_selector . ' class="sppb-addon-title">' . $title .'</' . $heading_selector . '>' : '';
 			$output .= '<div class="sppb-addon-content">';
 			$output .= '<div class="sppb-alert' . $type . ' sppb-fade in">';
-			$output .= ( $close ) ? '<button type="button" class="sppb-close" data-dismiss="sppb-alert"><span aria-hidden="true">&times;</span></button>' : '';
+			$output .= ( $close ) ? '<button type="button" class="sppb-close" data-dismiss="sppb-alert" aria-label="alert dismiss"><span aria-hidden="true">&times;</span></button>' : '';
 			$output .= $text;
 			$output .= '</div>';
 			$output .= '</div>';
@@ -41,13 +42,13 @@ class SppagebuilderAddonAlert extends SppagebuilderAddons{
 	{
 		$output = '
 		<div class="sppb-addon sppb-addon-alert {{ data.class }}">
-			<# if( !_.isEmpty( data.title ) ){ #><{{ data.heading_selector }} class="sppb-addon-title">{{{ data.title }}}</{{ data.heading_selector }}><# } #>
+			<# if( !_.isEmpty( data.title ) ){ #><{{ data.heading_selector }} class="sppb-addon-title sp-inline-editable-element" data-id={{data.id}} data-fieldName="title" contenteditable="true">{{{ data.title }}}</{{ data.heading_selector }}><# } #>
 			<div class="sppb-addon-content">
 				<div class="sppb-alert sppb-alert-{{ data.alrt_type }} sppb-fade in">
 					<# if( data.close ){ #>
 						<button type="button" class="sppb-close"><span aria-hidden="true">&times;</span></button>
 					<# } #>
-					{{{ data.text }}}
+					<div id="addon-text-{{data.id}}" class="sp-editable-content" data-id={{data.id}} data-fieldName="text">{{{ data.text }}}</div>
 				</div>
 			</div>
 		</div>';

@@ -1,19 +1,38 @@
 <?php
 /**
- * @package Helix Ultimate Framework
- * @author JoomShaper https://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2018 JoomShaper
+ * @package Helix_Ultimate_Framework
+ * @author JoomShaper <support@joomshaper.com>
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or Later
-*/
+ */
 
-defined ('_JEXEC') or die ();
+defined('_JEXEC') or die();
 
-jimport('joomla.form.formfield');
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Form\FormField;
 
-class JFormFieldHelixbutton extends JFormField
+/**
+ * Form field for helixButton
+ *
+ * @since		1.0.0
+ * @deprecated	3.0		Use the Same Class from the src/fields instead.
+ */
+class JFormFieldHelixbutton extends FormField
 {
-	protected $type = 'Helixbutton';	
-	
+	/**
+	 * Field type
+	 *
+	 * @var		string	$type
+	 * @since	1.0.0
+	 */
+	protected $type = 'Helixbutton';
+
+	/**
+	 * Override getInput function form FormField
+	 *
+	 * @return	string	Field HTML string
+	 * @since	1.0.0
+	 */
 	protected function getInput()
 	{
 
@@ -21,7 +40,7 @@ class JFormFieldHelixbutton extends JFormField
 		$class = !empty($this->element['class']) ? ' ' . $this->element['class'] : '';
 		$text = !empty($this->element['text']) ? $this->element['text'] : 'Button';
 		$target = !empty($this->element['target']) ? $this->element['target'] : '_self';
-		
-		return '<a id="'. $this->id .'" class="btn'. $class .'" href="'. $url .'" target="' . $target . '">'. JText::_($text) .'</a>';	
-	}	
+
+		return '<a id="' . $this->id . '" class="hu-btn' . str_replace('btn-', 'hu-btn-', $class) . '" href="' . $url . '" target="' . $target . '">' . Text::_($text) . '</a>';	
+	}
 }

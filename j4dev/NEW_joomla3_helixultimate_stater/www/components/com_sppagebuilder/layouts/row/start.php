@@ -2,15 +2,18 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+
 $options = $displayData['options'];
 
-$doc = JFactory::getDocument();
+$doc = Factory::getDocument();
 $custom_class  = (isset($options->class) && ($options->class))?' '.$options->class:'';
 $row_id     = (isset($options->id) && $options->id )? $options->id : 'section-id-'.$options->dynamicId;
 $fluid_row = (isset($options->fullscreen) && $options->fullscreen) ? $options->fullscreen : 0;
@@ -51,39 +54,90 @@ if (!empty($external_video)) {
 	$custom_class .= ' sppb-row-have-ext-bg';
 }
 
-
 // Video
-$video_params = '';
-if (isset($options->background_video) && $options->background_video) {
-	if (isset($options->background_image) && $options->background_image){
-		$video_params .= ' data-vide-image="' . JURI::base(true) . '/' . $options->background_image . '"';
-	}
-	if (isset($options->background_video_mp4) && $options->background_video_mp4) {
-		$mp4_parsed = parse_url($options->background_video_mp4);
-		$mp4_url = (isset($mp4_parsed['host']) && $mp4_parsed['host']) ? $options->background_video_mp4 : JURI::base(true) . '/' . $options->background_video_mp4;
-
-		$video_params .= ' data-vide-mp4="' . $mp4_url . '"';}
-	if (isset($options->background_video_ogv) && $options->background_video_ogv) {
-		$ogv_parsed = parse_url($options->background_video_ogv);
-		$ogv_url = (isset($ogv_parsed['host']) && $ogv_parsed['host']) ? $options->background_video_ogv : JURI::base(true) . '/' . $options->background_video_ogv;
-
-		$video_params .= ' data-vide-ogv="' . $ogv_url . '"';
-	}
-	$video_params .= ' data-vide-bg';
+$video_loop = '';
+if (isset($options->video_loop) && $options->video_loop==true) {
+	$video_loop = 'loop';
+} else {
+	$video_loop = '';
 }
 
+$video_params = '';
+$mp4_url = '';
+$ogv_url = '';
+$external_background_video = 0;
 
+if(isset($options->external_background_video) && $options->external_background_video){
+	$external_background_video = $options->external_background_video;
+}
+if(isset($options->background_type)){
+	if ($options->background_type == 'video' && !$external_background_video) {
+		if (isset($options->background_image) && $options->background_image){
+			if(strpos($options->background_image, "http://") !== false || strpos($options->background_image, "https://") !== false){
+				$video_params .= ' poster="' . $options->background_image . '" '.$video_loop.'';
+			} else {
+				$video_params .= ' poster="' . Uri::base(true) . '/' . $options->background_image . '"';
+			}
+		}
+
+		if (isset($options->background_video_mp4) && $options->background_video_mp4) {
+			$mp4_parsed = parse_url($options->background_video_mp4);
+			$mp4_url = (isset($mp4_parsed['host']) && $mp4_parsed['host']) ? $options->background_video_mp4 : Uri::base(true) . '/' . $options->background_video_mp4;
+		}
+
+		if (isset($options->background_video_ogv) && $options->background_video_ogv) {
+			$ogv_parsed = parse_url($options->background_video_ogv);
+			$ogv_url = (isset($ogv_parsed['host']) && $ogv_parsed['host']) ? $options->background_video_ogv : Uri::base(true) . '/' . $options->background_video_ogv;
+
+		}
+	}
+
+} else {
+	if (isset($options->background_video) && $options->background_video && !$external_background_video) {
+		if (isset($options->background_image) && $options->background_image){
+			if(strpos($options->background_image, "http://") !== false || strpos($options->background_image, "https://") !== false){
+				$video_params .= ' poster="' . $options->background_image . '" '.$video_loop.'';
+			} else {
+				$video_params .= ' poster="' . Uri::base(true) . '/' . $options->background_image . '" '.$video_loop.'';
+			}
+		}
+
+		if (isset($options->background_video_mp4) && $options->background_video_mp4) {
+			$mp4_parsed = parse_url($options->background_video_mp4);
+			$mp4_url = (isset($mp4_parsed['host']) && $mp4_parsed['host']) ? $options->background_video_mp4 : Uri::base(true) . '/' . $options->background_video_mp4;
+		}
+
+		if (isset($options->background_video_ogv) && $options->background_video_ogv) {
+			$ogv_parsed = parse_url($options->background_video_ogv);
+			$ogv_url = (isset($ogv_parsed['host']) && $ogv_parsed['host']) ? $options->background_video_ogv : Uri::base(true) . '/' . $options->background_video_ogv;
+	
+		}
+	}
+}
 
 $html = '';
 
 if(!$fluid_row){
-	$html .= '<section id="' . $row_id . '" class="sppb-section ' . $custom_class . '" '.$addon_attr.' ' . $video_params . '>';
+	$html .= '<section id="' . $row_id . '" class="sppb-section ' . $custom_class . '" '.$addon_attr.'>';
 	if (isset($options->overlay) && $options->overlay) {
 		$html .= '<div class="sppb-row-overlay"></div>';
 	}
+	if ($mp4_url || $ogv_url) {
+		$html .= '<div class="sppb-section-bacground-video">';
+		$html .= '<video class="section-bg-video" autoplay muted webkit-playsinline playsinline '.$video_loop.' controlsList="nodownload" '.$video_params.'>';
+		if($mp4_url){
+			$html .= '<source src="'.$mp4_url.'" type="video/mp4">';
+		}
+		if($ogv_url){
+			$html .= '<source src="'.$ogv_url.'" type="video/ogg">';
+		}
+		$html .= '</video>';
+		$html .= '</div>';
+	}
+	
 	$html .= '<div class="sppb-row-container">';
 } else {
-	$html .= '<div id="' . $row_id . '" class="sppb-section ' . $custom_class . '" '.$addon_attr.' ' . $video_params . '>';
+	$html .= '<div id="' . $row_id . '" class="sppb-section ' . $custom_class . '" '.$addon_attr.'>';
 	if (isset($options->overlay) && $options->overlay) {
 		$html .= '<div class="sppb-row-overlay"></div>';
 	}
@@ -118,29 +172,6 @@ if ( (isset($options->title) && $options->title) || (isset($options->subtitle) &
 	if( $fluid_row ) {
 		$html .= '</div>';
 	}
-}
-
-if (!empty($external_video) && $options->external_background_video && $options->background_video) {
-	$video = parse_url($external_video);
-	$src = '';
-	switch($video['host']) {
-		case 'youtu.be':
-		$id = trim($video['path'],'/');
-		$src = '//www.youtube.com/embed/' . $id .'?playlist='.$id.'&iv_load_policy=3&enablejsapi=1&disablekb=1&autoplay=1&controls=0&showinfo=0&rel=0&loop=1&wmode=transparent&widgetid=1&mute=';
-		break;
-
-		case 'www.youtube.com':
-		case 'youtube.com':
-		parse_str($video['query'], $query);
-		$id = $query['v'];
-		$src = '//www.youtube.com/embed/' . $id .'?playlist='.$id.'&iv_load_policy=3&enablejsapi=1&disablekb=1&autoplay=1&controls=0&showinfo=0&rel=0&loop=1&wmode=transparent&widgetid=1&mute=';
-		break;
-		case 'vimeo.com':
-		case 'www.vimeo.com':
-		$id = trim($video['path'],'/');
-		$src = "//player.vimeo.com/video/{$id}?autoplay=1&loop=1&title=0&byline=0&portrait=0";
-	}
-	$html .= '<div class="sppb-youtube-video-bg hidden"><iframe src="'.$src.'" frameborder="0" allowfullscreen></iframe></div>';
 }
 
 $html .= '<div class="sppb-row'. $row_class .'">';

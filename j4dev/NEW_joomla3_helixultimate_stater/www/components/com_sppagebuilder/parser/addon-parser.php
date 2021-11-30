@@ -2,14 +2,19 @@
 /**
 * @package SP Page Builder
 * @author JoomShaper http://www.joomshaper.com
-* @copyright Copyright (c) 2010 - 2016 JoomShaper
+* @copyright Copyright (c) 2010 - 2021 JoomShaper
 * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+defined ('_JEXEC') or die ('Restricted access');
 
-jimport( 'joomla.filesystem.file' );
-jimport('joomla.filesystem.folder');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Access\Access;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Layout\FileLayout;
+use Joomla\CMS\Plugin\PluginHelper;
 
 require_once __DIR__ . '/addons.php';
 require_once __DIR__ . './../helpers/helper.php';
@@ -17,12 +22,16 @@ require_once __DIR__ . './../helpers/helper.php';
 require_once JPATH_ROOT .'/administrator/components/com_sppagebuilder/builder/classes/base.php';
 require_once JPATH_ROOT .'/administrator/components/com_sppagebuilder/builder/classes/config.php';
 
-class AddonParser {
+class AddonParser
+{
   public static $loaded_addon = array();
   public static $css_content = array();
+  public static $module_css_content = array();
   public static $js_content = '';
   private static $sppagebuilderAddonTags = array();
   private static $template = '';
+  public static $authorised = array();
+  public static $addon_interactions = array();
 
   public static function addAddon($tag, $func)
   {
@@ -48,8 +57,8 @@ class AddonParser {
   *
   * @since 1.0.8
   */
-  public static function getAddonPath( $addon_name = '')
-  {
+  public static function getAddonPath( $addon_name = '') {
+
     $template_path = JPATH_ROOT . '/templates/' . self::$template;
     $plugins = self::getPluginsAddons();
 
@@ -155,11 +164,11 @@ class AddonParser {
     $template_path = JPATH_ROOT . '/templates/' . self::$template;
     $tmpl_folders = array();
     if (file_exists($template_path . '/sppagebuilder/addons')) {
-      $tmpl_folders = JFolder::folders( $template_path . '/sppagebuilder/addons');
+      $tmpl_folders = Folder::folders( $template_path . '/sppagebuilder/addons');
     }
 
 
-    $folders = JFolder::folders( JPATH_ROOT . '/components/com_sppagebuilder/addons');
+    $folders = Folder::folders( JPATH_ROOT . '/components/com_sppagebuilder/addons');
     if($tmpl_folders){
       $merge_folders = array_merge( $folders, $tmpl_folders );
       $folders = array_unique( $merge_folders );
@@ -185,26 +194,29 @@ class AddonParser {
 
 
   public static function viewAddons( $content, $fluid = 0, $pageName = 'none' ) {
+
     SpPgaeBuilderBase::loadAddons();
     $addon_list = SpAddonsConfig::$addons;
+
+    self::$authorised = Access::getAuthorisedViewLevels(Factory::getUser()->get('id'));
 
     $layout_path = JPATH_ROOT . '/components/com_sppagebuilder/layouts';
 
     $layouts =  new stdClass;
 
-    $layouts->row_start       = new JLayoutFile('row.start', $layout_path);
-    $layouts->row_end         = new JLayoutFile('row.end', $layout_path);
-    $layouts->row_css         = new JLayoutFile('row.css', $layout_path);
+    $layouts->row_start       = new FileLayout('row.start', $layout_path);
+    $layouts->row_end         = new FileLayout('row.end', $layout_path);
+    $layouts->row_css         = new FileLayout('row.css', $layout_path);
 
-    $layouts->column_start    = new JLayoutFile('column.start', $layout_path);
-    $layouts->column_end      = new JLayoutFile('column.end', $layout_path);
-    $layouts->column_css      = new JLayoutFile('column.css', $layout_path);
+    $layouts->column_start    = new FileLayout('column.start', $layout_path);
+    $layouts->column_end      = new FileLayout('column.end', $layout_path);
+    $layouts->column_css      = new FileLayout('column.css', $layout_path);
 
-    $layouts->addon_start     = new JLayoutFile('addon.start', $layout_path);
-    $layouts->addon_end       = new JLayoutFile('addon.end', $layout_path);
-    $layouts->addon_css       = new JLayoutFile('addon.css', $layout_path);
+    $layouts->addon_start     = new FileLayout('addon.start', $layout_path);
+    $layouts->addon_end       = new FileLayout('addon.end', $layout_path);
+    $layouts->addon_css       = new FileLayout('addon.css', $layout_path);
 
-    $doc = JFactory::getDocument();
+    $doc = Factory::getDocument();
 
     if (is_array($content)) {
       $output = '';
@@ -222,7 +234,11 @@ class AddonParser {
         }
 
         $row_css = $layouts->row_css->render(array('options' => $row->settings));
-        array_push( self::$css_content, $row_css );
+        if($pageName == 'module') {
+          array_push( self::$module_css_content, $row_css );
+        } else {
+          array_push( self::$css_content, $row_css );
+        }
 
         $output .= $layouts->row_start->render(array('options' => $row->settings));
 
@@ -239,66 +255,20 @@ class AddonParser {
           }
 
           $column_css = $layouts->column_css->render(array('options' => $column->settings));
-          array_push( self::$css_content, $column_css );
+          if($pageName == 'module') {
+            array_push( self::$module_css_content, $column_css );
+          } else {
+            array_push( self::$css_content, $column_css );
+          }
 
           $output .= $layouts->column_start->render(array('options' => $column->settings));
 
           foreach ($column->addons as $key => $addon) {
 
-            $addon_options = array();
-            if((!isset($addon->type) || $addon->type !== 'inner_row') && isset($addon_list[$addon->name]['attr']) && $addon_list[$addon->name]['attr']) {
-              $addon_groups = $addon_list[$addon->name]['attr'];
-              foreach ($addon_groups as $addon_group) {
-                $addon_options += $addon_group;
-              }
-            }
-
-            foreach ($addon->settings as $key => &$setting) {
-
-              if (isset($setting->md)) {
-                $md = isset($setting->md) ? $setting->md : "";
-                $sm = isset($setting->sm) ? $setting->sm : "";
-                $xs = isset($setting->xs) ? $setting->xs : "";
-                $setting = $md;
-                $addon->settings->{$key . '_sm'} = $sm;
-                $addon->settings->{$key . '_xs'} = $xs;
-              }
-
-              if(isset($addon_options[$key]['selector'])) {
-                $addon_selector = $addon_options[$key]['selector'];
-                if(isset($addon->settings->{$key}) && !empty($addon->settings->{$key})) {
-                  $selector_value = $addon->settings->{$key};
-                  $addon->settings->{$key . '_selector'} = str_replace('{{ VALUE }}', $selector_value, $addon_selector);
-                }
-              }
-
-              // Repeatable
-              if( (!isset($addon->type) || $addon->type !== 'inner_row') &&  (($key == 'sp_'. $addon->name .'_item') || ($key == $addon->name .'_item')) ) {
-                if(count((array) $setting)) {
-                  foreach ($setting as &$options) {
-                    foreach ($options as $key2 => &$opt) {
-
-                      if (isset($opt->md)) {
-                        $md = isset($opt->md) ? $opt->md : "";
-                        $sm = isset($opt->sm) ? $opt->sm : "";
-                        $xs = isset($opt->xs) ? $opt->xs : "";
-                        $opt = $md;
-                        $options->{$key2 . '_sm'} = $sm;
-                        $options->{$key2 . '_xs'} = $xs;
-                      }
-
-                      if(isset($addon_options[$key]['attr'][$key2]['selector'])) {
-                        $addon_selector = $addon_options[$key]['attr'][$key2]['selector'];
-                        if(isset($options->{$key2}) && !empty($options->{$key2})) {
-                          $selector_value = $options->{$key2};
-                          $options->{$key2 . '_selector'} = str_replace('{{ VALUE }}', $selector_value, $addon_selector);
-                        }
-                      }
-
-                    }
-                  }
-                }
-              }
+            // interaction
+            if(isset($addon->settings->mouse_movement) || isset($addon->settings->while_scroll_view) ) {
+              $selectors =  ['mouse_movement'];                  
+              self::parseInteractions( $addon->id, $addon->settings, $selectors );
             }
 
             // Addon Visibility and ACL
@@ -307,27 +277,17 @@ class AddonParser {
             }
 
             // ACL
-            $access = true;
-            $authorised = JAccess::getAuthorisedViewLevels(JFactory::getUser()->get('id'));
-            if(isset($addon->settings->acl) && $addon->settings->acl ) {
-              $access_list = $addon->settings->acl;
-              $access = false;
-              foreach ($access_list as $acl) {
-                if(in_array($acl, $authorised)) {
-                  $access = true;
-                }
-              }
-              unset($addon->settings->acl);
-            }
-
+            $access = self::checkAddonACL($addon);
             if(!$access) {
               continue;
             } // End ACL
+          
 
             if ( isset($addon->type) && $addon->type === 'inner_row' ) {
-              $output .= self::viewAddons(array($addon), 1);
+              $newPageName = $pageName == 'module' ? 'module' : 'none';
+              $output .= self::viewAddons(array($addon), 1, $newPageName);
             } else {
-              $output .= self::getAddonHtmlView( $addon, $layouts );
+              $output .= self::getAddonHtmlView( $addon, $layouts, $pageName );
             }
           }
 
@@ -336,21 +296,51 @@ class AddonParser {
         $output .=  $layouts->row_end->render(array('options' => $row->settings));
       }
 
+      // interaction js
+      if(count(self::$addon_interactions) > 0 ) {
+        $doc->addScriptDeclaration('var addonInteraction = ' . json_encode(self::$addon_interactions) . ';');
+      }
+
       if($pageName == 'module') {
-        return AddonParser::spDoAddon( $output ) . '<style type="text/css">'. self::convertCssArrayToString(self::$css_content).'</style>';
+        return  AddonParser::spDoAddon( $output ) . '<style type="text/css">'. self::convertCssArrayToString(self::minifyCss(self::$module_css_content)).'</style>';
       } else {
         if( $pageName != 'none' ) {
-          $doc->addStyleDeclaration( self::convertCssArrayToString( self::$css_content ) );
+          $app = Factory::getApplication();
+          $params = $app->getParams('com_sppagebuilder');
+          $production_mode = $params->get('production_mode', 0);
+         
+          $inline_css = self::convertCssArrayToString( self::minifyCss(self::$css_content) );
+         
+          if($production_mode) {
+            $css_folder_path = JPATH_ROOT . '/media/com_sppagebuilder/css';
+            $css_file_path = $css_folder_path . '/'. $pageName . '.css';
+            $css_file_url = Uri::base(true) . '/media/com_sppagebuilder/css/' . $pageName . '.css';
+
+            if(!Folder::exists( $css_folder_path )) {
+              Folder::create( $css_folder_path );
+            }
+          
+            file_put_contents( $css_file_path, $inline_css );
+
+            if(file_exists( $css_file_path )) {
+              $doc->addStylesheet( $css_file_url );
+            } else {
+              $doc->addStyleDeclaration( $inline_css );
+            }
+          } else {
+            $doc->addStyleDeclaration( $inline_css );
+          }
+
         }
         return AddonParser::spDoAddon( $output );
       }
-    }else{
+    } else {
       return '<p>'.$content.'</p>';
     }
 
   }
 
-  public static function getAddonHtmlView( $addon, $layouts ) {
+  public static function getAddonHtmlView( $addon, $layouts, $pageName = 'none' ) {
 
     $addon_list = SpAddonsConfig::$addons;
 
@@ -358,19 +348,81 @@ class AddonParser {
     $class_name = 'SppagebuilderAddon' . ucfirst( $addon_name );
     $addon_path = AddonParser::getAddonPath( $addon_name );
 
-    $doc = JFactory::getDocument();
+    $doc = Factory::getDocument();
 
     $output = '';
 
     if(file_exists($addon_path . '/site.php')) {
 
-      //sbou start
+      $addon_options = array();
+      if(isset($addon_list[$addon->name]['attr']) && $addon_list[$addon->name]['attr']) {
+        $addon_groups = $addon_list[$addon->name]['attr'];
+        if (is_array($addon_groups)) {
+          foreach ($addon_groups as $addon_group) {
+            $addon_options += $addon_group;
+          }
+        }
+      }
+
+      foreach ($addon->settings as $key => &$setting) {
+
+        if (isset($setting->md)) {
+          $md = isset($setting->md) ? $setting->md : "";
+          $sm = isset($setting->sm) ? $setting->sm : "";
+          $xs = isset($setting->xs) ? $setting->xs : "";
+          $setting = $md;
+          $addon->settings->{$key . '_sm'} = $sm;
+          $addon->settings->{$key . '_xs'} = $xs;
+        }
+
+        if(isset($addon_options[$key]['selector'])) {
+          $addon_selector = $addon_options[$key]['selector'];
+          if(isset($addon->settings->{$key}) && !empty($addon->settings->{$key})) {
+            $selector_value = $addon->settings->{$key};
+            $addon->settings->{$key . '_selector'} = str_replace('{{ VALUE }}', $selector_value, $addon_selector);
+          }
+        }
+
+        // Repeatable
+        if( (!isset($addon->type) || $addon->type !== 'inner_row') &&  (($key == 'sp_'. $addon->name .'_item') || ($key == $addon->name .'_item')) ) {
+          if(count((array) $setting)) {
+            foreach ($setting as &$options) {
+              foreach ($options as $key2 => &$opt) {
+
+                if (isset($opt->md)) {
+                  $md = isset($opt->md) ? $opt->md : "";
+                  $sm = isset($opt->sm) ? $opt->sm : "";
+                  $xs = isset($opt->xs) ? $opt->xs : "";
+                  $opt = $md;
+                  $options->{$key2 . '_sm'} = $sm;
+                  $options->{$key2 . '_xs'} = $xs;
+                }
+
+                if(isset($addon_options[$key]['attr'][$key2]['selector'])) {
+                  $addon_selector = $addon_options[$key]['attr'][$key2]['selector'];
+                  if(isset($options->{$key2}) && !empty($options->{$key2})) {
+                    $selector_value = $options->{$key2};
+                    $options->{$key2 . '_selector'} = str_replace('{{ VALUE }}', $selector_value, $addon_selector);
+                  }
+                }
+
+              }
+            }
+          }
+        }
+      }
+
       //plugin support for addonRender
-      JPluginHelper::importPlugin( 'system' );
-      // Get the dispatcher and load the content plugins.
-      $dispatcher = JEventDispatcher::getInstance();
-      $results = $dispatcher->trigger( 'onBeforeAddonRender', array( &$addon) );
-      //sbou end
+      PluginHelper::importPlugin('system');
+
+      if (JVERSION < 4) {
+        $dispatcher = JDispatcher::getInstance();
+        $results = $dispatcher->trigger( 'onBeforeAddonRender', array( &$addon) );
+      } else {
+        $dispatcher = new Joomla\Event\Dispatcher();
+        $results = $dispatcher->triggerEvent( 'onBeforeAddonRender', array( &$addon) );
+      }
+      //end plugin support for addonRender
 
       $output .= $layouts->addon_start->render(array('addon'=>$addon)); // start addon
       require_once $addon_path . '/site.php';
@@ -388,34 +440,18 @@ class AddonParser {
             $newConetnt = '';
             foreach ($item->content as $contentAddon) {
 
-              $addon_options = array();
-              if(isset($addon_list[$contentAddon->name]['attr']) && $addon_list[$contentAddon->name]['attr']) {
-                $addon_groups = $addon_list[$contentAddon->name]['attr'];
-                foreach ($addon_groups as $addon_group) {
-                  $addon_options += $addon_group;
-                }
+              // Addon Visibility and ACL
+              if ( isset($addon->visibility) && !$addon->visibility ) {
+                continue;
               }
 
-              foreach ($contentAddon->settings as $key => &$setting) {
-                if (isset($setting->md)) {
-                  $md = isset($setting->md) ? $setting->md : "";
-                  $sm = isset($setting->sm) ? $setting->sm : "";
-                  $xs = isset($setting->xs) ? $setting->xs : "";
-                  $setting = $md;
-                  $contentAddon->settings->{$key . '_sm'} = $sm;
-                  $contentAddon->settings->{$key . '_xs'} = $xs;
-                }
+              // ACL
+              $access = self::checkAddonACL($contentAddon);
+              if(!$access) {
+                continue;
+              } // End ACL
 
-                if(isset($addon_options[$key]['selector'])) {
-                  $addon_selector = $addon_options[$key]['selector'];
-                  if(isset($contentAddon->settings->{$key}) && !empty($contentAddon->settings->{$key})) {
-                    $selector_value = $contentAddon->settings->{$key};
-                    $contentAddon->settings->{$key . '_selector'} = str_replace('{{ VALUE }}', $selector_value, $addon_selector);
-                  }
-                }
-              }
-
-              $newConetnt .= self::getAddonHtmlView($contentAddon, $layouts);
+              $newConetnt .= self::getAddonHtmlView($contentAddon, $layouts, $pageName);
             }
             $item->content = $newConetnt;
           }
@@ -452,20 +488,47 @@ class AddonParser {
         }
 
         $addon_css = $layouts->addon_css->render( array( 'addon' => $addon ) );
-        array_push( self::$css_content, $addon_css );
+        if($pageName == 'module') {
+          $output .= '<style type="text/css">'. $addon_css .'</style>';
+        } else {
+          array_push( self::$css_content, $addon_css );
+        }
 
         // css
         if ( method_exists( $class_name, 'css' ) ) {
-          array_push( self::$css_content, $addon_obj->css() );
+          if($pageName == 'module') {
+            $output .= '<style type="text/css">'. $addon_obj->css() .'</style>';
+          } else {
+            array_push( self::$css_content, $addon_obj->css() );
+          }
         }
 
       } else {
-        $output .= htmlspecialchars_decode(AddonParser::spDoAddon(AddonParser::generateShortcode($addon)));
+        $output .= htmlspecialchars_decode( AddonParser::spDoAddon( AddonParser::generateShortcode($addon) ) );
       }
       $output .= $layouts->addon_end->render(); // end addon
     }
 
     return $output;
+  }
+
+  public static function minifyCss($css_code){
+    // Remove comments
+    $css_code = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css_code);
+    
+    // Remove space after colons
+    $css_code = str_replace(': ', ':', $css_code);
+
+    // Remove whitespace
+    $css_code = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $css_code);
+
+    // Remove Empty Selectors without any properties
+    $css_code = preg_replace('/(?:(?:[^\r\n{}]+)\s?{[\s]*})/', '', $css_code);
+
+    // Remove Empty Media Selectors without any properties or selector
+    $css_code = preg_replace('/@media\s?\((?:[^\r\n,{}]+)\s?{[\s]*}/', '', $css_code);
+
+    return $css_code;
   }
 
   public static function generateShortcode($addon){
@@ -520,20 +583,20 @@ class AddonParser {
   // Get list of plugin addons
   private static function getPluginsAddons() {
     $path = JPATH_PLUGINS . '/sppagebuilder';
-    if(!JFolder::exists($path)) return;
+    if(!Folder::exists($path)) return;
 
-    $plugins = JFolder::folders($path);
+    $plugins = Folder::folders($path);
     if(!count((array) $plugins)) return;
 
     $elements = array();
     foreach ($plugins as $plugin) {
-      if(JPluginHelper::isEnabled('sppagebuilder', $plugin)) {
+      if(PluginHelper::isEnabled('sppagebuilder', $plugin)) {
         $addons_path = $path . '/' . $plugin . '/addons';
-        if(JFolder::exists($addons_path)) {
-          $addons = JFolder::folders($addons_path);
+        if(Folder::exists($addons_path)) {
+          $addons = Folder::folders($addons_path);
           foreach ($addons as $addon) {
             $path = $addons_path . '/' . $addon;
-            if(JFile::exists($path . '/site.php')) {
+            if(File::exists($path . '/site.php')) {
               $elements[$addon] = $path;
             }
           }
@@ -545,12 +608,12 @@ class AddonParser {
   }
 
   private static function getTemplateName() {
-    $db = JFactory::getDbo();
+    $db = Factory::getDbo();
     $query = $db->getQuery(true);
     $query->select($db->quoteName(array('template')));
     $query->from($db->quoteName('#__template_styles'));
     $query->where($db->quoteName('client_id') . ' = 0');
-    $query->where($db->quoteName('home') . ' = ' . $db->quote('1'));
+    $query->where($db->quoteName('home') . ' = 1');
     $db->setQuery($query);
 
     return $db->loadObject()->template;
@@ -566,7 +629,52 @@ class AddonParser {
 
     return $cssString;
   }
+
+  public static function checkAddonACL($addon){
+    $access = true;
+    if(isset($addon->settings->acl) && $addon->settings->acl ) {
+      $access_list = $addon->settings->acl;
+      $access = false;
+      foreach ($access_list as $acl) {
+        if(in_array($acl, self::$authorised)) {
+          $access = true;
+        }
+      }
+      unset($addon->settings->acl);
+    }
+
+    return $access;
+  }
+
+  /*
+  * Print interaction css and javascript object
+  */
+  private static function parseInteractions($addonId, $addonSettings, $selectors){
+    foreach( $selectors as $selector ){
+      $interactions = isset( $addonSettings->{$selector} ) ? $addonSettings->{$selector} : [];
+
+      if( is_array( $interactions ) && count($interactions) ){
+        $interactions = $interactions[0];
+        $animationCollection = new stdClass();
+        $animationCollection->addonId = $addonId;
+        $animationCollection->enable_mobile = isset($interactions->enable_mobile) && $interactions->enable_mobile;
+        $animationCollection->enable_tablet = isset($interactions->enable_tablet) && $interactions->enable_tablet;
+
+        if( $selector == 'mouse_movement' && $interactions->enable_tilt_effect ){
+          $animationCollection->animation = $interactions;
+          if(isset(self::$addon_interactions[$selector])){
+            array_push(self::$addon_interactions[$selector], $animationCollection);
+          }else{
+              self::$addon_interactions[$selector] = array($animationCollection);
+          }
+        }
+      }
+    }
+  }
+
 }
+
+
 
 function spAddonAtts( $pairs, $atts, $shortcode = '' ) {
   $atts = (array)$atts;

@@ -1,141 +1,204 @@
 <?php
 /**
- * @package SP Page Builder
- * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2017 JoomShaper
+ * @package SP_Page_Builder
+ * @author JoomShaper <support@joomshaper.com>
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper <http://www.joomshaper.com>
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
-*/
-//no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+ */
+// No direct accees
+defined('_JEXEC') or die('Restricted access');
 
-class SppagebuilderRouter extends JComponentRouterBase {
+use Joomla\CMS\Factory;
+use Joomla\CMS\Component\Router\RouterBase;
 
-	public function build(&$query) {
-		$app = JFactory::getApplication();
-		$menu = $app->getMenu();
-
+/**
+ * SP Page Builder Router class
+ *
+ * @since 1.0.0
+ */
+class SppagebuilderRouterBase
+{
+	/**
+	 * Build route function
+	 *
+	 * @param   string $query Query string
+	 * @return  mixed
+	 */
+	public static function buildRoute(&$query)
+	{
 		$segments = array();
+		$menu = Factory::getApplication()->getMenu();
 
-		if (empty($query['Itemid'])) {
+		// We need a menu item.  Either the one specified in the query, or the current active one if none specified
+		if (empty($query['Itemid']))
+		{
 			$menuItem = $menu->getActive();
 			$menuItemGiven = false;
-		} else {
+		}
+		else
+		{
 			$menuItem = $menu->getItem($query['Itemid']);
 			$menuItemGiven = true;
 		}
 
 		// Check again
-		if ($menuItemGiven && isset($menuItem) && $menuItem->component != 'com_sppagebuilder') {
+		if ($menuItemGiven && isset($menuItem) && $menuItem->component != 'com_sppagebuilder')
+		{
 			$menuItemGiven = false;
 			unset($query['Itemid']);
 		}
 
-		if (isset($query['view'])) {
+		if (isset($query['view']))
+		{
 			$view = $query['view'];
-		} else {
+		}
+		else
+		{
+			// We need to have a view in the query or it is an invalid URL
 			return $segments;
 		}
 
-		if (($menuItem instanceof stdClass) && $menuItem->query['view'] == $query['view']) {
-
-			if (!$menuItemGiven) {
-				$segments[] = $view;
-			}
-
+		if (($menuItem instanceof stdClass) && $menuItem->query['view'] == $query['view'] && isset($query['id']) && $menuItem->query['id'] == (int) $query['id'])
+		{
 			unset($query['view']);
+			unset($query['id']);
+
+			return $segments;
 		}
 
-		// Page
-		if (($view == 'page')) {
+		if ($menuItemGiven)
+		{
+			if (isset($query['view']) && $query['view'])
+			{
+				unset($query['view']);
+			}
 
-			if(isset($query['id']) && $query['id']) {
-				if(!isset($query['Itemid']) || empty($query['Itemid']) || (isset($menuItem) && $menuItem->query['id'] != $query['id'])){
-					$id = $this->getPageSegment($query['id']);
-					$segments[] = str_replace(':', '-', $id);
-				}
+			if (isset($query['id']) && $query['id'])
+			{
+				$id = $query['id'];
 				unset($query['id']);
 			}
 
-			unset($query['view']);
-		}
-
-		// Form
-		if (($view == 'form')) {
-
-			if(isset($query['id']) && $query['id']) {
-				$id = $this->getPageSegment($query['id']);
-				$segments[] = str_replace(':', '-', $id);
-				unset($query['id']);
-			}
-
-			if(isset($query['layout']) && $query['layout']) {
-				$segments[] = $query['layout'];
-				unset($query['layout']);
-			}
-
-			if(isset($query['tmpl']) && $query['tmpl']) {
+			if (isset($query['tmpl']) && $query['tmpl'])
+			{
 				unset($query['tmpl']);
 			}
 
-			unset($query['view']);
+			if (isset($query['layout']) && $query['layout'])
+			{
+				$segments[] = $query['layout'];
+
+				if (isset($id))
+				{
+					$segments[] = $id;
+				}
+
+				unset($query['layout']);
+			}
 		}
 
 		return $segments;
 	}
 
-	// Parse
-	public function parse(&$segments) {
-		$app = JFactory::getApplication();
+	/**
+	 * Undocumented function
+	 *
+	 * @param   [type] $segments
+	 * @return mixed
+	 *
+	 * @since 1.0.0
+	 */
+	public static function parseRoute(&$segments)
+	{
+		$app = Factory::getApplication();
 		$menu = $app->getMenu();
 		$item = $menu->getActive();
 		$total = count((array) $segments);
 		$vars = array();
-		$view = (isset($item->query['view']) && $item->query['view']) ? $item->query['view'] : 'page';
+		$view = (isset($item->query['view']) && $item->query['view']) ? $item->query['view'] : '';
 
-		if($view == 'page') {
-			if($total == 2) {
-				if($segments[1] == 'edit') {
-					$vars['view'] = 'form';
-					$vars['id'] = (int) $segments[0];
-					$vars['tmpl'] = 'component';
-					$vars['layout'] = 'edit';
-				} else {
-					$vars['view'] = 'page';
-					$vars['id'] = (int) $segments[0];
-				}
-			}
+		// Form
+		if (count($segments) == 2 && $segments[0] == 'edit')
+		{
+			$vars['view'] = 'form';
+			$vars['id'] = (int) $segments[1];
+			$vars['tmpl'] = 'component';
+			$vars['layout'] = 'edit';
 
-			if($total == 1) {
-				$vars['view'] = 'page';
-				$vars['id'] = (int) $segments[0];
-			}
+			return $vars;
 		}
 
 		return $vars;
 	}
+}
 
-	private function getPageSegment($id) {
-		if (!strpos($id, ':')) {
-			$db = JFactory::getDbo();
-			$dbquery = $db->getQuery(true);
-			$dbquery->select($dbquery->qn('title'))
-			->from($dbquery->qn('#__sppagebuilder'))
-			->where('id = ' . $dbquery->q($id));
-			$db->setQuery($dbquery);
+if (JVERSION >= 4)
+{
+	/**
+	 * SP Page Builder Router class
+	 *
+	 * @since 1.0.0
+	 */
+	class SppagebuilderRouter extends RouterBase
+	{
+		/**
+		 * Undocumented function
+		 *
+		 * @param   [type] $query
+		 * @return void
+		 *
+		 * @since 1.0.0
+		 */
+		public function build(&$query)
+		{
+			$segments = SppagebuilderRouterBase::buildRoute($query);
 
-			$id .= ':' . JFilterOutput::stringURLSafe($db->loadResult());
+			return $segments;
 		}
 
-		return $id;
+		/**
+		 * Undocumented function
+		 *
+		 * @param   [type] $segments
+		 * @return void
+		 *
+		 * @since 1.0.0
+		 */
+		public function parse(&$segments)
+		{
+			$vars = SppagebuilderRouterBase::parseRoute($segments);
+
+			$segments = array();
+
+			return $vars;
+		}
 	}
 }
 
-function SppagebuilderBuildRoute(&$query) {
-	$router = new SppagebuilderRouter;
-	return $router->build($query);
+/**
+ * Undocumented function
+ *
+ * @param   string $query   query string
+ * @return mixed
+ *
+ * @since 1.0.0
+ */
+function SppagebuilderBuildRoute(&$query)
+{
+	$segments = SppagebuilderRouterBase::buildRoute($query);
+
+	return $segments;
 }
 
-function SppagebuilderParseRoute($segments) {
-	$router = new SppagebuilderRouter;
-	return $router->parse($query);
+/**
+ * Undocumented function
+ *
+ * @param   string $segments    query string
+ * @return mixed
+ */
+function SppagebuilderParseRoute(&$segments)
+{
+	$vars = SppagebuilderRouterBase::parseRoute($segments);
+
+	return $vars;
 }

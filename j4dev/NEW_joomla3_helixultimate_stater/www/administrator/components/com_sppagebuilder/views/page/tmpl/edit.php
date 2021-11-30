@@ -1,33 +1,42 @@
 <?php
 /**
- * @package SP Page Builder
- * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
- * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
+* @package SP Page Builder
+* @author JoomShaper http://www.joomshaper.com
+* @copyright Copyright (c) 2010 - 2021 JoomShaper
+* @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
-jimport('joomla.application.component.helper');
-require_once JPATH_COMPONENT .'/builder/classes/base.php';
-require_once JPATH_COMPONENT .'/builder/classes/config.php';
+defined ('_JEXEC') or die ('Restricted access');
 
-JHTML::_('behavior.keepalive');
-JHtml::_('jquery.ui', array('core', 'sortable'));
-JHtml::_('formbehavior.chosen', 'select');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Component\ComponentHelper;
 
-$doc = JFactory::getDocument();
-$doc->addScriptdeclaration('var pagebuilder_base="' . JURI::root() . '";');
-$doc->addStylesheet( JURI::base(true) . '/components/com_sppagebuilder/assets/css/pbfont.css' );
-$doc->addStylesheet( JURI::base(true) . '/components/com_sppagebuilder/assets/css/react-select.css' );
-$doc->addStylesheet( JURI::base(true) . '/components/com_sppagebuilder/assets/css/sppagebuilder.css' );
+HTMLHelper::_('jquery.framework');
+HTMLHelper::_('behavior.formvalidator');
+HTMLHelper::_('behavior.keepalive');
+
+$doc = Factory::getDocument();
+$app = Factory::getApplication();
+
+//css
+SppagebuilderHelper::loadAssets('css');
+SppagebuilderHelper::addStylesheet('react-select.css');
 
 //js
-$doc->addScript( JURI::root(true) . '/media/editors/tinymce/tinymce.min.js' );
-$doc->addScript( JURI::base(true) . '/components/com_sppagebuilder/assets/js/script.js' );
-$doc->addScript( JURI::base(true) . '/components/com_sppagebuilder/assets/js/actions.js' );
+$doc->addScriptdeclaration('var pagebuilder_base="' . Uri::root() . '";');
+SppagebuilderHelper::loadEditor();
+SppagebuilderHelper::addScript('sidebar.js');
+SppagebuilderHelper::addScript('script.js');
+SppagebuilderHelper::addScript('actions.js');
+//SppagebuilderHelper::addScript('csslint.js');
 
-require_once JPATH_ROOT . '/administrator/components/com_sppagebuilder/helpers/language.php';
-$app = JFactory::getApplication();
+require_once JPATH_COMPONENT .'/builder/classes/base.php';
+require_once JPATH_COMPONENT .'/builder/classes/config.php';
+require_once JPATH_COMPONENT . '/helpers/language.php';
 
 global $pageId;
 global $language;
@@ -90,7 +99,9 @@ $doc->addScriptdeclaration('var articleCats=' . json_encode( $article_cats ) . '
 $doc->addScriptdeclaration('var moduleAttr=' . json_encode( $moduleAttr ) . ';');
 $doc->addScriptdeclaration('var rowSettings=' . json_encode( $rowSettings ) . ';');
 $doc->addScriptdeclaration('var colSettings=' . json_encode( $columnSettings ) . ';');
-$doc->addScriptdeclaration('var sppbMediaPath=\'/images\';');
+// Media
+$mediaParams = ComponentHelper::getParams('com_media');
+$doc->addScriptdeclaration('var sppbMediaPath=\'/'. $mediaParams->get('file_path', 'images') .'\';');
 
 if (!$this->item->text) {
   $doc->addScriptdeclaration('var initialState=[];');
@@ -99,168 +110,101 @@ if (!$this->item->text) {
   $this->item->text = SpPageBuilderAddonHelper::__($this->item->text);
   $doc->addScriptdeclaration('var initialState=' . $this->item->text . ';');
 }
-
-$conf   = JFactory::getConfig();
-$editor   = $conf->get('editor');
-if ($editor == 'jce') {
-  require_once(JPATH_ADMINISTRATOR . '/components/com_jce/includes/base.php');
-	wfimport('admin.models.editor');
-  $editor = new WFModelEditor();
-
-  $settings = $editor->getEditorSettings();
-
-  $app->triggerEvent('onBeforeWfEditorRender', array(&$settings));
-	echo $editor->render($settings);
-}
-
 ?>
 
 <div class="sp-pagebuilder-admin">
+	<form action="<?php echo Route::_('index.php?option=com_sppagebuilder&layout=edit&id=' . (int) $this->item->id); ?>" method="post" name="adminForm" id="adminForm" class="form-validate">
 
-  <form action="#" method="post" name="adminForm" id="adminForm" class="form-validate">
+		<div class="sp-pagebuilder-editor-wrapper">
+			<div class="sp-pagebuilder-sidebar">
+				<ul class="sp-pagebuilder-sidebar-tabs">
+					<li class="sp-pagebuilder-sidebar-tab-item" aria-label="<?php echo Text::_('COM_SPPAGEBUILDER_FIELDSET_SEOSETTINGS'); ?>">
+						<span class="fab fa-facebook" aria-hidden="true" data-pb-sidebar-action></span>
+						<span class="sp-pagebuilder-sidebar-item-title"><?php echo Text::_('COM_SPPAGEBUILDER_FIELDSET_SEOSETTINGS'); ?></span>
+						<ul>
+							<li>
+								<span class="sp-pagebuilder-close-sidebar" role="button"><span class="fas fa-times" area-hidden="true"></span></span>
+								<?php echo $this->form->renderFieldset('seosettings'); ?>
+							</li>
+						</ul>
+					</li>
+					<li class="sp-pagebuilder-sidebar-tab-item" aria-label="<?php echo Text::_('COM_SPPAGEBUILDER_FIELD_CSS'); ?>">
+						<span class="fab fa-css3" aria-hidden="true" data-pb-sidebar-action></span>	
+						<span class="sp-pagebuilder-sidebar-item-title"><?php echo Text::_('COM_SPPAGEBUILDER_FIELD_CSS'); ?></span>
+						<ul>
+							<li>
+								<span class="sp-pagebuilder-close-sidebar" role="button"><span class="fas fa-times" area-hidden="true"></span></span>
+								<?php echo $this->form->renderFieldset('pagecss'); ?>
+							</li>
+						</ul>
+					</li>
+					<li class="sp-pagebuilder-sidebar-tab-item" aria-label="<?php echo Text::_('JGLOBAL_FIELDSET_PUBLISHING'); ?>">
+						<span class="far fa-calendar-check" aria-hidden="true" data-pb-sidebar-action></span>
+						<span class="sp-pagebuilder-sidebar-item-title"><?php echo Text::_('JGLOBAL_FIELDSET_PUBLISHING'); ?></span>
+						<ul>
+							<li>
+								<span class="sp-pagebuilder-close-sidebar" role="button"><span class="fas fa-times" area-hidden="true"></span></span>
+								<?php echo $this->form->renderFieldset('publishing'); ?>
+							</li>
+						</ul>
+					</li>
+					<li class="sp-pagebuilder-sidebar-tab-item" aria-label="<?php echo Text::_('Permissions'); ?>">
+						<span class="fas fa-globe-europe" aria-hidden="true" data-pb-sidebar-action></span>
+						<span class="sp-pagebuilder-sidebar-item-title"><?php echo Text::_('Permissions'); ?></span>
+						<ul class="w-double">
+							<li>
+								<span class="sp-pagebuilder-close-sidebar" role="button"><span class="fas fa-times" area-hidden="true"></span></span>
+								<div class="form-vertical">
+									<?php echo $this->form->renderFieldset('permissions'); ?>
+								</div>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
 
-   <div class="clearfix sp-page-header">
-    <div class="pull-left">
-     <?php echo JLayoutHelper::render('joomla.edit.title_alias', $this); ?>
-   </div>
-   <div class="pull-right">
-     <div class="text-right">
-      <div class="sp-pagebuilder-btn-group">
-       <a href="#" id="btn-save-page" class="sp-pagebuilder-btn sp-pagebuilder-btn-success"><i class="fa fa-save"></i> <?php echo JText::_('COM_SPPAGEBUILDER_SAVE'); ?></a>
-       <a href="#" class="sp-pagebuilder-btn sp-pagebuilder-btn-success dropdown-toggle" data-toggle="dropdown"><i class="fa fa-chevron-down"></i></a>
-       <ul class="dropdown-menu">
-        <li><a id="btn-save-close" href="#"><i class="fa fa-check"></i> <?php echo JText::_('COM_SPPAGEBUILDER_SAVE_CLOSE'); ?></a></li>
-        <li><a id="btn-save-new" href="#"><i class="fa fa-plus"></i> <?php echo JText::_('COM_SPPAGEBUILDER_SAVE_NEW'); ?></a></li>
-        <li><a id="btn-save-copy" href="#"><i class="fa fa-clone"></i> <?php echo JText::_('COM_SPPAGEBUILDER_SAVE_COPY'); ?></a></li>
-      </ul>
-    </div>
+			<div class="sp-pagebuilder-main-editor">
+				
+				<div class="sp-pagebuilder-row mt-3 mb-5">
+					<div class="col-lg-6">
+						<div class="form-sp-pagebuilder-inline">
+							<?php echo $this->form->renderField('title'); ?>
+						</div>
+					</div>
 
-    <?php if($this->item->id) { ?>
-      <div class="sp-pagebuilder-btn-group">
-        <a id="btn-page-frontend-editor" target="_blank" href="<?php echo $this->item->frontend_edit; ?>" class="sp-pagebuilder-btn sp-pagebuilder-btn-info"><i class="fa fa-edit"></i> <?php echo JText::_('COM_SPPAGEBUILDER_FRONTEND_EDITOR'); ?></a>
-      </div>
+					<div class="col-lg-6">
+						<div class="sp-pagebuilder-frontend-actions">
+							<?php if($this->item->id) : ?>
+								<a id="btn-page-frontend-editor" target="_blank" href="<?php echo $this->item->frontend_edit; ?>" class="btn btn-primary"><?php echo Text::_('COM_SPPAGEBUILDER_FRONTEND_EDITOR'); ?></a>
+								<a id="btn-page-preview" target="_blank" href="<?php echo $this->item->preview; ?>" class="btn btn-outline-primary ml-3"><?php echo Text::_('COM_SPPAGEBUILDER_PREVIEW'); ?></a>
+							<?php endif; ?>
+						</div>
+					</div>
+				</div>
 
-      <div class="sp-pagebuilder-btn-group">
-        <a id="btn-page-preview" target="_blank" href="<?php echo $this->item->preview; ?>" class="sp-pagebuilder-btn sp-pagebuilder-btn-inverse"><i class="fa fa-eye"></i> <?php echo JText::_('COM_SPPAGEBUILDER_PREVIEW'); ?></a>
-      </div>
-    <?php } ?>
+				<div id="sp-pagebuilder-page-tools" class="sp-pagebuilder-page-tools"></div>
+				
+				<div class="sp-pagebuilder-sidebar-and-builder">
+					<div id="sp-pagebuilder-section-lib" class="sp-pagebuilder-section-lib"></div>
+					<div class="sp-pagebuilder-main-app">
+						<div id="container"></div>
+					</div>
+				</div>
 
-    <div class="sp-pagebuilder-btn-group">
-     <a href="#" id="btn-page-options" class="sp-pagebuilder-btn sp-pagebuilder-btn-inverse"><i class="fa fa-gear"></i> <?php echo JText::_('COM_SPPAGEBUILDER_OPTIONS'); ?></a>
-   </div>
+			</div>
+		</div>
 
-   <div class="sp-pagebuilder-btn-group">
-     <a href="#" class="sp-pagebuilder-btn sp-pagebuilder-btn-inverse" onclick="Joomla.submitbutton('page.cancel')"><i class="fa fa-times"></i> <?php echo JText::_('COM_SPPAGEBUILDER_CLOSE'); ?></a>
-   </div>
- </div>
+		<?php echo $this->form->renderField('text'); ?>
+		<?php echo $this->form->renderField('id'); ?>
+		<input type="hidden" name="task" value="item.edit" />
+		<?php echo HTMLHelper::_('form.token'); ?>
+	</form>
+
+	<div class="sp-pagebuilder-notifications"></div>
+
+	<div class="sp-pagebuilder-media-modal-overlay" style="display:none">
+		<div id="sp-pagebuilder-media-modal"></div>
+	</div>
 </div>
-</div>
 
-<div id="sp-pagebuilder-page-tools" class="clearfix sp-pagebuilder-page-tools"></div>
-
-<div class="sp-pagebuilder-sidebar-and-builder">
-
-  <div id="sp-pagebuilder-section-lib" class="clearfix sp-pagebuilder-section-lib"></div>
-
-  <div class="form-horizontal">
-    <div class="row-fluid">
-      <div class="span12">
-        <?php
-        $fields = $this->form->getFieldset('basic');
-        foreach ($fields as $key => $field) {
-          if (($field->name == 'jform[text]') || ($field->name == 'jform[id]')) {
-            ?>
-            <div class="control-group hidden">
-              <div class="control-label"><?php echo $field->label; ?></div>
-              <div class="controls"><?php echo $field->input; ?></div>
-            </div>
-            <?php
-          }
-        }
-        ?>
-        <div id="container"></div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div class="sp-pagebuilder-modal-alt">
-  <div id="page-options" class="sp-pagebuilder-modal-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;">
-    <div class="sp-pagebuilder-modal-content" style="position:fixed;top:0px;left:0px;right:0px;bottom:0px;">
-      <div class="sp-pagebuilder-modal-small">
-       <h2 class="sp-pagebuilder-modal-title"><?php echo JText::_('COM_SPPAGEBUILDER_PAGE_OPTIONS'); ?></h2>
-       <div>
-        <div class="page-options-content">
-
-          <?php
-          $fieldsets = $this->form->getFieldsets();
-          ?>
-
-          <ul class="sp-pagebuilder-nav sp-pagebuilder-nav-tabs" id="pageTabs">
-            <li class="active"><a href="#seosettings" data-toggle="tab"><i class="fa fa-bullseye"></i> <?php echo JText::_($fieldsets['seosettings']->label, true); ?></a></li>
-            <li><a href="#pagecss" data-toggle="tab"><i class="fa fa-css3"></i> <?php echo JText::_($fieldsets['pagecss']->label, true); ?></a></li>
-            <li><a href="#publishing" data-toggle="tab"><i class="fa fa-calendar-check-o"></i> <?php echo JText::_($fieldsets['publishing']->label, true); ?></a></li>
-            <li><a href="#permissions" data-toggle="tab"><i class="fa fa-globe"></i> <?php echo JText::_($fieldsets['permissions']->label, true); ?></a></li>
-          </ul>
-
-          <div class="tab-content" id="pageContent">
-
-            <div id="seosettings" class="tab-pane active">
-              <?php foreach ($this->form->getFieldset('seosettings') as $key => $field) { ?>
-                <div class="sp-pagebuilder-form-group">
-                  <?php echo $field->label; ?>
-                  <?php echo str_replace(array('<input', '<textarea'), array('<input class="sp-pagebuilder-form-control"', '<textarea class="sp-pagebuilder-form-control"'), $field->input); ?>
-                </div>
-                <?php } ?>
-              </div>
-
-              <div id="pagecss" class="tab-pane">
-                <?php foreach ($this->form->getFieldset('pagecss') as $key => $field) { ?>
-                  <div class="sp-pagebuilder-form-group">
-                    <?php echo $field->label; ?>
-                    <?php echo str_replace(array('<textarea'), array('<textarea class="sp-pagebuilder-form-control"'), $field->input); ?>
-                  </div>
-                  <?php } ?>
-                </div>
-
-                <div id="publishing" class="tab-pane">
-                  <?php foreach ($this->form->getFieldset('publishing') as $key => $field) { ?>
-                    <div class="sp-pagebuilder-form-group">
-                      <?php echo $field->label; ?>
-                      <?php echo str_replace(array('<input', '<textarea'), array('<input class="sp-pagebuilder-form-control"', '<textarea class="sp-pagebuilder-form-control"'), $field->input); ?>
-                    </div>
-                    <?php } ?>
-                  </div>
-
-                  <div id="permissions" class="tab-pane">
-                   <?php foreach ($this->form->getFieldset('permissions') as $key => $field) { ?>
-                   <div class="sp-pagebuilder-form-group">
-                     <?php echo str_replace(array('<input', '<textarea'), array('<input class="sp-pagebuilder-form-control"', '<textarea class="sp-pagebuilder-form-control"'), $field->input); ?>
-                  </div>
-                  <?php } ?>
-                  </div>		                  </div>
-
-                </div>
-
-                <a id="btn-apply-page-options" class="sp-pagebuilder-btn sp-pagebuilder-btn-success" href="#"><i class="fa fa-check-square-o"></i> <?php echo JText::_('COM_SPPAGEBUILDER_APPLY'); ?></a>
-                <a id="btn-cancel-page-options" class="sp-pagebuilder-btn sp-pagebuilder-btn-default" href="#"><i class="fa fa-times-circle-o"></i> <?php echo JText::_('COM_SPPAGEBUILDER_CANCEL'); ?></a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <?php echo JLayoutHelper::render('footer'); ?>
-
-    <input type="hidden" id="form_task" name="task" value="page.apply" />
-    <?php echo JHtml::_('form.token'); ?>
-  </form>
-</div>
-<div class="sp-pagebuilder-notifications"></div>
-<div class="sp-pagebuilder-media-modal-overlay" style="display:none">
-  <div id="sp-pagebuilder-media-modal">
-  </div>
-</div>
-<script type="text/javascript" src="<?php echo JURI::base(true) . '/components/com_sppagebuilder/assets/js/engine.js'; ?>"></script>
+<script type="text/javascript" src="<?php echo Uri::base(true) . '/components/com_sppagebuilder/assets/js/engine.js'; ?>" defer></script>

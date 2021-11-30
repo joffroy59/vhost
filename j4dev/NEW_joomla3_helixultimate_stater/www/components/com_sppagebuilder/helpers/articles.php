@@ -2,11 +2,17 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Access\Access;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Uri\Uri;
 
 if(!class_exists('ContentHelperRoute')) require_once (JPATH_SITE . '/components/com_content/helpers/route.php');
 
@@ -14,12 +20,12 @@ abstract class SppagebuilderHelperArticles
 {
 	public static function getArticles( $count = 5, $ordering = 'latest', $catid = '', $include_subcategories = true, $post_format = '' ) {
 
-		$authorised = JAccess::getAuthorisedViewLevels(JFactory::getUser()->get('id'));
+		$authorised = Access::getAuthorisedViewLevels(Factory::getUser()->get('id'));
 
-		$app = JFactory::getApplication();
-		$db = JFactory::getDbo();
+		$app = Factory::getApplication();
+		$db = Factory::getDbo();
 		$nullDate = $db->quote($db->getNullDate());
-		$nowDate  = $db->quote(JFactory::getDate()->toSql());
+		$nowDate  = $db->quote(Factory::getDate()->toSql());
 
 		$query = $db->getQuery(true);
 
@@ -50,9 +56,32 @@ abstract class SppagebuilderHelperArticles
 
 		}
 
-		$query->where('(a.publish_up = ' . $nullDate . ' OR a.publish_up <= ' . $nowDate . ')');
-		$query->where('(a.publish_down = ' . $nullDate . ' OR a.publish_down >= ' . $nowDate . ')');
-
+		// publishing
+		if ( JVERSION < 4)
+		{
+			$query->where('(a.publish_up = ' . $nullDate . ' OR a.publish_up <= ' . $nowDate . ')');
+			$query->where('(a.publish_down = ' . $nullDate . ' OR a.publish_down >= ' . $nowDate . ')');
+		}
+		else
+		{
+			$nowDate = Factory::getDate()->toSql();
+			$query->extendWhere(
+				'AND',
+				[
+					$db->quoteName('a.publish_up') . ' IS NULL',
+					$db->quoteName('a.publish_up') . ' <= :publishUp',
+				],
+				'OR'
+			)->extendWhere(
+				'AND',
+				[
+					$db->quoteName('a.publish_down') . ' IS NULL',
+					$db->quoteName('a.publish_down') . ' >= :publishDown',
+				],
+				'OR'
+			)->bind([':publishUp', ':publishDown'], $nowDate);
+		}
+		
 		// has order by
 		if ($ordering == 'hits') {
 			$query->order($db->quoteName('a.hits') . ' DESC');
@@ -67,7 +96,7 @@ abstract class SppagebuilderHelperArticles
 
 		// Language filter
 		if ($app->getLanguageFilter()) {
-			$query->where('a.language IN (' . $db->Quote(JFactory::getLanguage()->getTag()) . ',' . $db->Quote('*') . ')');
+			$query->where('a.language IN (' . $db->Quote(Factory::getLanguage()->getTag()) . ',' . $db->Quote('*') . ')');
 		}
 
 		// continue query
@@ -81,8 +110,8 @@ abstract class SppagebuilderHelperArticles
 		foreach ($items as &$item) {
 			$item->slug    	= $item->id . ':' . $item->alias;
 			$item->catslug 	= $item->catid . ':' . $item->category_alias;
-			$item->username = JFactory::getUser($item->created_by)->name;
-			$item->link 	= JRoute::_(ContentHelperRoute::getArticleRoute($item->slug, $item->catid, $item->language));
+			$item->username = Factory::getUser($item->created_by)->name;
+			$item->link 	= Route::_(ContentHelperRoute::getArticleRoute($item->slug, $item->catid, $item->language));
 			$attribs 		= json_decode($item->attribs);
 
 			// Featured Image
@@ -92,36 +121,36 @@ abstract class SppagebuilderHelperArticles
 				$img_baseurl = basename($featured_image);
 
 				//Small
-				$small = JPATH_ROOT . '/' . dirname($featured_image) . '/' . JFile::stripExt($img_baseurl) .  '_small.' . JFile::getExt($img_baseurl);
+				$small = JPATH_ROOT . '/' . dirname($featured_image) . '/' . File::stripExt($img_baseurl) .  '_small.' . File::getExt($img_baseurl);
 				if(file_exists($small)) {
-					$item->image_small = JURI::root(true) . '/' . dirname($featured_image) . '/' . JFile::stripExt($img_baseurl) . '_small.' . JFile::getExt($img_baseurl);
+					$item->image_small = Uri::root(true) . '/' . dirname($featured_image) . '/' . File::stripExt($img_baseurl) . '_small.' . File::getExt($img_baseurl);
 				}
 
 				//Thumb
-				$thumbnail = JPATH_ROOT . '/' . dirname($featured_image) . '/' . JFile::stripExt($img_baseurl) .  '_thumbnail.' . JFile::getExt($img_baseurl);
+				$thumbnail = JPATH_ROOT . '/' . dirname($featured_image) . '/' . File::stripExt($img_baseurl) .  '_thumbnail.' . File::getExt($img_baseurl);
 				if(file_exists($thumbnail)) {
-					$item->image_thumbnail = JURI::root(true) . '/' . dirname($featured_image) . '/' . JFile::stripExt($img_baseurl) . '_thumbnail.' . JFile::getExt($img_baseurl);
+					$item->image_thumbnail = Uri::root(true) . '/' . dirname($featured_image) . '/' . File::stripExt($img_baseurl) . '_thumbnail.' . File::getExt($img_baseurl);
 				} else {
-					$item->image_thumbnail = JURI::root(true) . '/' . $item->featured_image;
+					$item->image_thumbnail = Uri::root(true) . '/' . $item->featured_image;
 				}
 
 				//Medium
-				$medium = JPATH_ROOT . '/' . dirname($featured_image) . '/' . JFile::stripExt($img_baseurl) .  '_medium.' . JFile::getExt($img_baseurl);
+				$medium = JPATH_ROOT . '/' . dirname($featured_image) . '/' . File::stripExt($img_baseurl) .  '_medium.' . File::getExt($img_baseurl);
 				if(file_exists($medium)) {
-					$item->image_medium = JURI::root(true) . '/' . dirname($featured_image) . '/' . JFile::stripExt($img_baseurl) . '_medium.' . JFile::getExt($img_baseurl);
+					$item->image_medium = Uri::root(true) . '/' . dirname($featured_image) . '/' . File::stripExt($img_baseurl) . '_medium.' . File::getExt($img_baseurl);
 				}
 
 				//Large
-				$large = JPATH_ROOT . '/' . dirname($featured_image) . '/' . JFile::stripExt($img_baseurl) .  '_large.' . JFile::getExt($img_baseurl);
+				$large = JPATH_ROOT . '/' . dirname($featured_image) . '/' . File::stripExt($img_baseurl) .  '_large.' . File::getExt($img_baseurl);
 				if(file_exists($large)) {
-					$item->image_large = JURI::root(true) . '/' . dirname($featured_image) . '/' . JFile::stripExt($img_baseurl) . '_large.' . JFile::getExt($img_baseurl);
+					$item->image_large = Uri::root(true) . '/' . dirname($featured_image) . '/' . File::stripExt($img_baseurl) . '_large.' . File::getExt($img_baseurl);
 				}
 			} else {
 				$images = json_decode($item->images);
 				if(isset($images->image_intro) && $images->image_intro) {
-					$item->image_thumbnail = $images->image_intro;
+					$item->image_thumbnail = Uri::root(true) . '/' . $images->image_intro;
 				} elseif (isset($images->image_fulltext) && $images->image_fulltext) {
-					$item->image_thumbnail = $images->image_fulltext;
+					$item->image_thumbnail = Uri::root(true) . '/' . $images->image_fulltext;
 				} else {
 					$item->image_thumbnail = false;
 				}
@@ -229,27 +258,27 @@ abstract class SppagebuilderHelperArticles
 						$gallery_img_baseurl = basename($value);
 
 						//Small
-						$small = JPATH_ROOT . '/' . dirname($value) . '/' . JFile::stripExt($gallery_img_baseurl) .  '_small.' . JFile::getExt($gallery_img_baseurl);
+						$small = JPATH_ROOT . '/' . dirname($value) . '/' . File::stripExt($gallery_img_baseurl) .  '_small.' . File::getExt($gallery_img_baseurl);
 						if(file_exists($small)) {
-							$gallery_images[$key]['small'] = JURI::root(true) . '/' . dirname($value) . '/' . JFile::stripExt($gallery_img_baseurl) . '_small.' . JFile::getExt($gallery_img_baseurl);
+							$gallery_images[$key]['small'] = Uri::root(true) . '/' . dirname($value) . '/' . File::stripExt($gallery_img_baseurl) . '_small.' . File::getExt($gallery_img_baseurl);
 						}
 
 						//Thumbnail
-						$thumbnail = JPATH_ROOT . '/' . dirname($value) . '/' . JFile::stripExt($gallery_img_baseurl) .  '_thumbnail.' . JFile::getExt($gallery_img_baseurl);
+						$thumbnail = JPATH_ROOT . '/' . dirname($value) . '/' . File::stripExt($gallery_img_baseurl) .  '_thumbnail.' . File::getExt($gallery_img_baseurl);
 						if(file_exists($thumbnail)) {
-							$gallery_images[$key]['thumbnail'] = JURI::root(true) . '/' . dirname($value) . '/' . JFile::stripExt($gallery_img_baseurl) . '_thumbnail.' . JFile::getExt($gallery_img_baseurl);
+							$gallery_images[$key]['thumbnail'] = Uri::root(true) . '/' . dirname($value) . '/' . File::stripExt($gallery_img_baseurl) . '_thumbnail.' . File::getExt($gallery_img_baseurl);
 						}
 
 						//Medium
-						$medium = JPATH_ROOT . '/' . dirname($value) . '/' . JFile::stripExt($gallery_img_baseurl) .  '_medium.' . JFile::getExt($gallery_img_baseurl);
+						$medium = JPATH_ROOT . '/' . dirname($value) . '/' . File::stripExt($gallery_img_baseurl) .  '_medium.' . File::getExt($gallery_img_baseurl);
 						if(file_exists($medium)) {
-							$gallery_images[$key]['medium'] = JURI::root(true) . '/' . dirname($value) . '/' . JFile::stripExt($gallery_img_baseurl) . '_medium.' . JFile::getExt($gallery_img_baseurl);
+							$gallery_images[$key]['medium'] = Uri::root(true) . '/' . dirname($value) . '/' . File::stripExt($gallery_img_baseurl) . '_medium.' . File::getExt($gallery_img_baseurl);
 						}
 
 						//Large
-						$large = JPATH_ROOT . '/' . dirname($value) . '/' . JFile::stripExt($gallery_img_baseurl) .  '_large.' . JFile::getExt($gallery_img_baseurl);
+						$large = JPATH_ROOT . '/' . dirname($value) . '/' . File::stripExt($gallery_img_baseurl) .  '_large.' . File::getExt($gallery_img_baseurl);
 						if(file_exists($large)) {
-							$gallery_images[$key]['large'] = JURI::root(true) . '/' . dirname($value) . '/' . JFile::stripExt($gallery_img_baseurl) . '_large.' . JFile::getExt($gallery_img_baseurl);
+							$gallery_images[$key]['large'] = Uri::root(true) . '/' . dirname($value) . '/' . File::stripExt($gallery_img_baseurl) . '_large.' . File::getExt($gallery_img_baseurl);
 						}
 					}
 
@@ -266,8 +295,8 @@ abstract class SppagebuilderHelperArticles
 
 	public static function getCategories($parent_id = 1, $include_subcategories = true, $child = false, $cats = array()) {
 
-		$app = JFactory::getApplication();
-		$db = JFactory::getDbo();
+		$app = Factory::getApplication();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 
 		$query
@@ -275,8 +304,8 @@ abstract class SppagebuilderHelperArticles
 			->from($db->quoteName('#__categories'))
 			->where($db->quoteName('extension') . ' = ' . $db->quote('com_content'))
 			->where($db->quoteName('published') . ' = ' . $db->quote(1))
-			->where($db->quoteName('access')." IN (" . implode( ',', JFactory::getUser()->getAuthorisedViewLevels() ) . ")")
-			->where($db->quoteName('language')." IN (" . $db->Quote(JFactory::getLanguage()->getTag()).", ".$db->Quote('*') . ")")
+			->where($db->quoteName('access')." IN (" . implode( ',', Factory::getUser()->getAuthorisedViewLevels() ) . ")")
+			->where($db->quoteName('language')." IN (" . $db->Quote(Factory::getLanguage()->getTag()).", ".$db->Quote('*') . ")")
 			->where($db->quoteName('parent_id')." IN (" . implode( ',', $parent_id ) . ")")
 			->order($db->quoteName('lft') . ' ASC');
 
@@ -298,8 +327,8 @@ abstract class SppagebuilderHelperArticles
 
 	private static function hasChildren($parent_id = 1) {
 
-		$app = JFactory::getApplication();
-		$db = JFactory::getDbo();
+		$app = Factory::getApplication();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 
 		$query
@@ -307,8 +336,8 @@ abstract class SppagebuilderHelperArticles
 			->from($db->quoteName('#__categories'))
 			->where($db->quoteName('extension') . ' = ' . $db->quote('com_content'))
 			->where($db->quoteName('published') . ' = ' . $db->quote(1))
-			->where($db->quoteName('access')." IN (" . implode( ',', JFactory::getUser()->getAuthorisedViewLevels() ) . ")")
-			->where($db->quoteName('language')." IN (" . $db->Quote(JFactory::getLanguage()->getTag()).", ".$db->Quote('*') . ")")
+			->where($db->quoteName('access')." IN (" . implode( ',', Factory::getUser()->getAuthorisedViewLevels() ) . ")")
+			->where($db->quoteName('language')." IN (" . $db->Quote(Factory::getLanguage()->getTag()).", ".$db->Quote('*') . ")")
 			->where($db->quoteName('parent_id') . ' = ' . $db->quote($parent_id))
 			->order($db->quoteName('created_time') . ' DESC');
 

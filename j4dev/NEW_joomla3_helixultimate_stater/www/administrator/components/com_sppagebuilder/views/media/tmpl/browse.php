@@ -2,11 +2,11 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
-defined('_JEXEC') or die ('restricted aceess');
+defined('_JEXEC') or die ('Restricted access');
 
 $input 				= JFactory::getApplication()->input;
 $m_source  = $input->get('source', '', 'STRING');
@@ -57,7 +57,7 @@ if ($m_source == 'page') {
 
 
 	// Media Items
-	if(!$this->start) $report['output'] .= '<ul class="sp-pagebuilder-media clearfix">';
+	if(!$this->start) $report['output'] .= '<ul class="sp-pagebuilder-media">';
 
 	if(count((array) $this->items)) {
 		foreach ($this->items as $key => $this->item) {

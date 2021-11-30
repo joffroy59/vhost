@@ -2,13 +2,16 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Image\Image;
+
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
-class SppagebuilderHelperImage extends JImage
+class SppagebuilderHelperImage extends Image
 {
 
 	public function createThumbs($thumbSizes, $creationMethod = self::SCALE_INSIDE, $thumbsFolder = null)
@@ -58,7 +61,7 @@ class SppagebuilderHelperImage extends JImage
 
 				if ($thumb->toFile($thumbFileName, $imgProperties->type))
 				{
-					// Return JImage object with thumb path to ease further manipulation
+					// Return Image object with thumb path to ease further manipulation
 					$thumb->path     = $thumbFileName;
 					$thumbsCreated[] = $thumb;
 				}

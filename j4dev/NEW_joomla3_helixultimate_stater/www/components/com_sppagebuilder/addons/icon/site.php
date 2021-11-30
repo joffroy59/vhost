@@ -2,7 +2,7 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 
@@ -12,20 +12,27 @@ defined ('_JEXEC') or die ('Restricted access');
 class SppagebuilderAddonIcon extends SppagebuilderAddons {
 
 	public function render() {
-
-		$class = (isset($this->addon->settings->class) && $this->addon->settings->class) ? $this->addon->settings->class : '';
-		$class .= (isset($this->addon->settings->alignment) && $this->addon->settings->alignment) ? ' ' . $this->addon->settings->alignment : '';
-		$class .= (isset($this->addon->settings->hover_effect) && $this->addon->settings->hover_effect) ? ' sppb-icon-hover-effect-' . $this->addon->settings->hover_effect : '';
-		$name = (isset($this->addon->settings->name) && $this->addon->settings->name) ? $this->addon->settings->name : '';
-		$link = (isset($this->addon->settings->link) && $this->addon->settings->link) ? $this->addon->settings->link : '';
-
+		
+		$settings = $this->addon->settings;
+		$class = (isset($settings->class) && $settings->class) ? $settings->class : '';
+		$class .= (isset($settings->alignment) && $settings->alignment) ? ' ' . $settings->alignment : '';
+		$class .= (isset($settings->hover_effect) && $settings->hover_effect) ? ' sppb-icon-hover-effect-' . $settings->hover_effect : '';
+		$name = (isset($settings->name) && $settings->name) ? $settings->name : '';
+		$link = (isset($settings->link) && $settings->link) ? $settings->link : '';
+		$target = (isset($settings->target) && $settings->target) ? 'rel="noopener noreferrer" target="' . $settings->target . '"' : '';
 		if($name) {
 			$output   = '<div class="sppb-icon ' . $class . '">';
 			if (!empty($link)) {
-				$output .= '<a href="'.$link.'">';
+				$output .= '<a ' . $target . ' href="'.$link.'">';
 			}
 			$output  .= '<span class="sppb-icon-inner">';
-			$output  .= '<i class="fa ' . $name . '"></i>';
+
+			$icon_arr = array_filter(explode(' ', $name));
+			if (count($icon_arr) === 1) {
+				$name = 'fa ' . $name;
+			}
+
+			$output  .= '<i class="' . $name . '" aria-hidden="true"></i>';
 			$output  .= '</span>';
 			if (!empty($link)) {
 				$output .= '</a>';
@@ -37,6 +44,7 @@ class SppagebuilderAddonIcon extends SppagebuilderAddons {
 
 	public function css() {
 		$addon_id = '#sppb-addon-' . $this->addon->id;
+		$settings = $this->addon->settings;
 
 		// Normal
 		$icon_style  = '';
@@ -47,9 +55,9 @@ class SppagebuilderAddonIcon extends SppagebuilderAddons {
 		$font_size_sm = '';
 		$font_size_xs = '';
 
-		if(isset($this->addon->settings->margin) && trim($this->addon->settings->margin) != ""){
+		if(isset($settings->margin) && trim($settings->margin) != ""){
 			$margin_md = '';
-			$margins = explode(' ', $this->addon->settings->margin);
+			$margins = explode(' ', $settings->margin);
 			foreach($margins as $margin){
 				if(empty(trim($margin))){
 					$margin_md .= ' 0';
@@ -61,9 +69,9 @@ class SppagebuilderAddonIcon extends SppagebuilderAddons {
 			$icon_style .= "margin: " . $margin_md . ";\n";
 		}
 
-		if(isset($this->addon->settings->margin_sm) && trim($this->addon->settings->margin_sm) != ""){
+		if(isset($settings->margin_sm) && trim($settings->margin_sm) != ""){
 			$margin_sm_full = '';
-			$margins_sm = explode(' ', $this->addon->settings->margin_sm);
+			$margins_sm = explode(' ', $settings->margin_sm);
 			foreach($margins_sm as $margin_sm){
 				if(empty(trim($margin_sm))){
 					$margin_sm_full .= ' 0';
@@ -75,9 +83,9 @@ class SppagebuilderAddonIcon extends SppagebuilderAddons {
 			$icon_style_sm .= "margin: " . $margin_sm_full . ";\n";
 		}
 
-		if(isset($this->addon->settings->margin_xs) && trim($this->addon->settings->margin_xs) != ""){
+		if(isset($settings->margin_xs) && trim($settings->margin_xs) != ""){
 			$margin_xs_full = '';
-			$margins_xs = explode(' ', $this->addon->settings->margin_xs);
+			$margins_xs = explode(' ', $settings->margin_xs);
 			foreach($margins_xs as $margin_xs){
 				if(empty(trim($margin_xs))){
 					$margin_xs_full .= ' 0';
@@ -89,54 +97,54 @@ class SppagebuilderAddonIcon extends SppagebuilderAddons {
 			$icon_style_xs .= "margin: " . $margin_xs_full . ";\n";
 		}
 
-		$icon_style .= (isset($this->addon->settings->height) && $this->addon->settings->height) ? 'height: ' . (int) $this->addon->settings->height . 'px;' : '';
-		$icon_style_sm .= (isset($this->addon->settings->height_sm) && $this->addon->settings->height_sm) ? 'height: ' . (int) $this->addon->settings->height_sm . 'px;' : '';
-		$icon_style_xs .= (isset($this->addon->settings->height_xs) && $this->addon->settings->height_xs) ? 'height: ' . (int) $this->addon->settings->height_xs . 'px;' : '';
+		$icon_style .= (isset($settings->height) && $settings->height) ? 'height: ' . (int) $settings->height . 'px;' : '';
+		$icon_style_sm .= (isset($settings->height_sm) && $settings->height_sm) ? 'height: ' . (int) $settings->height_sm . 'px;' : '';
+		$icon_style_xs .= (isset($settings->height_xs) && $settings->height_xs) ? 'height: ' . (int) $settings->height_xs . 'px;' : '';
 
-		$font_size .= (isset($this->addon->settings->height) && $this->addon->settings->height) ? 'line-height: ' . (int) $this->addon->settings->height . 'px;' : '';
-		$font_size_sm .= (isset($this->addon->settings->height_sm) && $this->addon->settings->height_sm) ? 'line-height: ' . (int) $this->addon->settings->height_sm . 'px;' : '';
-		$font_size_xs .= (isset($this->addon->settings->height_xs) && $this->addon->settings->height_xs) ? 'line-height: ' . (int) $this->addon->settings->height_xs . 'px;' : '';
+		$font_size .= (isset($settings->height) && $settings->height) ? 'line-height: ' . (int) $settings->height . 'px;' : '';
+		$font_size_sm .= (isset($settings->height_sm) && $settings->height_sm) ? 'line-height: ' . (int) $settings->height_sm . 'px;' : '';
+		$font_size_xs .= (isset($settings->height_xs) && $settings->height_xs) ? 'line-height: ' . (int) $settings->height_xs . 'px;' : '';
 
-		$icon_style .= (isset($this->addon->settings->width) && $this->addon->settings->width) ? 'width: ' . (int) $this->addon->settings->width . 'px;' : '';
-		$icon_style_sm .= (isset($this->addon->settings->width_sm) && $this->addon->settings->width_sm) ? 'width: ' . (int) $this->addon->settings->width_sm . 'px;' : '';
-		$icon_style_xs .= (isset($this->addon->settings->width_xs) && $this->addon->settings->width_xs) ? 'width: ' . (int) $this->addon->settings->width_xs . 'px;' : '';
+		$icon_style .= (isset($settings->width) && $settings->width) ? 'width: ' . (int) $settings->width . 'px;' : '';
+		$icon_style_sm .= (isset($settings->width_sm) && $settings->width_sm) ? 'width: ' . (int) $settings->width_sm . 'px;' : '';
+		$icon_style_xs .= (isset($settings->width_xs) && $settings->width_xs) ? 'width: ' . (int) $settings->width_xs . 'px;' : '';
 
-		$icon_style .= (isset($this->addon->settings->color) && $this->addon->settings->color) ? 'color: ' . $this->addon->settings->color . ';' : '';
-		$icon_style .= (isset($this->addon->settings->background) && $this->addon->settings->background) ? 'background-color: ' . $this->addon->settings->background . ';' : '';
-		$icon_style .= (isset($this->addon->settings->border_color) && $this->addon->settings->border_color) ? 'border-style: solid; border-color: ' . $this->addon->settings->border_color . ';' : '';
+		$icon_style .= (isset($settings->color) && $settings->color) ? 'color: ' . $settings->color . ';' : '';
+		$icon_style .= (isset($settings->background) && $settings->background) ? 'background-color: ' . $settings->background . ';' : '';
+		$icon_style .= (isset($settings->border_color) && $settings->border_color) ? 'border-style: solid; border-color: ' . $settings->border_color . ';' : '';
 
-		$icon_style .= (isset($this->addon->settings->border_width) && $this->addon->settings->border_width) ? 'border-width: ' . (int) $this->addon->settings->border_width . 'px;' : '';
-		$icon_style_sm .= (isset($this->addon->settings->border_width_sm) && $this->addon->settings->border_width_sm) ? 'border-width: ' . (int) $this->addon->settings->border_width_sm . 'px;' : '';
-		$icon_style_xs .= (isset($this->addon->settings->border_width_xs) && $this->addon->settings->border_width_xs) ? 'border-width: ' . (int) $this->addon->settings->border_width_xs . 'px;' : '';
+		$icon_style .= (isset($settings->border_width) && $settings->border_width) ? 'border-width: ' . (int) $settings->border_width . 'px;' : '';
+		$icon_style_sm .= (isset($settings->border_width_sm) && $settings->border_width_sm) ? 'border-width: ' . (int) $settings->border_width_sm . 'px;' : '';
+		$icon_style_xs .= (isset($settings->border_width_xs) && $settings->border_width_xs) ? 'border-width: ' . (int) $settings->border_width_xs . 'px;' : '';
 
-		$icon_style .= (isset($this->addon->settings->border_radius) && $this->addon->settings->border_radius) ? 'border-radius: ' . (int) $this->addon->settings->border_radius . 'px;' : '';
-		$icon_style_sm .= (isset($this->addon->settings->border_radius_sm) && $this->addon->settings->border_radius_sm) ? 'border-radius: ' . (int) $this->addon->settings->border_radius_sm . 'px;' : '';
-		$icon_style_xs .= (isset($this->addon->settings->border_radius_xs) && $this->addon->settings->border_radius_xs) ? 'border-radius: ' . (int) $this->addon->settings->border_radius_xs . 'px;' : '';
+		$icon_style .= (isset($settings->border_radius) && $settings->border_radius) ? 'border-radius: ' . (int) $settings->border_radius . 'px;' : '';
+		$icon_style_sm .= (isset($settings->border_radius_sm) && $settings->border_radius_sm) ? 'border-radius: ' . (int) $settings->border_radius_sm . 'px;' : '';
+		$icon_style_xs .= (isset($settings->border_radius_xs) && $settings->border_radius_xs) ? 'border-radius: ' . (int) $settings->border_radius_xs . 'px;' : '';
 
-		$font_size .= (isset($this->addon->settings->size) && $this->addon->settings->size) ? 'font-size: ' . (int) $this->addon->settings->size . 'px;' : '';
-		$font_size_sm .= (isset($this->addon->settings->size_sm) && $this->addon->settings->size_sm) ? 'font-size: ' . (int) $this->addon->settings->size_sm . 'px;' : '';
-		$font_size_xs .= (isset($this->addon->settings->size_xs) && $this->addon->settings->size_xs) ? 'font-size: ' . (int) $this->addon->settings->size_xs . 'px;' : '';
+		$font_size .= (isset($settings->size) && $settings->size) ? 'font-size: ' . (int) $settings->size . 'px;' : '';
+		$font_size_sm .= (isset($settings->size_sm) && $settings->size_sm) ? 'font-size: ' . (int) $settings->size_sm . 'px;' : '';
+		$font_size_xs .= (isset($settings->size_xs) && $settings->size_xs) ? 'font-size: ' . (int) $settings->size_xs . 'px;' : '';
 
-		$font_size .= (isset($this->addon->settings->border_width) && $this->addon->settings->border_width) ? 'margin-top: -' . (int) $this->addon->settings->border_width . 'px;' : '';
-		$font_size_sm .= (isset($this->addon->settings->border_width_sm) && $this->addon->settings->border_width_sm) ? 'margin-top: -' . (int) $this->addon->settings->border_width_sm . 'px;' : '';
-		$font_size_xs .= (isset($this->addon->settings->border_width_xs) && $this->addon->settings->border_width_xs) ? 'margin-top: -' . (int) $this->addon->settings->border_width_xs . 'px;' : '';
+		$font_size .= (isset($settings->border_width) && $settings->border_width) ? 'margin-top: -' . (int) $settings->border_width . 'px;' : '';
+		$font_size_sm .= (isset($settings->border_width_sm) && $settings->border_width_sm) ? 'margin-top: -' . (int) $settings->border_width_sm . 'px;' : '';
+		$font_size_xs .= (isset($settings->border_width_xs) && $settings->border_width_xs) ? 'margin-top: -' . (int) $settings->border_width_xs . 'px;' : '';
 
 		// Mouse Hover
 		$icon_style_hover  = '';
 		$icon_style_hover_sm  = '';
 		$icon_style_hover_xs  = '';
 
-		$icon_style_hover  .= (isset($this->addon->settings->hover_color) && $this->addon->settings->hover_color) ? 'color: ' . $this->addon->settings->hover_color . ';' : '';
-		$icon_style_hover .= (isset($this->addon->settings->hover_background) && $this->addon->settings->hover_background) ? 'background-color: ' . $this->addon->settings->hover_background . ';' : '';
-		$icon_style_hover .= (isset($this->addon->settings->hover_border_color) && $this->addon->settings->hover_border_color) ? 'border-color: ' . $this->addon->settings->hover_border_color . ';' : '';
+		$icon_style_hover  .= (isset($settings->hover_color) && $settings->hover_color) ? 'color: ' . $settings->hover_color . ';' : '';
+		$icon_style_hover .= (isset($settings->hover_background) && $settings->hover_background) ? 'background-color: ' . $settings->hover_background . ';' : '';
+		$icon_style_hover .= (isset($settings->hover_border_color) && $settings->hover_border_color) ? 'border-color: ' . $settings->hover_border_color . ';' : '';
 
-		$icon_style_hover .= (isset($this->addon->settings->hover_border_width) && $this->addon->settings->hover_border_width) ? 'border-width: ' . (int) $this->addon->settings->hover_border_width . 'px;' : '';
-		$icon_style_hover_sm .= (isset($this->addon->settings->hover_border_width_sm) && $this->addon->settings->hover_border_width_sm) ? 'border-width: ' . (int) $this->addon->settings->hover_border_width_sm . 'px;' : '';
-		$icon_style_hover_xs .= (isset($this->addon->settings->hover_border_width_xs) && $this->addon->settings->hover_border_width_xs) ? 'border-width: ' . (int) $this->addon->settings->hover_border_width_xs . 'px;' : '';
+		$icon_style_hover .= (isset($settings->hover_border_width) && $settings->hover_border_width) ? 'border-width: ' . (int) $settings->hover_border_width . 'px;' : '';
+		$icon_style_hover_sm .= (isset($settings->hover_border_width_sm) && $settings->hover_border_width_sm) ? 'border-width: ' . (int) $settings->hover_border_width_sm . 'px;' : '';
+		$icon_style_hover_xs .= (isset($settings->hover_border_width_xs) && $settings->hover_border_width_xs) ? 'border-width: ' . (int) $settings->hover_border_width_xs . 'px;' : '';
 
-		$icon_style_hover .= (isset($this->addon->settings->hover_border_radius) && $this->addon->settings->hover_border_radius) ? 'border-radius: ' . (int) $this->addon->settings->hover_border_radius . 'px;' : '';
-		$icon_style_hover_sm .= (isset($this->addon->settings->hover_border_radius_sm) && $this->addon->settings->hover_border_radius_sm) ? 'border-radius: ' . (int) $this->addon->settings->hover_border_radius_sm . 'px;' : '';
-		$icon_style_hover_xs .= (isset($this->addon->settings->hover_border_radius_xs) && $this->addon->settings->hover_border_radius_xs) ? 'border-radius: ' . (int) $this->addon->settings->hover_border_radius_xs . 'px;' : '';
+		$icon_style_hover .= (isset($settings->hover_border_radius) && $settings->hover_border_radius) ? 'border-radius: ' . (int) $settings->hover_border_radius . 'px;' : '';
+		$icon_style_hover_sm .= (isset($settings->hover_border_radius_sm) && $settings->hover_border_radius_sm) ? 'border-radius: ' . (int) $settings->hover_border_radius_sm . 'px;' : '';
+		$icon_style_hover_xs .= (isset($settings->hover_border_radius_xs) && $settings->hover_border_radius_xs) ? 'border-radius: ' . (int) $settings->hover_border_radius_xs . 'px;' : '';
 
 		$css = '';
 		if($icon_style) {
@@ -406,13 +414,18 @@ class SppagebuilderAddonIcon extends SppagebuilderAddons {
 			}
 		}
 		</style>
-		<# if(data.name){ #>
+		<#
+		if(data.name){
+		#>
 			<div class="sppb-icon {{ data.alignment }} {{ data.class }}">
 				<# if(!_.isEmpty(data.link)){ #>
-					<a href=\'{{ data.link }}\'>
-				<# } #>
+					<a target="{{data.target}}" href=\'{{ data.link }}\'>
+				<# }
+				let icon_arr = (typeof data.name !== "undefined" && data.name) ? data.name.split(" ") : "";
+                let icon_name = icon_arr.length === 1 ? "fa "+data.name : data.name;
+				#>
 				<span class="sppb-icon-inner">
-					<i class="fa {{ data.name }}"></i>
+					<i class="{{ icon_name }}"></i>
 				</span>
 				<# if(!_.isEmpty(data.link)){ #>
 					</a>

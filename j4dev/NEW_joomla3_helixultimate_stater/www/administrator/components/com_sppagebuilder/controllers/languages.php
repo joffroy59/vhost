@@ -2,23 +2,30 @@
 /**
 * @package SP Page Builder
 * @author JoomShaper http://www.joomshaper.com
-* @copyright Copyright (c) 2010 - 2016 JoomShaper
+* @copyright Copyright (c) 2010 - 2021 JoomShaper
 * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Installer\Installer;
+use Joomla\CMS\Installer\InstallerHelper;
+use Joomla\CMS\MVC\Controller\BaseController;
+
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
-class SppagebuilderControllerLanguages extends JControllerLegacy {
+class SppagebuilderControllerLanguages extends BaseController {
 
 	public function install() {
 		$report = array();
-		$user = JFactory::getUser();
-		$input = JFactory::getApplication()->input;
+		$user = Factory::getUser();
+		$input = Factory::getApplication()->input;
 		$model = $this->getModel('languages');
 
 		// Return if not authorised
 		if (!$user->authorise('core.admin', 'com_sppagebuilder')) {
-			$report['message'] = JText::_('JERROR_ALERTNOAUTHOR');
+			$report['message'] = Text::_('JERROR_ALERTNOAUTHOR');
 			$report['success'] = false;
 			die(json_encode($report));
 		}
@@ -30,7 +37,7 @@ class SppagebuilderControllerLanguages extends JControllerLegacy {
 		} elseif(extension_loaded('curl')) {
 			$ch_output = self::getCurlData($language_api);
 		} else {
-			$report['message'] = JText::_('Please enable \'cURL\' or url_fopen in PHP or Contact with your Server or Hosting administrator.');
+			$report['message'] = Text::_('Please enable \'cURL\' or url_fopen in PHP or Contact with your Server or Hosting administrator.');
 			die(json_encode($report));
 		}
 
@@ -41,31 +48,31 @@ class SppagebuilderControllerLanguages extends JControllerLegacy {
 			$url = $languages->$component->downloads->source;
 			$language = $languages->$component;
 		} else {
-			$report['message'] = JText::_('Unsble to find the download language package');
+			$report['message'] = Text::_('Unsble to find the download language package');
 			$report['success'] = false;
 			die(json_encode($report));
 		}
 		//
-		$p_file = JInstallerHelper::downloadPackage($url);
+		$p_file = InstallerHelper::downloadPackage($url);
 
 		if (!$p_file) {
-			$report['message'] = JText::_('COM_INSTALLER_MSG_INSTALL_INVALID_URL');
+			$report['message'] = Text::_('COM_INSTALLER_MSG_INSTALL_INVALID_URL');
 			$report['success'] = false;
 			die(json_encode($report));
 		}
 
-		$config   = JFactory::getConfig();
+		$config   = Factory::getConfig();
 		$tmp_dest = $config->get('tmp_path');
-		$package = JInstallerHelper::unpack($tmp_dest . '/' . $p_file, true);
-		$installer = JInstaller::getInstance();
+		$package = InstallerHelper::unpack($tmp_dest . '/' . $p_file, true);
+		$installer = Installer::getInstance();
 
 		// Was the package unpacked?
 		if (!$package || !$package['type']) {
 			if (in_array($installType, array('upload', 'url'))) {
-				JInstallerHelper::cleanupInstall($package['packagefile'], $package['extractdir']);
+				InstallerHelper::cleanupInstall($package['packagefile'], $package['extractdir']);
 			}
 
-			$report['message'] = JText::_('COM_INSTALLER_UNABLE_TO_FIND_INSTALL_PACKAGE');
+			$report['message'] = Text::_('COM_INSTALLER_UNABLE_TO_FIND_INSTALL_PACKAGE');
 			$report['success'] = false;
 			die(json_encode($report));
 		}
@@ -73,11 +80,11 @@ class SppagebuilderControllerLanguages extends JControllerLegacy {
 		// Install the package.
 		if (!$installer->install($package['dir'])) {
 			// There was an error installing the package.
-			$report['message'] = JText::sprintf('COM_INSTALLER_INSTALL_ERROR', JText::_('COM_INSTALLER_TYPE_TYPE_' . strtoupper($package['type'])));
+			$report['message'] = Text::sprintf('COM_INSTALLER_INSTALL_ERROR', Text::_('COM_INSTALLER_TYPE_TYPE_' . strtoupper($package['type'])));
 			$report['success'] = false;
 		} else {
 			// Package installed sucessfully.
-			$report['message'] = JText::sprintf('COM_INSTALLER_INSTALL_SUCCESS', JText::_('COM_INSTALLER_TYPE_TYPE_' . strtoupper($package['type'])));
+			$report['message'] = Text::sprintf('COM_INSTALLER_INSTALL_SUCCESS', Text::_('COM_INSTALLER_TYPE_TYPE_' . strtoupper($package['type'])));
 			$report['success'] = true;
 			$report['version'] = $model->storeInstall($language);
 		}
@@ -87,7 +94,7 @@ class SppagebuilderControllerLanguages extends JControllerLegacy {
 			$package['packagefile'] = $tmp_dest . '/' . $package['packagefile'];
 		}
 
-		JInstallerHelper::cleanupInstall($package['packagefile'], $package['extractdir']);
+		InstallerHelper::cleanupInstall($package['packagefile'], $package['extractdir']);
 
 		die(json_encode($report));
 	}

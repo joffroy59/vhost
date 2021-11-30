@@ -2,9 +2,13 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
@@ -23,11 +27,11 @@ class SpAddonsConfig {
 		} else {
 			$addon = self::str_replace_first('sp_', '', $attributes['addon_name']);
 
-			$app = JFactory::getApplication();
+			$app = Factory::getApplication();
 			$com_option = $app->input->get('option','','STR');
 			$com_view = $app->input->get('view','','STR');
 			$com_id = $app->input->get('id',0,'INT');
-			if($app->isAdmin() || ( $com_option == 'com_sppagebuilder' && $com_view == 'form' && $com_id)){
+			if($app->isClient('administrator') || ( $com_option == 'com_sppagebuilder' && $com_view == 'form' && $com_id)){
 				if (!isset($attributes['icon']) || !$attributes['icon']) {
 					$attributes['icon'] = self::getIcon($addon);
 				}
@@ -55,11 +59,11 @@ class SpAddonsConfig {
 		$com_file_path = JPATH_ROOT . '/components/com_sppagebuilder/addons/' . $addon . '/assets/images/icon.png';
 
 		if ( file_exists($template_path) ) {
-			$icon = JURI::root(true) . '/templates/' . $template_name . '/sppagebuilder/addons/' . $addon . '/assets/images/icon.png';
+			$icon = Uri::root(true) . '/templates/' . $template_name . '/sppagebuilder/addons/' . $addon . '/assets/images/icon.png';
 		} else if ( file_exists($com_file_path) ) {
-			$icon = JURI::root(true) . '/components/com_sppagebuilder/addons/' . $addon . '/assets/images/icon.png';
+			$icon = Uri::root(true) . '/components/com_sppagebuilder/addons/' . $addon . '/assets/images/icon.png';
 		} else {
-			$icon = JURI::root(true) . '/administrator/components/com_sppagebuilder/assets/img/addon-default.png';
+			$icon = Uri::root(true) . '/administrator/components/com_sppagebuilder/assets/img/addon-default.png';
 		}
 
 		return $icon;
@@ -67,7 +71,7 @@ class SpAddonsConfig {
 	}
 
 	private static function getTemplateName() {
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName(array('template')));
 		$query->from($db->quoteName('#__template_styles'));

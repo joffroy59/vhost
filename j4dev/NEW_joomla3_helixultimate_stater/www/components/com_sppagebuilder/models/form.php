@@ -7,19 +7,19 @@
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
+
 defined('_JEXEC') or die;
 
-use Joomla\Registry\Registry;
-use Joomla\Utilities\ArrayHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Multilanguage;
+use Joomla\CMS\Language\Text;
+
+JLoader::register('SppagebuilderHelperRoute', JPATH_ROOT . '/components/com_sppagebuilder/helpers/route.php');
 
 // Base this model on the backend version.
-require_once JPATH_ADMINISTRATOR . '/components/com_sppagebuilder/models/page.php';
+JLoader::register('SppagebuilderModelPage', JPATH_ADMINISTRATOR . '/components/com_sppagebuilder/models/page.php');
 
-/**
- * Content Component Article Model
- *
- * @since  1.5
- */
+
 class SppagebuilderModelForm extends SppagebuilderModelPage
 {
 	protected $_context = 'com_sppagebuilder.page';
@@ -27,28 +27,24 @@ class SppagebuilderModelForm extends SppagebuilderModelPage
 
 	protected function populateState()
 	{
-		$app = JFactory::getApplication('site');
+		$app = Factory::getApplication('site');
 
 		$pageId = $app->input->getInt('id');
 		$this->setState('page.id', $pageId);
 
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 
 		if ((!$user->authorise('core.edit.state', 'com_sppagebuilder')) && (!$user->authorise('core.edit', 'com_sppagebuilder')))
 		{
 			$this->setState('filter.published', 1);
 		}
 
-		$this->setState('filter.language', JLanguageMultilang::isEnabled());
-	}
-
-	public function getForm($data = array(), $loadData = true) {
-			return parent::getForm();
+		$this->setState('filter.language', Multilanguage::isEnabled());
 	}
 
 	public function getItem( $pageId = null )
 	{
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 
 		$pageId = (!empty($pageId))? $pageId : (int)$this->getState('page.id');
 
@@ -82,24 +78,27 @@ class SppagebuilderModelForm extends SppagebuilderModelPage
 
 				if ($this->getState('filter.language'))
 				{
-					$query->where('a.language in (' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')');
+					$query->where('a.language in (' . $db->quote(Factory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')');
 				}
 
 				$db->setQuery($query);
 				$data = $db->loadObject();
 
 				if (empty($data)) {
-					return JError::raiseError(404, JText::_('COM_SPPAGEBUILDER_ERROR_PAGE_NOT_FOUND'));
+					return Factory::getApplication()->enqueueMessage(Text::_('COM_SPPAGEBUILDER_ERROR_PAGE_NOT_FOUND'), 'error');
 				}
 
 				if ($access = $this->getState('filter.access')) {
 					$data->access_view = true;
 				}else{
-					$user = JFactory::getUser();
+					$user = Factory::getUser();
 					$groups = $user->getAuthorisedViewLevels();
 
 					 $data->access_view = in_array($data->access, $groups);
 				}
+
+				$data->link = SppagebuilderHelperRoute::getPageRoute($data->id, $data->language);
+				$data->formLink = SppagebuilderHelperRoute::getFormRoute($data->id, $data->language);
 
 				$this->_item[$pageId] = $data;
 			}
@@ -107,7 +106,9 @@ class SppagebuilderModelForm extends SppagebuilderModelPage
 			{
 				if ($e->getCode() == 404 )
 				{
-					JError::raiseError(404, $e->getMessage());
+					$app = Factory::getApplication();
+					$app->enqueueMessage($e->getMessage(), 'error');
+					$app->setHeader('status', 404, true);
 				}
 				else
 				{
@@ -118,5 +119,33 @@ class SppagebuilderModelForm extends SppagebuilderModelPage
 		}
 
 		return $this->_item[$pageId];
+	}
+
+	public function getForm($data = array(), $loadData = true)
+	{
+		$app = Factory::getApplication();
+		$user = Factory::getUser();
+
+		// Get the form.
+		$form = $this->loadForm('com_sppagebuilder.page', 'page', array('control' => 'jform', 'load_data' => $loadData));
+
+		if (empty($form))
+		{
+			return false;
+		}
+
+		// Manually check-out
+		$pageId = (!empty($pageId))? $pageId : (int)$this->getState('page.id');
+		/**
+		 * Check user id for manual check-out 
+		 * 
+		 * @since 3.7.10
+		 */
+		if ($user->id)
+		{
+			$this->checkout($pageId);
+		}
+
+		return parent::getForm();
 	}
 }

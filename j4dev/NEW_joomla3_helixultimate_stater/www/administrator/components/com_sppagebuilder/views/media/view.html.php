@@ -2,80 +2,154 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+defined ('_JEXEC') or die ('Restricted access');
 
 require_once JPATH_ROOT . '/administrator/components/com_sppagebuilder/helpers/language.php';
 
-jimport('joomla.application.component.view');
 
-class SppagebuilderViewMedia extends JViewLegacy {
-	public function display( $tpl = null ) {
-		$user = JFactory::getUser();
-		$app  = JFactory::getApplication();
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Toolbar\Toolbar;
+use Joomla\CMS\Layout\FileLayout;
+use Joomla\CMS\MVC\View\HtmlView;
+use Joomla\CMS\Toolbar\ToolbarHelper;
+use Joomla\CMS\Component\ComponentHelper;
+
+class SppagebuilderViewMedia extends HtmlView
+{
+	public function display( $tpl = null )
+	{
+		$user = Factory::getUser();
+		$app  = Factory::getApplication();
 
 		$authorised = $user->authorise('core.edit', 'com_sppagebuilder') || $user->authorise('core.edit.own', 'com_sppagebuilder');
-		if ($authorised !== true) {
-			$app->enqueueMessage(JText::_('JERROR_ALERTNOAUTHOR'), 'error');
+		
+		if ($authorised !== true)
+		{
+			$app->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'error');
 			$app->setHeader('status', 403, true);
 
 			return false;
 		}
 
-		$input = JFactory::getApplication()->input;
-    $layout = $input->get('layout', 'browse', 'STRING');
-    $this->date = $input->post->get('date', NULL, 'STRING');
-    $this->start = $input->post->get('start', 0, 'INT');
-    $this->search = $input->post->get('search', NULL, 'STRING');
-    $this->limit = 18;
+		$input = Factory::getApplication()->input;
+		$layout = $input->get('layout', 'browse', 'STRING');
+		$this->date = $input->post->get('date', NULL, 'STRING');
+		$this->start = $input->post->get('start', 0, 'INT');
+		$this->search = $input->post->get('search', NULL, 'STRING');
+		$this->limit = 18;
 
-  	$model = $this->getModel();
-    $this->items = $model->getItems();
-    $this->filters = $model->getDateFilters($this->date, $this->search);
-    $this->total = $model->getTotalMedia($this->date, $this->search);
-    $this->categories = $model->getMediaCategories();
+		$model = $this->getModel();
+		$this->items = $model->getItems();
+		$this->filters = $model->getDateFilters($this->date, $this->search);
+		$this->total = $model->getTotalMedia($this->date, $this->search);
+		$this->categories = $model->getMediaCategories();
 
-		JToolBarHelper::title(JText::_('SP Page Builder - Media'));
+		ToolbarHelper::title(Text::_('SP Page Builder - Media'));
 
-		$this->addSubmenu('media');
-		$this->sidebar = JHtmlSidebar::render();
+		$mediaParams = ComponentHelper::getParams('com_media');
+		Factory::getDocument()->addScriptdeclaration('var sppbMediaPath=\'/'. $mediaParams->get('file_path', 'images') .'\';');
+
+		$this->prepareToolbar();
+
 		parent::display($tpl);
 	}
 
-	protected function addSubmenu($vName) {
-		JHtmlSidebar::addEntry(
-			'<i class="fa fa-list-ul"></i> ' . JText::_('COM_SPPAGEBUILDER_PAGES'),
-			'index.php?option=com_sppagebuilder&view=pages',
-			$vName == 'pages'
-		);
-		JHtmlSidebar::addEntry(
-			'<i class="fa fa-folder-o"></i> ' . JText::_('COM_SPPAGEBUILDER_CATEGORIES'),
-			'index.php?option=com_categories&extension=com_sppagebuilder',
-			$vName == 'categories');
-		JHtmlSidebar::addEntry(
-				'<i class="fa fa-plug"></i> ' . JText::_('COM_SPPAGEBUILDER_INTEGRATIONS'),
-				'index.php?option=com_sppagebuilder&view=integrations',
-				$vName == 'integrations'
-			);
-		JHtmlSidebar::addEntry(
-			'<i class="fa fa-globe"></i> ' . JText::_('COM_SPPAGEBUILDER_LANGUAGES'),
-			'index.php?option=com_sppagebuilder&view=languages',
-			$vName == 'languages'
-		);
+	/**
+	 * Prepare the toolbar.
+	 *
+	 * @return  void
+	 *
+	 * @since   4.0.0
+	 */
+	protected function prepareToolbar()
+	{
+		$tmpl = Factory::getApplication()->input->getCmd('tmpl');
+		
+		if (JVERSION < 4)
+		{
+			$jversion = 'j3';
+		}
+		else
+		{
+			$jversion = 'j4';
+		}
 
-		JHtmlSidebar::addEntry(
-			'<i class="fa fa-info-circle"></i> ' . JText::_('COM_SPPAGEBUILDER_ABOUT_SPPB'),
-			'index.php?option=com_sppagebuilder&view=about',
-			$vName == 'about'
-		);
+		// Get the toolbar object instance
+		$toolbar = Toolbar::getInstance();
+		$user = Factory::getUser();
 
-		JHtmlSidebar::addEntry(
-			'<i class="fa fa-picture-o"></i> ' . JText::_('COM_SPPAGEBUILDER_MEDIA'). '<span><i class="fa fa-chevron-down pull-right"></i></span>',
-			'index.php?option=com_sppagebuilder&view=media',
-			$vName == 'media'
-		);
+		// Set the title
+		ToolbarHelper::title(Text::_('COM_SPPAGEBUILDER') . ' - ' . Text::_('COM_SPPAGEBUILDER_MEDIA'), 'none pbfont pbfont-pagebuilder');
+
+		if(JVERSION < 4)
+		{
+			// Add an upload button
+			if ($user->authorise('core.create', 'com_media'))
+			{
+				// Instantiate a new JLayoutFile instance and render the layout
+				$layout = new FileLayout('upload', JPATH_COMPONENT_ADMINISTRATOR . '/layouts/toolbar/' . $jversion);
+
+				$toolbar->appendButton('Custom', $layout->render(array()), 'upload');
+				ToolbarHelper::divider();
+
+				// Add the create folder button
+				$layout = new FileLayout('create-folder', JPATH_COMPONENT_ADMINISTRATOR . '/layouts/toolbar/' . $jversion);
+
+				$toolbar->appendButton('Custom', $layout->render(array()), 'new');
+				ToolbarHelper::divider();
+			}
+
+			// Add a delete button
+			if ($user->authorise('core.delete', 'com_sppagebuilder'))
+			{
+				$layout = new FileLayout('delete', JPATH_COMPONENT_ADMINISTRATOR . '/layouts/toolbar/' . $jversion);
+
+				$toolbar->appendButton('Custom', $layout->render(array()), 'delete');
+				ToolbarHelper::divider();
+			}
+
+			if ($user->authorise('core.admin', 'com_sppagebuilder') || $user->authorise('core.options', 'com_sppagebuilder'))
+			{
+				ToolbarHelper::preferences('com_sppagebuilder');
+			}
+		}
+		else
+		{
+			// Add the upload and create folder buttons
+			if ($user->authorise('core.create', 'com_sppagebuilder'))
+			{
+				// Add the upload button
+				$layout = new FileLayout('upload', JPATH_COMPONENT_ADMINISTRATOR . '/layouts/toolbar/' . $jversion);
+
+				$toolbar->appendButton('Custom', $layout->render([]), 'upload');
+				ToolbarHelper::divider();
+
+				// Add the create folder button
+				$layout = new FileLayout('create-folder', JPATH_COMPONENT_ADMINISTRATOR . '/layouts/toolbar/' . $jversion);
+
+				$toolbar->appendButton('Custom', $layout->render([]), 'new');
+				ToolbarHelper::divider();
+			}
+
+			// Add a delete button
+			if ($user->authorise('core.delete', 'com_sppagebuilder'))
+			{
+				// Instantiate a new FileLayout instance and render the layout
+				$layout = new FileLayout('delete', JPATH_COMPONENT_ADMINISTRATOR . '/layouts/toolbar/' . $jversion);
+
+				$toolbar->appendButton('Custom', $layout->render([]), 'delete');
+				ToolbarHelper::divider();
+			}
+
+			if ($user->authorise('core.admin', 'com_sppagebuilder') || $user->authorise('core.options', 'com_sppagebuilder'))
+			{
+				$toolbar->preferences('com_sppagebuilder');
+			}
+		}
 	}
 }

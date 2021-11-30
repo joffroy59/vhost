@@ -1,76 +1,127 @@
 <?php
 /**
- * @package SP Page Builder
- * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2015 JoomShaper
+ * @package SP_Page_Builder
+ * @author JoomShaper <support@joomshaper.com>
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper <http://www.joomshaper.com>
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
-*/
-//no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+ */
+// No direct accees
+defined('_JEXEC') or die('restricted aceess');
 
-//import Joomla controller library
-jimport('joomla.application.component.controller');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Response\JsonResponse;
+use Joomla\CMS\MVC\Controller\BaseController;
 
-class SppagebuilderController extends JControllerLegacy {
-
-	function display( $cachable = false, $urlparams = false )
+/**
+ * Undocumented class
+ * @since 1.0.0
+ */
+class SppagebuilderController extends BaseController
+{
+	/**
+	 * Display function
+	 *
+	 * @param	boolean $cachable	Cachable
+	 * @param	boolean $urlparams	Url params
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	public function display($cachable = false, $urlparams = false)
 	{
-		$apps = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$viewStatus = false;
 
 		$id    		= $this->input->getInt('id');
 		$vName 		= $this->input->getCmd('view');
 
-		if ($vName == 'page') {
-				$viewStatus = true;
-		}else if ($vName == 'form') {
-				$viewStatus = true;
-		}else if ($vName == 'ajax') {
-				$viewStatus = true;
-		}else if ($vName == 'media') {
-				$viewStatus = true;
+		if ($vName == 'page')
+		{
+			$viewStatus = true;
+		}
+		elseif ($vName == 'form')
+		{
+			$viewStatus = true;
+		}
+		elseif ($vName == 'ajax')
+		{
+			$viewStatus = true;
+		}
+		elseif ($vName == 'media')
+		{
+			$viewStatus = true;
 		}
 
-		if ( !$viewStatus ) {
-			return JError::raiseError(404, 'Page not found');
+		if (!$viewStatus)
+		{
+			$app->enqueueMessage(Text::_('COM_SPPAGEBUILDER_ERROR_PAGE_NOT_FOUND'), 'error');
+			$app->setHeader('status', 404, true);
+
+			return;
 		}
 
 		$this->input->set('view', $vName);
+
 		parent::display($cachable);
 	}
 
-	public function export(){
-		$input  = JFactory::getApplication()->input;
-		$template = $input->get('template','[]','RAW');
-		$filename = 'template'. rand(10000,99999);
+	/**
+	 * Export template file function
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	public function export()
+	{
+		$input  = Factory::getApplication()->input;
+		$template = $input->get('template', '[]', 'RAW');
+		$filename = 'template' . rand(10000, 99999);
 
-		if ($template !== '[]') {
+		if ($template !== '[]')
+		{
 			$template  = json_decode($template);
-			foreach ($template as &$row) {
-				foreach ($row->columns as &$column) {
-					foreach ($column->addons as &$addon){
-						if (isset($addon->type) && $addon->type == 'sp_row') {
-							foreach ($addon->columns as &$column) {
-								foreach ($column->addons as &$addon) {
-									if (isset($addon->htmlContent)) {
+
+			foreach ($template as &$row)
+			{
+				foreach ($row->columns as &$column)
+				{
+					foreach ($column->addons as &$addon)
+					{
+						if (isset($addon->type) && $addon->type == 'sp_row')
+						{
+							foreach ($addon->columns as &$column)
+							{
+								foreach ($column->addons as &$addon)
+								{
+									if (isset($addon->htmlContent))
+									{
 										unset($addon->htmlContent);
 									}
-									if (isset($addon->assets)) {
+
+									if (isset($addon->assets))
+									{
 										unset($addon->assets);
 									}
 								}
 							}
-						} else {
-							if (isset($addon->htmlContent)) {
+						}
+						else
+						{
+							if (isset($addon->htmlContent))
+							{
 								unset($addon->htmlContent);
 							}
-							if (isset($addon->assets)) {
+
+							if (isset($addon->assets))
+							{
 								unset($addon->assets);
 							}
 						}
 					}
 				}
 			}
+
 			$template  = json_encode($template);
 		}
 
@@ -88,17 +139,23 @@ class SppagebuilderController extends JControllerLegacy {
 		die();
 	}
 
-	//Ajax
-	public function ajax() {
-		$app = JFactory::getApplication();
+	/**
+	 * Ajax call function
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
+	public function ajax()
+	{
+		$app = Factory::getApplication();
 		$input = $app->input;
 		$format = strtolower($input->getWord('format'));
 		$results = null;
 		$addon = $input->get('addon', '', 'STRING');
 
-		if ($addon) {
-
-			$function = 'sp_'. $addon .'_get_ajax';
+		if ($addon)
+		{
+			$function = 'sp_' . $addon . '_get_ajax';
 			$addon_class = 'SppagebuilderAddon' . ucfirst($addon);
 			$method = $input->get('method', 'get', 'STRING');
 
@@ -107,44 +164,67 @@ class SppagebuilderController extends JControllerLegacy {
 			$core_path 		= JPATH_BASE . '/components/com_sppagebuilder/addons/' . $input->get('addon') . '/site.php';
 			$template_path 	= JPATH_BASE . '/templates/' . $this->getTemplateName() . '/sppagebuilder/addons/' . $input->get('addon') . '/site.php';
 
-			if(file_exists($template_path)) {
+			if (file_exists($template_path))
+			{
 				require_once $template_path;
-			} else {
+			}
+			else
+			{
 				require_once $core_path;
 			}
 
-			if(class_exists($addon_class)) {
-
-				if (method_exists($addon_class, $method . 'Ajax')) {
-					try {
+			if (class_exists($addon_class))
+			{
+				if (method_exists($addon_class, $method . 'Ajax'))
+				{
+					try
+					{
 						$results = call_user_func($addon_class . '::' . $method . 'Ajax');
-					} catch (Exception $e) {
+					}
+					catch (Exception $e)
+					{
 						$results = $e;
 					}
-				} else {
-					$results = new LogicException(JText::sprintf('COM_AJAX_METHOD_NOT_EXISTS', $method . 'Ajax'), 404);
 				}
-
-			} else {
-				if (function_exists($function)) {
-					try {
+				else
+				{
+					$results = new LogicException(Text::sprintf('COM_AJAX_METHOD_NOT_EXISTS', $method . 'Ajax'), 404);
+				}
+			}
+			else
+			{
+				if (function_exists($function))
+				{
+					try
+					{
 						$results = call_user_func($function);
-					} catch (Exception $e) {
+					}
+					catch (Exception $e)
+					{
 						$results = $e;
 					}
-				} else {
-					$results = new LogicException(JText::sprintf('Function %s does not exist', $function), 404);
+				}
+				else
+				{
+					$results = new LogicException(Text::sprintf('Function %s does not exist', $function), 404);
 				}
 			}
 		}
 
-		echo new JResponseJson($results, null, false, $input->get('ignoreMessages', true, 'bool'));
+		echo new JsonResponse($results, null, false, $input->get('ignoreMessages', true, 'bool'));
 		die;
 	}
 
+	/**
+	 * Get the template name function
+	 *
+	 * @return mixed
+	 *
+	 * @since 1.0.0
+	 */
 	private function getTemplateName()
 	{
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName(array('template')));
 		$query->from($db->quoteName('#__template_styles'));

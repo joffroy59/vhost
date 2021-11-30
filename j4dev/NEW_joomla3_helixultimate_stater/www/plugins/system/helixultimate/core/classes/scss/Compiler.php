@@ -3565,6 +3565,10 @@ class Compiler
             return false;
         }
 
+        if(!(isset($prototype) && empty($prototype))) {
+            return false;
+        }
+
         list($sorted, $kwargs) = $this->sortArgs($prototype, $args);
 
         if ($name !== 'if' && $name !== 'call') {

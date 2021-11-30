@@ -2,95 +2,120 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2015 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+defined ('_JEXEC') or die ('Restricted access');
 
-// import Joomla view library
-jimport('joomla.application.component.view');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\View\HtmlView;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Uri\Uri;
 
-if(!class_exists('SppagebuilderHelperSite')) {
-	require_once JPATH_ROOT . '/components/com_sppagebuilder/helpers/helper.php';
-}
-
-// if (!class_exists('SppagebuilderModelPage')) {
-// 	require_once JPATH_ROOT . '/components/com_sppagebuilder/models/page.php';
-// }
-
-class SppagebuilderViewForm extends JViewLegacy
+class SppagebuilderViewForm extends HtmlView
 {
 	protected $form;
 	protected $item;
 
+	/**
+	 * Execute and display a template script.
+	 *
+	 * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
+	 *
+	 * @return  void
+	 *
+	 * @since   1.0.0
+	 */
 	function display( $tpl = null )
 	{
-
-		$user = JFactory::getUser();
-		$app  = JFactory::getApplication();
+		$user = Factory::getUser();
+		$app  = Factory::getApplication();
 
 		$this->item = $this->get('Item');
 		$this->form = $this->get('Form');
 
-		if ( !$user->id ) {
-				$uri = JFactory::getURI();
-				$pageURL = $uri->toString();
-				$return_url = base64_encode($pageURL);
-				$joomlaLoginUrl = 'index.php?option=com_users&view=login&return=' . $return_url;
+		if ( !$user->id )
+		{
+			$uri = Uri::getInstance();	
+			$pageURL = $uri->toString();
+			$return_url = base64_encode($pageURL);
+			$joomlaLoginUrl = 'index.php?option=com_users&view=login&return=' . $return_url;
 
-				$app->redirect(JRoute::_($joomlaLoginUrl, false), JText::_('JERROR_ALERTNOAUTHOR'), 'message');
-				return false;
+			$app->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'error');
+			$app->redirect(Route::_($joomlaLoginUrl, false));
+
+			return false;
 		}
 
-		$input 		 = JFactory::getApplication()->input;
-		$pageid 	 = $input->get('id', '', 'INT');
+		$input = $app->input;
+		$pageid = $input->get('id', '', 'INT');
 		$item_info  = SppagebuilderModelPage::getPageInfoById($pageid);
-		
-		$authorised = $user->authorise('core.edit', 'com_sppagebuilder') || $user->authorise('core.edit', 'com_sppagebuilder.page.' . $pageid) || ($user->authorise('core.edit.own', 'com_sppagebuilder') && ($user->id == $item_info->created_by));
+		$authorised = $user->authorise('core.edit', 'com_sppagebuilder.page.' . $pageid) || ($user->authorise('core.edit.own',   'com_sppagebuilder.page.' . $pageid) && $item_info->created_by == $user->id);
+
+		// checkout
+		if ( !($this->item->checked_out == 0 || $this->item->checked_out == $user->id) )
+		{
+			$app->enqueueMessage(Text::_('COM_SPPAGEBUILDER_ERROR_CHECKED_IN'), 'warning');
+			$app->redirect($this->item->link);
+
+			return false;
+		}
 
 		if ($authorised !== true)
 		{
-			$app->enqueueMessage(JText::_('COM_SPPAGEBUILDER_ERROR_EDIT_PERMISSION'), 'error');
-			$app->setHeader('status', 403, true);
+			$app->enqueueMessage(Text::_('COM_SPPAGEBUILDER_ERROR_EDIT_PERMISSION'), 'warning');
+			$app->redirect($this->item->link);
+
 			return false;
 		}
 
 		// Check for errors.
-		if (count($errors = $this->get('Errors')))
+		if (count($errors = (array) $this->get('Errors')))
 		{
-			JError::raiseWarning(500, implode("\n", $errors));
+			$app->enqueueMessage(implode("\n", $errors), 'warning');
+			$app->setHeader('status', 500, true);
 
 			return false;
 		}
 
 		$this->_prepareDocument($this->item->title);
 		SppagebuilderHelperSite::loadLanguage();
+
 		parent::display($tpl);
 	}
 
 	protected function _prepareDocument($title = '')
 	{
-		$config 	= JFactory::getConfig();
-		$app 		= JFactory::getApplication();
-		$doc 		= JFactory::getDocument();
+		$config 	= Factory::getConfig();
+		$app 		= Factory::getApplication();
+		$doc 		= Factory::getDocument();
 		$menus   	= $app->getMenu();
 		$menu 		= $menus->getActive();
 
-		if(isset($menu)) {
-			if($menu->params->get('page_title', '')) {
-				$title = $menu->params->get('page_title');
-			} else {
+		if (isset($menu))
+		{
+			if ($menu->getParams()->get('page_title', ''))
+			{
+				$title = $menu->getParams()->get('page_title');
+			}
+			else
+			{
 				$title = $menu->title;
 			}
 		}
 
 		//Include Site title
 		$sitetitle = $title;
-		if($config->get('sitename_pagetitles')==2) {
-			$sitetitle = JText::sprintf('JPAGETITLE', $sitetitle, $app->get('sitename'));
-		} elseif ($config->get('sitename_pagetitles')==1) {
-			$sitetitle = JText::sprintf('JPAGETITLE', $app->get('sitename'), $sitetitle);
+
+		if ($config->get('sitename_pagetitles')==2)
+		{
+			$sitetitle = Text::sprintf('JPAGETITLE', $sitetitle, $app->get('sitename'));
+		}
+		elseif ($config->get('sitename_pagetitles')==1)
+		{
+			$sitetitle = Text::sprintf('JPAGETITLE', $app->get('sitename'), $sitetitle);
 		}
 
 		$doc->setTitle($sitetitle);

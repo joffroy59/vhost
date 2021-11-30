@@ -2,7 +2,7 @@
 /**
  * @package Helix Ultimate Framework
  * @author JoomShaper https://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2018 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or Later
 */
 
@@ -24,7 +24,7 @@ $layout_path  = JPATH_ROOT .'/plugins/system/helixultimate/layouts';
 
 <div class="hidden">
     <div class="save-box">
-        <div class="form-group">
+        <div class="mb-3">
             <label><?php echo JText::_('HELIX_ENTER_LAYOUT_NAME'); ?></label>
             <input class="form-control addon-input addon-name" type="text" data-attrname="layout_name" value="" placeholder="">
         </div>
@@ -43,7 +43,7 @@ $layout_path  = JPATH_ROOT .'/plugins/system/helixultimate/layouts';
 <div class="clearfix"></div>
 
 <!-- Layout Builder Section -->
-<div id="helix-ultimate-layout-builder" >
+<div id="hu-layout-builder" >
 <?php
     $output = '';
     if ($layout_data)

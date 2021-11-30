@@ -3,59 +3,62 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2018 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
  */
+
+use Joomla\CMS\Language\Text;
+
 //no direct accees
 defined('_JEXEC') or die('Restricted access');
 SpAddonsConfig::addonConfig(
         array(
             'type' => 'general',
             'addon_name' => 'sp_button',
-            'title' => JText::_('COM_SPPAGEBUILDER_ADDON_BUTTON'),
-            'desc' => JText::_('COM_SPPAGEBUILDER_ADDON_BUTTON_DESC'),
+            'title' => Text::_('COM_SPPAGEBUILDER_ADDON_BUTTON'),
+            'desc' => Text::_('COM_SPPAGEBUILDER_ADDON_BUTTON_DESC'),
             'category' => 'Content',
             'attr' => array(
                 'general' => array(
                     'admin_label' => array(
                         'type' => 'text',
-                        'title' => JText::_('COM_SPPAGEBUILDER_ADDON_ADMIN_LABEL'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_ADDON_ADMIN_LABEL_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_ADDON_ADMIN_LABEL'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_ADDON_ADMIN_LABEL_DESC'),
                         'std' => ''
                     ),
                     'text' => array(
                         'type' => 'text',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_TEXT'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_TEXT_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_TEXT'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_TEXT_DESC'),
                         'std' => 'Button',
                     ),
                     'alignment' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_CONTENT_ALIGNMENT'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_CONTENT_ALIGNMENT_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_CONTENT_ALIGNMENT'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_CONTENT_ALIGNMENT_DESC'),
                         'values' => array(
-                            'sppb-text-left' => JText::_('COM_SPPAGEBUILDER_GLOBAL_LEFT'),
-                            'sppb-text-center' => JText::_('COM_SPPAGEBUILDER_GLOBAL_CENTER'),
-                            'sppb-text-right' => JText::_('COM_SPPAGEBUILDER_GLOBAL_RIGHT'),
+                            'sppb-text-left' => Text::_('COM_SPPAGEBUILDER_GLOBAL_LEFT'),
+                            'sppb-text-center' => Text::_('COM_SPPAGEBUILDER_GLOBAL_CENTER'),
+                            'sppb-text-right' => Text::_('COM_SPPAGEBUILDER_GLOBAL_RIGHT'),
                         ),
                         'std' => 'sppb-text-left',
                     ),
                     'font_family' => array(
                         'type' => 'fonts',
-                        'title' => JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_FONT_FAMILY'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_FONT_FAMILY'),
                         'selector' => array(
                             'type' => 'font',
                             'font' => '{{ VALUE }}',
-                            'css' => '.sppb-btn { font-family: {{ VALUE }}; }'
+                            'css' => '.sppb-btn { font-family: "{{ VALUE }}"; }'
                         )
                     ),
                     'font_style' => array(
                         'type' => 'fontstyle',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_FONT_STYLE'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_FONT_STYLE'),
                     ),
                     'letterspace' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_LETTER_SPACING'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_LETTER_SPACING'),
                         'values' => array(
                             '0' => 'Default',
                             '1px' => '1px',
@@ -74,54 +77,57 @@ SpAddonsConfig::addonConfig(
                     'url' => array(
                         'type' => 'media',
                         'format' => 'attachment',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_URL'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_URL_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_URL'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_URL_DESC'),
                         'placeholder' => 'http://',
                         'hide_preview' => true,
                     ),
                     'target' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_LINK_NEWTAB'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_LINK_NEWTAB_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_LINK_NEWTAB'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_LINK_NEWTAB_DESC'),
                         'values' => array(
-                            '' => JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_SAME_WINDOW'),
-                            '_blank' => JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_NEW_WINDOW'),
+                            '' => Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_SAME_WINDOW'),
+                            '_blank' => Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_NEW_WINDOW'),
                         ),
                         'depends' => array(array('url', '!=', '')),
                     ),
                     'type' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_STYLE'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_STYLE_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_STYLE'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_STYLE_DESC'),
                         'values' => array(
-                            'default' => JText::_('COM_SPPAGEBUILDER_GLOBAL_DEFAULT'),
-                            'primary' => JText::_('COM_SPPAGEBUILDER_GLOBAL_PRIMARY'),
-                            'secondary' => JText::_('COM_SPPAGEBUILDER_GLOBAL_SECONDARY'),
-                            'success' => JText::_('COM_SPPAGEBUILDER_GLOBAL_SUCCESS'),
-                            'info' => JText::_('COM_SPPAGEBUILDER_GLOBAL_INFO'),
-                            'warning' => JText::_('COM_SPPAGEBUILDER_GLOBAL_WARNING'),
-                            'danger' => JText::_('COM_SPPAGEBUILDER_GLOBAL_DANGER'),
-                            'dark' => JText::_('COM_SPPAGEBUILDER_GLOBAL_DARK'),
-                            'link' => JText::_('COM_SPPAGEBUILDER_GLOBAL_LINK'),
-                            'custom' => JText::_('COM_SPPAGEBUILDER_GLOBAL_CUSTOM'),
+                            'default' => Text::_('COM_SPPAGEBUILDER_GLOBAL_DEFAULT'),
+                            'primary' => Text::_('COM_SPPAGEBUILDER_GLOBAL_PRIMARY'),
+                            'secondary' => Text::_('COM_SPPAGEBUILDER_GLOBAL_SECONDARY'),
+                            'success' => Text::_('COM_SPPAGEBUILDER_GLOBAL_SUCCESS'),
+                            'info' => Text::_('COM_SPPAGEBUILDER_GLOBAL_INFO'),
+                            'warning' => Text::_('COM_SPPAGEBUILDER_GLOBAL_WARNING'),
+                            'danger' => Text::_('COM_SPPAGEBUILDER_GLOBAL_DANGER'),
+                            'dark' => Text::_('COM_SPPAGEBUILDER_GLOBAL_DARK'),
+                            'link' => Text::_('COM_SPPAGEBUILDER_GLOBAL_LINK'),
+                            'custom' => Text::_('COM_SPPAGEBUILDER_GLOBAL_CUSTOM'),
                         ),
-                        'std' => 'custom',
+                        'std' => 'default',
                     ),
                     'appearance' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_DESC'),
                         'values' => array(
-                            '' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_FLAT'),
-                            'gradient' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_GRADIENT'),
-                            'outline' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_OUTLINE'),
-                            '3d' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_3D'),
+                            '' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_FLAT'),
+                            'gradient' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_GRADIENT'),
+                            'outline' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_OUTLINE'),
+                            '3d' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_APPEARANCE_3D'),
                         ),
                         'std' => '',
+                        'depends' => array(
+                            array('type', '!=', 'link'),
+                        )
                     ),
                     'fontsize' => array(
                         'type' => 'slider',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_FONT_SIZE'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_FONT_SIZE'),
                         'std' => array('md' => 16),
                         'responsive' => true,
                         'max' => 400,
@@ -131,7 +137,7 @@ SpAddonsConfig::addonConfig(
                     ),
                     'button_status' => array(
                         'type' => 'buttons',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_ENABLE_BACKGROUND_OPTIONS'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_ENABLE_BACKGROUND_OPTIONS'),
                         'std' => 'normal',
                         'values' => array(
                             array(
@@ -150,8 +156,8 @@ SpAddonsConfig::addonConfig(
                     ),
                     'background_color' => array(
                         'type' => 'color',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BACKGROUND_COLOR'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BACKGROUND_COLOR_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BACKGROUND_COLOR'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BACKGROUND_COLOR_DESC'),
                         'std' => '#03E16D',
                         'depends' => array(
                             array('appearance', '!=', 'gradient'),
@@ -161,7 +167,7 @@ SpAddonsConfig::addonConfig(
                     ),
                     'background_gradient' => array(
                         'type' => 'gradient',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BACKGROUND_GRADIENT'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BACKGROUND_GRADIENT'),
                         'std' => array(
                             "color" => "#B4EC51",
                             "color2" => "#429321",
@@ -176,8 +182,8 @@ SpAddonsConfig::addonConfig(
                     ),
                     'color' => array(
                         'type' => 'color',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_COLOR'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_COLOR_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_COLOR'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_COLOR_DESC'),
                         'std' => '#FFFFFF',
                         'depends' => array(
                             array('type', '=', 'custom'),
@@ -186,8 +192,8 @@ SpAddonsConfig::addonConfig(
                     ),
                     'background_color_hover' => array(
                         'type' => 'color',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BACKGROUND_COLOR_HOVER'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BACKGROUND_COLOR_HOVER_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BACKGROUND_COLOR_HOVER'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BACKGROUND_COLOR_HOVER_DESC'),
                         'std' => '#00E66E',
                         'depends' => array(
                             array('appearance', '!=', 'gradient'),
@@ -197,7 +203,7 @@ SpAddonsConfig::addonConfig(
                     ),
                     'background_gradient_hover' => array(
                         'type' => 'gradient',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BACKGROUND_GRADIENT'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BACKGROUND_GRADIENT'),
                         'std' => array(
                             "color" => "#429321",
                             "color2" => "#B4EC51",
@@ -212,18 +218,95 @@ SpAddonsConfig::addonConfig(
                     ),
                     'color_hover' => array(
                         'type' => 'color',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_COLOR_HOVER'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_COLOR_HOVER_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_COLOR_HOVER'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_COLOR_HOVER_DESC'),
                         'std' => '#FFFFFF',
                         'depends' => array(
                             array('type', '=', 'custom'),
                             array('button_status', '=', 'hover'),
                         ),
                     ),
+                    //Link Button Style
+                    'link_button_status' => array(
+                        'type' => 'buttons',
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_STYLE'),
+                        'std' => 'normal',
+                        'values' => array(
+                            array(
+                                'label' => 'Normal',
+                                'value' => 'normal'
+                            ),
+                            array(
+                                'label' => 'Hover',
+                                'value' => 'hover'
+                            ),
+                        ),
+                        'tabs' => true,
+                        'depends' => array(
+                            array('type', '=', 'link'),
+                        )
+                    ),
+                    'link_button_color' => array(
+                        'type' => 'color',
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_COLOR'),
+                        'std' => '',
+                        'depends' => array(
+                            array('type', '=', 'link'),
+                            array('link_button_status', '=', 'normal'),
+                        )
+                    ),
+                    'link_button_border_width' => array(
+                        'type' => 'slider',
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BORDER_WIDTH'),
+                        'max'=> 30,
+                        'std' => '',
+                        'depends' => array(
+                            array('type', '=', 'link'),
+                            array('link_button_status', '=', 'normal'),
+                        )
+                    ),
+                    'link_border_color' => array(
+                        'type' => 'color',
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BORDER_COLOR'),
+                        'std' => '',
+                        'depends' => array(
+                            array('type', '=', 'link'),
+                            array('link_button_status', '=', 'normal'),
+                        )
+                    ),
+                    'link_button_padding_bottom' => array(
+                        'type' => 'slider',
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_PADDING_BOTTOM'),
+                        'max'=>100,
+                        'std' => '',
+                        'depends' => array(
+                            array('type', '=', 'link'),
+                            array('link_button_status', '=', 'normal'),
+                        )
+                    ),
+                    //Link Hover
+                    'link_button_hover_color' => array(
+                        'type' => 'color',
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_COLOR_HOVER'),
+                        'std' => '',
+                        'depends' => array(
+                            array('type', '=', 'link'),
+                            array('link_button_status', '=', 'hover'),
+                        )
+                    ),
+                    'link_button_border_hover_color' => array(
+                        'type' => 'color',
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BORDER_COLOR_HOVER'),
+                        'std' => '',
+                        'depends' => array(
+                            array('type', '=', 'link'),
+                            array('link_button_status', '=', 'hover'),
+                        )
+                    ),
                     'button_padding' => array(
                         'type' => 'padding',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_PADDING'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_PADDING_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_PADDING'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_PADDING_DESC'),
                         'std' => '',
                         'depends' => array(
                             array('type', '=', 'custom'),
@@ -232,53 +315,65 @@ SpAddonsConfig::addonConfig(
                     ),
                     'size' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_DESC'),
                         'values' => array(
-                            '' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_DEFAULT'),
-                            'lg' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_LARGE'),
-                            'xlg' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_XLARGE'),
-                            'sm' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_SMALL'),
-                            'xs' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_EXTRA_SAMLL'),
+                            '' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_DEFAULT'),
+                            'lg' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_LARGE'),
+                            'xlg' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_XLARGE'),
+                            'sm' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_SMALL'),
+                            'xs' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SIZE_EXTRA_SAMLL'),
                         ),
                     ),
                     'shape' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE_DESC'),
                         'values' => array(
-                            'rounded' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE_ROUNDED'),
-                            'square' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE_SQUARE'),
-                            'round' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE_ROUND'),
+                            'rounded' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE_ROUNDED'),
+                            'square' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE_SQUARE'),
+                            'round' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_SHAPE_ROUND'),
                         ),
+                        'depends' => array(
+                            array('type', '!=', 'link'),
+                        )
                     ),
                     'block' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BLOCK'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BLOCK_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BLOCK'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_BLOCK_DESC'),
                         'values' => array(
-                            '' => JText::_('JNO'),
-                            'sppb-btn-block' => JText::_('JYES'),
+                            '' => Text::_('JNO'),
+                            'sppb-btn-block' => Text::_('JYES'),
+                        ),
+                        'depends' => array(
+                            array('type', '!=', 'link'),
                         )
                     ),
                     'icon' => array(
                         'type' => 'icon',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_ICON'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_ICON_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_ICON'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_ICON_DESC'),
+                    ),
+                    'icon_margin' => array(
+                        'type' =>'margin',
+                        'title' =>Text::_('COM_SPPAGEBUILDER_TAB_ICON_MARGIN'),
+                        'responsive'=>true,
+                        'std'=>'0px 0px 0px 0px',
                     ),
                     'icon_position' => array(
                         'type' => 'select',
-                        'title' => JText::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_ICON_POSITION'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_GLOBAL_BUTTON_ICON_POSITION'),
                         'values' => array(
-                            'left' => JText::_('COM_SPPAGEBUILDER_GLOBAL_LEFT'),
-                            'right' => JText::_('COM_SPPAGEBUILDER_GLOBAL_RIGHT'),
+                            'left' => Text::_('COM_SPPAGEBUILDER_GLOBAL_LEFT'),
+                            'right' => Text::_('COM_SPPAGEBUILDER_GLOBAL_RIGHT'),
                         ),
-                        'std' => 'left'
+                        'std' => 'left',
                     ),
                     'class' => array(
                         'type' => 'text',
-                        'title' => JText::_('COM_SPPAGEBUILDER_ADDON_CLASS'),
-                        'desc' => JText::_('COM_SPPAGEBUILDER_ADDON_CLASS_DESC'),
+                        'title' => Text::_('COM_SPPAGEBUILDER_ADDON_CLASS'),
+                        'desc' => Text::_('COM_SPPAGEBUILDER_ADDON_CLASS_DESC'),
                         'std' => ''
                     ),
                 ),
