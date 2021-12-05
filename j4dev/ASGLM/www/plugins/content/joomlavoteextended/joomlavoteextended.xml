@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" version="3.0" group="content" method="upgrade">
+    <name>PLG_JOOMLAVOTEEXTENDED</name>
+    <version>3.3.4</version>
+    <creationDate>2019-10-12</creationDate>
+    <license>http://www.gnu.org/licenses/gpl</license>
+    <copyright>Copyright 2019 Viktor Vogel. All rights reserved.</copyright>
+    <author>Viktor Vogel</author>
+    <authorEmail>admin@kubik-rubik.de</authorEmail>
+    <authorUrl>https://kubik-rubik.de/</authorUrl>
+    <description>PLG_JOOMLAVOTEEXTENDED_XML_DESCRIPTION</description>
+    <files>
+        <filename plugin="joomlavoteextended">joomlavoteextended.php</filename>
+        <filename plugin="joomlavoteextended">index.html</filename>
+        <folder plugin="joomlavoteextended">fields</folder>
+        <folder plugin="joomlavoteextended">assets</folder>
+    </files>
+    <languages>
+        <language tag="en-GB">language/en-GB/en-GB.plg_content_joomlavoteextended.ini</language>
+        <language tag="en-GB">language/en-GB/en-GB.plg_content_joomlavoteextended.sys.ini</language>
+        <language tag="de-DE">language/de-DE/de-DE.plg_content_joomlavoteextended.ini</language>
+        <language tag="de-DE">language/de-DE/de-DE.plg_content_joomlavoteextended.sys.ini</language>
+    </languages>
+    <updateservers>
+        <server type="extension" priority="1" name="PLG_JOOMLAVOTEEXTENDED">https://check.kubik-rubik.de/updates/joomlavoteextended.xml</server>
+    </updateservers>
+    <config>
+        <fields name="params" addfieldpath="/plugins/content/joomlavoteextended/fields">
+            <fieldset name="settings">
+                <field type="krdonationcodecheck"/>
+                <field name="introtext" type="text" default="" label="PLG_JOOMLAVOTEEXTENDED_INTROTEXT" description="PLG_JOOMLAVOTEEXTENDED_INTROTEXT_DESC"/>
+                <field name="position" type="list" default="0" label="PLG_JOOMLAVOTEEXTENDED_POSITION" description="PLG_JOOMLAVOTEEXTENDED_POSITION_DESC">
+                    <option value="0">PLG_JOOMLAVOTEEXTENDED_BEFORECONTENT</option>
+                    <option value="1">PLG_JOOMLAVOTEEXTENDED_AFTERCONTENT</option>
+                </field>
+                <field name="articleview" type="list" default="0" label="PLG_JOOMLAVOTEEXTENDED_ARTICLEVIEW" description="PLG_JOOMLAVOTEEXTENDED_ARTICLEVIEW_DESC">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="statistics" type="list" default="0" label="PLG_JOOMLAVOTEEXTENDED_STATISTICS" description="PLG_JOOMLAVOTEEXTENDED_STATISTICS_DESC">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="decimals" type="list" default="0" label="PLG_JOOMLAVOTEEXTENDED_DECIMALS" description="PLG_JOOMLAVOTEEXTENDED_DECIMALS_DESC">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="exclude_articles_ids" type="textarea" default="" rows="2" cols="50" label="PLG_JOOMLAVOTEEXTENDED_EXCLUDEARTICLEIDS" description="PLG_JOOMLAVOTEEXTENDED_EXCLUDEARTICLEIDS_DESC"/>
+            </fieldset>
+            <fieldset name="donation">
+                <field type="krdonationcodecheck" name="donation"/>
+                <field name="donation_code" type="text" default="" size="40" label="KR_DONATION_CODE" description="KR_DONATION_CODE_DESC"/>
+                <field type="krtitle" name="spacer_krtitle_general" label=""/>
+                <field type="krprobutton" name="joomlavoteextended"/>
+            </fieldset>
+        </fields>
+    </config>
+</extension>

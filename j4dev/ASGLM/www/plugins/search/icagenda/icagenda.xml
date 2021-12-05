@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" version="3.2.4" method="upgrade" group="search">
+	<name>PLG_SEARCH_ICAGENDA</name>
+	<author>Cyril Rezé / Jooml!C</author>
+	<creationDate>2018-09-25</creationDate>
+	<copyright>Copyright (c) 2012-2019 Jooml!C / Cyril Rezé. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later; see LICENSE.txt</license>
+	<authorEmail>info@joomlic.com</authorEmail>
+	<authorUrl>www.joomlic.com</authorUrl>
+	<version>2.3</version>
+	<description>PLG_SEARCH_ICAGENDA_XML_DESCRIPTION</description>
+
+	<files>
+		<filename plugin="icagenda">icagenda.php</filename>
+		<filename>index.html</filename>
+	</files>
+
+	<languages>
+		<language tag="en-GB">language/en-GB/en-GB.plg_search_icagenda.ini</language>
+		<language tag="en-GB">language/en-GB/en-GB.plg_search_icagenda.sys.ini</language>
+		<language tag="fr-FR">language/fr-FR/fr-FR.plg_search_icagenda.ini</language>
+		<language tag="fr-FR">language/fr-FR/fr-FR.plg_search_icagenda.sys.ini</language>
+		<language tag="it-IT">language/it-IT/it-IT.plg_search_icagenda.ini</language>
+		<language tag="it-IT">language/it-IT/it-IT.plg_search_icagenda.sys.ini</language>
+	</languages>
+
+	<config>
+
+		<fields name="params">
+
+			<fieldset name="basic">
+
+				<field
+					name="search_name"
+					type="text"
+					label="ICAGENDA_PLG_SEARCH_NAME_LABEL"
+					description="ICAGENDA_PLG_SEARCH_NAME_DESC"
+					default=""
+				/>
+
+				<field
+					name="search_limit"
+					type="text"
+					label="JFIELD_PLG_SEARCH_SEARCHLIMIT_LABEL"
+					description="JFIELD_PLG_SEARCH_SEARCHLIMIT_DESC"
+					default="50"
+					size="5"
+					filter="integer"
+				/>
+
+				<field
+					name="search_target"
+					type="list"
+					label="ICAGENDA_PLG_SEARCH_TARGET_LABEL"
+					description="ICAGENDA_PLG_SEARCH_TARGET_DESC"
+					default="0"
+					>
+					<option value="0">JBROWSERTARGET_PARENT</option>
+					<option value="1">JBROWSERTARGET_NEW</option>
+				</field>
+
+			</fieldset>
+
+		</fields>
+
+	</config>
+
+</extension>

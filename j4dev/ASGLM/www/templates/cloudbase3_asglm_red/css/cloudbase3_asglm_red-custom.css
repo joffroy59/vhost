@@ -1,0 +1,87 @@
+.bt-cs .bt-inner .bt-title {
+	color: #8f2424!important;
+}
+
+.bt-cs .bt_handles li a {
+	background-image: url("../images/pagination_red.png");
+}
+
+
+ul.menu li.active.current > a {
+  color:#74755d;
+}
+
+#rt-top-surround{
+  padding:0px;
+  background-color: transparent;
+}
+
+.rt-block.logo-block{
+  background-repeat: no-repeat;
+  background-position: center;
+  padding:0px;
+  margin:0px;
+  height: 150px;
+}
+
+.blog-featured h2{
+      font-weight: bolder;
+}
+
+a.slide{
+  color:#8f2424;
+}
+
+.rt-block h2{
+      font-weight: bolder;
+}
+
+#rt-main{
+	background: #b9ac99;
+}
+
+#rt-main .rt-block{
+	background: #ccc1b0;
+}
+
+#rt-logo {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#rt-menu {
+  background-color: #ccc1b0;
+}
+
+#rt-maintop .rt-container{
+  background-color: #b9ac99;
+}
+
+.box1 {
+    background: #ccc1af;
+    border: 1px solid #d5d5d5;
+}
+
+.component-content .item-separator {
+    display: flex;
+    margin: 10px;
+    #border-bottom: #8BC34A;
+    border-width: thin;
+    border-style: solid;
+}
+
+.boxplusFixedHeigh .boxplus-viewport{
+	height: 250px!important;  
+}
+
+.strong h2{
+  font-weight: bold;
+}
+
+.strong h1,h2,h3,h4,h5{
+  font-weight: bold;
+}
+
+.dropdown,.column {
+  width:280px!important;
+}

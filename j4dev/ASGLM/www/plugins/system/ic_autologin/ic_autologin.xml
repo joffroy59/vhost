@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" version="2.5" method="upgrade" group="system">
+	<name>System - iCagenda :: Autologin</name>
+	<author>Cyril Rezé / Jooml!C</author>
+	<creationDate>2018-05-01</creationDate>
+	<copyright>Copyright (c) 2012-2019 Jooml!C / Cyril Rezé. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later; see LICENSE.txt</license>
+	<authorEmail>info@joomlic.com</authorEmail>
+	<authorUrl>www.joomlic.com</authorUrl>
+	<version>1.4</version>
+	<description>The iCagenda Autologin plugin allows to automatically connect an authorized user when clicking on a not public URL inserted in a notification email.</description>
+
+	<files>
+		<filename plugin="ic_autologin">ic_autologin.php</filename>
+		<filename>index.html</filename>
+	</files>
+
+	<config>
+	</config>
+
+</extension>

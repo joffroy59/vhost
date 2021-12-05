@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<install version="2.0" type="language" core="0" method="upgrade">
+    <name>French</name>
+    <tag>fr-FR</tag>
+    <version>2.4.6</version>
+    <creationDate>2015-04-18</creationDate>
+    <author>Mihàly Marti alias Sarki</author>
+    <authorEmail>info@joomlatutos.com</authorEmail>
+    <authorUrl>https://www.transifex.com/projects/p/jce/language/fr_FR/</authorUrl>
+    <copyright>© Copyright (C) 2006 - 2013 Widget Factory Limited. Tous droits réservés</copyright>
+    <license>GNU/GPL Version 2 - http://www.gnu.org/licenses/gpl-2.0.html</license>
+    <description>Pack langue français (France) pour JCE 2.x</description>
+    <site folder="language/fr-FR">
+		<file>fr-FR.com_jce_caption.ini</file>
+		<file>fr-FR.com_jce_emotions.ini</file>
+		<file>fr-FR.com_jce_filemanager.ini</file>
+		<file>fr-FR.com_jce_iframe.ini</file>
+		<file>fr-FR.com_jce_imgmanager_ext.ini</file>
+		<file>fr-FR.com_jce.ini</file>
+		<file>fr-FR.com_jce_mediamanager.ini</file>
+		<file>fr-FR.com_jce_microdata.ini</file>
+		<file>fr-FR.com_jce_templatemanager.ini</file>
+    </site>
+    <administration folder="administrator/language/fr-FR">
+		<file>fr-FR.com_jce.ini</file>
+		<file>fr-FR.com_jce.menu.ini</file>
+		<file>fr-FR.com_jce.sys.ini</file>
+		<file>fr-FR.plg_editors_jce.ini</file>
+		<file>fr-FR.plg_editors_jce.sys.ini</file>
+		<file>fr-FR.plg_quickicon_jcefilebrowser.ini</file>
+		<file>fr-FR.plg_quickicon_jcefilebrowser.sys.ini</file>
+		<file>fr-FR.plg_system_jcemediabox.ini</file>
+		<file>fr-FR.plg_system_jcemediabox.sys.ini</file>
+    </administration>
+</install>
