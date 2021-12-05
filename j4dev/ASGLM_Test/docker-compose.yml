@@ -1,0 +1,46 @@
+version: '3.8'
+
+networks:
+  data: {}
+
+services:
+  joomla:
+    #image: joomla:3.9.18-php7.4
+    build:
+      context: /home/joffroy/vhost/j4dev/ASGLM/
+      dockerfile: ./dockerfile
+    restart: "no"
+    links:
+      - joomladb:mysql
+    ports:
+      - 9080:80
+    volumes:
+      - /home/joffroy/vhost/j4dev/ASGLM/uploads.ini:/usr/local/etc/php/conf.d/upload-limit.ini
+      - /home/joffroy/vhost/j4dev/ASGLM/www:/var/www/html:rw
+      # - /home/joffroy/vhost/j4dev/ASGLM/docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      # - /home/joffroy/vhost/j4dev/ASGLM/docker/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+    environment:
+      JOOMLA_DB_HOST: joomladb
+      JOOMLA_DB_PASSWORD: example
+    networks:
+      - data
+
+  joomladb:
+    image: mysql:5.6
+    restart: "no"
+    volumes:
+      - /home/joffroy/vhost/j4dev/ASGLM/db:/var/lib/mysql:rw
+
+    networks:
+      - data
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - joomladb
+    ports:
+      - "90:80"
+    environment:
+      PMA_HOST: joomladb

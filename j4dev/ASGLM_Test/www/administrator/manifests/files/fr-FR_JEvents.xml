@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension version="1.6" type="file" client="site" method="upgrade">
+<tag>fr-FR</tag>
+<name>French Translation for JEvents</name>
+<packagename>fr-FR JEvents</packagename>
+<version>3.20180109</version>
+<creationDate>2018.01.09</creationDate>
+<author>Xavier Spirlet and Didier</author>
+<authoremail>
+</authoremail>
+<authorurl>www.guzabi.net</authorurl>
+<copyright>2010 GWE Systems Ltd / Guzabi</copyright>
+<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+<description>French Language for JEvents</description>
+<scriptfile>install.php</scriptfile>
+<fileset>
+<files folder="admin" target="administrator/language/fr-FR">
+	<filename>fr-FR.com_jevents.ini</filename>
+	<filename>fr-FR.com_jevents.menu.ini</filename>
+	<filename>fr-FR.com_jevents.sys.ini</filename>
+	<filename>fr-FR.mod_jevents_latest.ini</filename>
+	<filename>fr-FR.pkg_jevents.sys.ini</filename>
+	<filename>fr-FR.plg_content_jevents.ini</filename>
+	<filename>fr-FR.plg_content_jevents.sys.ini</filename>
+	<filename>fr-FR.plg_finder_jevents.ini</filename>
+	<filename>fr-FR.plg_finder_jevents.sys.ini</filename>
+	<filename>fr-FR.plg_search_eventsearch.ini</filename>
+	<filename>fr-FR.plg_system_gwejson.ini</filename>
+	<filename>fr-FR.plg_system_gwejson.sys.ini</filename>
+</files>
+<files folder="site" target="language/fr-FR">
+	<filename>fr-FR.com_jevents.ini</filename>
+	<filename>fr-FR.mod_jevents_cal.ini</filename>
+	<filename>fr-FR.mod_jevents_custom.ini</filename>
+	<filename>fr-FR.mod_jevents_detail.ini</filename>
+	<filename>fr-FR.mod_jevents_latest.ini</filename>
+</files>
+</fileset>
+</extension>

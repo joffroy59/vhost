@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.0" client="site" method="upgrade">
+	<name>MOD_SMARTCOUNTDOWN3</name>
+	<author>Alex Polonski</author>
+	<creationDate>2012 - 2015</creationDate>
+	<copyright>Copyright (c)2012 Alex Polonski</copyright>
+	<license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
+	<authorEmail>alex3493@yandex.ru</authorEmail>
+	<authorUrl>smartcalc.es</authorUrl>
+	<version>3.4.7</version>
+	<description>MOD_SMARTCOUNTDOWN3_XML_DESCRIPTION</description>
+	<files>
+		<filename module="mod_smartcountdown3">mod_smartcountdown3.php</filename>
+		<folder>tmpl</folder>
+		<folder>helpers</folder>
+		<folder>fields</folder>
+		<folder>css</folder>
+		<folder>fx</folder>
+		<folder>images</folder>
+		<folder>js</folder>
+		<folder>language</folder>
+		<folder>layouts</folder>
+		<filename>index.html</filename>
+		<filename>mod_smartcountdown3.xml</filename>
+	</files>
+	
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="deadline" type="calendar" label="MOD_SMARTCOUNTDOWN3_DEADLINE_LABEL"
+					description="MOD_SMARTCOUNTDOWN3_DEADLINE_DESC" class="inputbox" size="22"
+					format="%Y-%m-%d %H:%M:%S" filter="user_utc" default="now" />
+				<field name="counter_modes" type="groupedlist" default="-1:-1" class="input-xlarge"
+					label="MOD_SMARTCOUNTDOWN3_COUNTER_MODES_LABEL" description="MOD_SMARTCOUNTDOWN3_COUNTER_MODES_DESC">
+					<option value="-1:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_ONLY</option>
+					<option value="-1:-1">MOD_SMARTCOUNTDOWN3_SHOW_BOTH_AUTO</option>
+					<option value="0:-1">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_ONLY</option>
+					<group label="MOD_SMARTCOUNTDOWN3_COUNTDOWN_OPTIONS_GROUP">
+						<option value="60:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_60</option>
+						<option value="300:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_300</option>
+						<option value="900:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_900</option>
+						<option value="1800:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_1800</option>
+						<option value="3600:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_3600</option>
+						<option value="28800:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_28800</option>
+						<option value="43200:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_43200</option>
+						<option value="86400:0">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_86400</option>
+					</group>
+					<group label="MOD_SMARTCOUNTDOWN3_COUNTUP_OPTIONS_GROUP">
+						<option value="0:60">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_60</option>
+						<option value="0:300">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_300</option>
+						<option value="0:900">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_900</option>
+						<option value="0:1800">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_1800</option>
+						<option value="0:3600">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_3600</option>
+						<option value="0:28800">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_28800</option>
+						<option value="0:43200">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_43200</option>
+						<option value="0:86400">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_86400</option>
+					</group>
+					<option value="-1:-2">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_TO_END</option>
+				</field>
+				<field name="title_before_down" type="textarea" class="input-xlarge"
+					label="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_DOWN_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_DOWN_DESC"
+					rows="8" cols="30" filter="safehtml" />
+				<field name="title_after_down" type="textarea" class="input-xlarge"
+					label="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_DOWN_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_DOWN_DESC"
+					rows="8" cols="30" filter="safehtml" />
+				<field name="title_before_up" type="textarea" class="input-xlarge"
+					label="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_UP_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_UP_DESC"
+					rows="8" cols="30" filter="safehtml" />
+				<field name="title_after_up" type="textarea" class="input-xlarge"
+					label="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_UP_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_UP_DESC"
+					rows="8" cols="30" filter="safehtml" />
+				<field name="hide_countup_counter" type="radio" default="0" class="radio btn-group"
+					label="MOD_SMARTCOUNTDOWN3_HIDE_COUNTUP_COUNTER_LABEL" description="MOD_SMARTCOUNTDOWN3_HIDE_COUNTUP_COUNTER_DESC">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field name="preview0" type="preview"
+					label="MOD_SMARTCOUNTDOWN3_PREVIEW_LABEL" description="MOD_SMARTCOUNTDOWN3_PREVIEW_DESC" />
+			</fieldset>
+			
+			<fieldset name="layout" addfieldpath="/modules/mod_smartcountdown3/fields">
+				<field name="units" type="checkboxes" checked="years,months,days,hours,minutes,seconds" class="checkbox inline"
+					label="MOD_SMARTCOUNTDOWN3_UNITS_LABEL" description="MOD_SMARTCOUNTDOWN3_UNITS_DESC">
+					<option value="years">MOD_SMARTCOUNTDOWN3_UNITS_YEARS</option>
+					<option value="months">MOD_SMARTCOUNTDOWN3_UNITS_MONTHS</option>
+					<option value="weeks">MOD_SMARTCOUNTDOWN3_UNITS_WEEKS</option>
+					<option value="days">MOD_SMARTCOUNTDOWN3_UNITS_DAYS</option>
+					<option value="hours">MOD_SMARTCOUNTDOWN3_UNITS_HOURS</option>
+					<option value="minutes">MOD_SMARTCOUNTDOWN3_UNITS_MINUTES</option>
+					<option value="seconds">MOD_SMARTCOUNTDOWN3_UNITS_SECONDS</option>
+				</field>
+				<field name="layout_preset" type="ConfigFile" default="auto.xml" class="input-xlarge"
+					context="layout"
+					label="MOD_SMARTCOUNTDOWN3_LAYOUT_PRESET_LABEL"
+					description="MOD_SMARTCOUNTDOWN3_LAYOUT_PRESET_DESC" />
+				<field name="fx_preset" type="ConfigFile" default="No_FX_animation.xml" class="input-xlarge"
+					context="fx"
+					label="MOD_SMARTCOUNTDOWN3_FX_PRESET_LABEL"
+					description="MOD_SMARTCOUNTDOWN3_FX_PRESET_DESC" />
+				<field name="horizontally_center" type="radio" class="btn-group"
+					label="MOD_SMARTCOUNTDOWN3_HORIZONTALLY_CENTER_LABEL" description="MOD_SMARTCOUNTDOWN3_HORIZONTALLY_CENTER_DESC"
+					default="1">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field name="title_before_size" type="integer" class="input-mini"
+					label="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_SIZE_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_SIZE_DESC"
+					first="10" last="50" step="1" default="24" />
+				<field name="title_after_size" type="integer" class="input-mini"
+					label="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_SIZE_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_SIZE_DESC"
+					first="10" last="50" step="1" default="20" />
+				<field name="digits_size" type="integer"  class="input-mini"
+					label="MOD_SMARTCOUNTDOWN3_DIGITS_SIZE_LABEL" description="MOD_SMARTCOUNTDOWN3_DIGITS_SIZE_DESC"
+					first="10" last="100" step="1" default="32" />
+				<field name="labels_size" type="integer"  class="input-mini"
+					label="MOD_SMARTCOUNTDOWN3_LABELS_SIZE_LABEL" description="MOD_SMARTCOUNTDOWN3_LABELS_SIZE_DESC"
+					first="10" last="50" step="1" default="14" />
+					
+				<field name="units_spacing_horz" type="list"
+					label="MOD_SMARTCOUNTDOWN3_UNITS_SPACING_HORZ_LABEL" description="MOD_SMARTCOUNTDOWN3_UNITS_SPACING_HORZ_DESC"
+					default="">
+					<option value="">JDEFAULT</option>
+					<option value="0 1.0em">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_WIDE</option>
+					<option value="0 0.8em">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_NORMAL</option>
+					<option value="0 0.5em">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_CONDENSED</option>
+					<option value="0 0.25em">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_CONDENSED_PLUS</option>
+				</field>
+				<field name="units_spacing_vert" type="list"
+					label="MOD_SMARTCOUNTDOWN3_UNITS_SPACING_VERT_LABEL" description="MOD_SMARTCOUNTDOWN3_UNITS_SPACING_VERT_DESC"
+					default="">
+					<option value="">JDEFAULT</option>
+					<option value="1.0em 0">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_WIDE_PLUS</option>
+					<option value="0.8em 0">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_WIDE</option>
+					<option value="0.5em 0">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_NORMAL</option>
+					<option value="0.25em 0">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_CONDENSED</option>
+				</field>
+				
+				<field name="preview" type="preview"
+					label="MOD_SMARTCOUNTDOWN3_PREVIEW_LABEL" description="MOD_SMARTCOUNTDOWN3_PREVIEW_DESC" />
+			</fieldset>
+			
+			<fieldset name="override_layout" description="MOD_SMARTCOUNTDOWN3_OVERRIDE_LAYOUT_DESC">
+				<field name="counter_layout" type="list"
+					label="MOD_SMARTCOUNTDOWN3_COUNTER_LAYOUT_LABEL" description="MOD_SMARTCOUNTDOWN3_COUNTER_LAYOUT_DESC"
+					default="">
+					<option value="">MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_NONE</option>
+					<option value="vert">MOD_SMARTCOUNTDOWN3_COUNTER_LAYOUT_VERT</option>
+					<option value="horz">MOD_SMARTCOUNTDOWN3_COUNTER_LAYOUT_HORZ</option>
+				</field>
+				<field name="event_text_pos" type="list"
+					label="MOD_SMARTCOUNTDOWN3_EVENT_TEXT_POS_LABEL" description="MOD_SMARTCOUNTDOWN3_EVENT_TEXT_POS_DESC"
+					default="">
+					<option value="">MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_NONE</option>
+					<option value="vert">MOD_SMARTCOUNTDOWN3_EVENT_TEXT_POS_VERT</option>
+					<option value="horz">MOD_SMARTCOUNTDOWN3_EVENT_TEXT_POS_HORZ</option>
+				</field>
+				<field name="lables_pos" type="list"
+					label="MOD_SMARTCOUNTDOWN3_LABELS_POS_LABEL" description="MOD_SMARTCOUNTDOWN3_LABELS_POS_DESC"
+					default="">
+					<option value="">MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_NONE</option>
+					<option value="right">MOD_SMARTCOUNTDOWN3_LABELS_POS_RIGTH</option>
+					<option value="bottom">MOD_SMARTCOUNTDOWN3_LABELS_POS_BOTTOM</option>
+					<option value="top">MOD_SMARTCOUNTDOWN3_LABELS_POS_TOP</option>
+					<option value="left">MOD_SMARTCOUNTDOWN3_LABELS_POS_LEFT</option>
+				</field>
+				<field name="spacer_overrides_desc" type="spacer"
+					label="MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_ALL_SCREENS_DESC" />
+				<field name="labels_vert_align" type="list"
+					label="MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_LABEL" description="MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_DESC"
+					default="">
+					<option value="">MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_NONE</option>
+					<option value="middle">MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_MIDDLE</option>
+					<option value="top">MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_TOP</option>
+					<option value="bottom">MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_BOTTOM</option>
+					<option value="high">MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_HIGH</option>
+					<option value="low">MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_LOW</option>
+					<option value="superscript">MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_SUPERSCRIPT</option>
+					<option value="subscript">MOD_SMARTCOUNTDOWN3_LABELS_VERT_ALIGN_SUBSCRIPT</option>
+				</field>
+				<field name="hide_highest_zeros" type="list"
+					label="MOD_SMARTCOUNTDOWN3_HIDE_HIGHEST_ZEROS_LABEL" description="MOD_SMARTCOUNTDOWN3_HIDE_HIGHEST_ZEROS_DESC"
+					default="">
+					<option value="">MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_NONE</option>
+					<option value="0">JNONE</option>
+					<option value="1">MOD_SMARTCOUNTDOWN3_HIDE_HIGHEST_ZEROS_HIGHEST</option>
+					<option value="2">MOD_SMARTCOUNTDOWN3_HIDE_HIGHEST_ZEROS_ALL</option>
+				</field>
+				<field name="allow_all_zeros" type="list"
+					label="MOD_SMARTCOUNTDOWN3_ALLOW_ALL_ZEROS_LABEL" description="MOD_SMARTCOUNTDOWN3_ALLOW_ALL_ZEROS_DESC"
+					default="">
+					<option value="">MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_NONE</option>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field name="disable_responsive" type="list"
+					label="MOD_SMARTCOUNTDOWN3_DISABLE_RESPONSIVE_LABEL" description="MOD_SMARTCOUNTDOWN3_DISABLE_RESPONSIVE_DESC"
+					default="">
+					<option value="">MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_NONE</option>
+					<option value="1">JDISABLED</option>
+				</field>
+				<field name="preview2" type="preview"
+					label="MOD_SMARTCOUNTDOWN3_PREVIEW_LABEL" description="MOD_SMARTCOUNTDOWN3_PREVIEW_DESC" />
+			</fieldset>
+			
+			<fieldset name="redirection">
+				<field name="counter_clickable" type="list" default="0"
+					label="MOD_SMARTCOUNTDOWN3_COUNTER_CLICKABLE_LABEL" description="MOD_SMARTCOUNTDOWN3_COUNTER_CLICKABLE_DESC"
+				>
+					<option value="0">MOD_SMARTCOUNTDOWN3_COUNTER_CLICKABLE_NEVER</option>
+					<option value="1">MOD_SMARTCOUNTDOWN3_COUNTER_CLICKABLE_ALWAYS</option>
+					<option value="2">MOD_SMARTCOUNTDOWN3_COUNTER_CLICKABLE_COUNTDOWN</option>
+					<option value="3">MOD_SMARTCOUNTDOWN3_COUNTER_CLICKABLE_COUNTUP</option>
+				</field>
+				<field name="confirm_redirect" type="radio" class="btn-group" default="1"
+					label="MOD_SMARTCOUNTDOWN3_CONFIRM_REDIRECT_LABEL" description="MOD_SMARTCOUNTDOWN3_CONFIRM_REDIRECT_DESC"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field name="redirect_spacer" type="spacer" class="spacer"
+					label="MOD_SMARTCOUNTDOWN3_REDIRECT_CONTROL_LABEL" />
+				<field name="event_goto_menu" type="menuitem" default=""
+					label="MOD_SMARTCOUNTDOWN3_EVENT_GOTO_MENU_LABEL" description="MOD_SMARTCOUNTDOWN3_EVENT_GOTO_MENU_DESC"
+				>
+					<option value="">JDISABLED</option>
+				</field>
+				<field name="event_goto_url" type="url" default="" filter="url" size="50" class="input-xxlarge"
+					label="MOD_SMARTCOUNTDOWN3_EVENT_GOTO_URL_LABEL" description="MOD_SMARTCOUNTDOWN3_EVENT_GOTO_URL_DESC" />
+			</fieldset>
+			
+			<fieldset name="styles">
+				<field name="module_style" type="text"
+					label="MOD_SMARTCOUNTDOWN3_MODULE_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_MODULE_STYLE_DESC"
+					size="50" class="inputbox input-xxlarge" />
+				<field name="title_before_style" type="text"
+					label="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_STYLE_DESC"
+					size="50" class="inputbox input-xxlarge" />
+				<field name="title_after_style" type="text"
+					label="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_STYLE_DESC"
+					size="50" class="inputbox input-xxlarge" />	
+				<field name="digits_style" type="text"
+					label="MOD_SMARTCOUNTDOWN3_DIGITS_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_DIGITS_STYLE_DESC"
+					size="50" class="inputbox input-xxlarge" />
+				<field name="labels_style" type="text"
+					label="MOD_SMARTCOUNTDOWN3_LABELS_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_LABELS_STYLE_DESC"
+					size="50" class="inputbox input-xxlarge" />
+			</fieldset>
+			
+			<fieldset name="advanced">
+				<field name="moduleclass_sfx" type="text"
+					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL" description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+				<field
+					name="cache"
+					type="list"
+					default="1"
+					label="COM_MODULES_FIELD_CACHING_LABEL"
+					description="COM_MODULES_FIELD_CACHING_DESC">
+					<option
+						value="1">JGLOBAL_USE_GLOBAL</option>
+					<option
+						value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+				</field>
+
+				<field
+					name="cache_time"
+					type="text"
+					default="900"
+					label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
+					description="COM_MODULES_FIELD_CACHE_TIME_DESC" />
+				<field
+					name="cachemode"
+					type="hidden"
+					default="static">
+					<option
+						value="static"></option>
+				</field>
+			</fieldset>
+		</fields>
+	</config>
+    <updateservers>
+		<server type="extension" priority="1" name="Smart Countdown 3 Update Site">http://smartcalc.org/updates/mod-smartcountdown3-update.xml</server>
+	</updateservers>
+</extension>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.1.0" client="site" method="upgrade">
+    <name>Scorpion Logout Button for J3</name>
+    <author>Scorpion Computers and Software</author>
+	<authorEmail>info@ScorpionComputers.nl</authorEmail>
+	<authorUrl>www.ScorpionComputers.nl</authorUrl>
+    <copyright>Copyright (C) 2011-2015 ScorpionComputers.nl. All rights reserved.</copyright>
+    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+    <creationDate>13-06-2015</creationDate>
+    <version>1.0.1</version>
+    <description>Plaats een logout knop op een module position</description>
+    <files>
+        <filename>mod_scorpion_j3logoutbutton.xml</filename>
+        <filename module="mod_scorpion_j3logoutbutton">mod_scorpion_j3logoutbutton.php</filename>
+        <filename>index.html</filename>
+        <filename>helper.php</filename>
+        <filename>tmpl/default.php</filename>
+        <filename>tmpl/index.html</filename>
+    </files>
+    <config>
+		<fields name="params">
+			<fieldset name="basic">	
+				<field name="class4link" type="text" default="" label="Class 4 link" description="Extra class for the link element"/>
+				<field name="class4btn" type="text" default="" label="Class 4 button" description="Extra class for the button element"/>
+			</fieldset>
+		</fields>
+
+    </config>
+</extension>

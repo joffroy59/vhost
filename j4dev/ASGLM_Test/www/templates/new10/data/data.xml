@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data>
+    <categories>
+        <category id="1" title="Featured"/>
+        <category id="2" title="Articles"/>
+    </categories>
+    <articles>
+        <article id="1" category="2" title="Accueil" alias="article" path="/accueil" description="Description" keywords="Keywords">
+            <![CDATA[<div class="art-content-layout" style="color: #18181B; background: #E5E4E7; ">
+    <div class="art-content-layout-row">
+    <div class="art-layout-cell" style="color: #18181B; background: #8ABB35; padding: 20px; width:50%" >
+        <div style="margin:120px 0"><h2>Keeping fit is</h2><div><span style="color: rgb(225, 239, 199); font-style: italic; font-size: 36px;">Orci nam est.</span></div></div>
+    </div><div class="art-layout-cell" style="color: #18181B; background:  url('images/template-content/08965.png') scroll; padding: 3px; width:50%" >
+        <p><br style="line-height: 320px"></p>
+    </div>
+    </div>
+</div>
+<div class="art-content-layout-wrapper" style="margin-top: 0px;margin-bottom: 0px;">
+<div class="art-content-layout" style=" border-collapse: separate; ">
+    <div class="art-content-layout-row">
+    <div class="art-layout-cell" style="border-top-style:solid;border-right-style:solid;border-bottom-style:solid;border-left-style:solid;border-width:0px;border-color:#E5E4E7; padding: 0px; width:100%" >
+        <h3 style="text-align: center; padding: 20px 0;background: #e5e4e7;margin-top:0;">Personal Programs</h3><img width="273" height="140" alt="" src="images/template-content/contentimage2.jpg" class="">&nbsp; &nbsp; &nbsp; &nbsp;AAAAAAAAABBBBBBBBBCCCCCCCCCC
+    </div>
+    </div>
+</div>
+</div>
+<div class="art-content-layout-br" style="border-top-width:10px;border-top-style:solid;border-top-color:#E5E4E7;">
+</div>]]>
+        </article>
+        <article id="2" category="2" title="Contacts" alias="article-1" path="/contacts" description="Description" keywords="Keywords">
+            <![CDATA[<div class="art-content-layout">
+    <div class="art-content-layout-row">
+    <div class="art-layout-cell" style="border-top-style:solid;border-right-style:solid;border-bottom-style:solid;border-left-style:solid;border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-left-width:1px;border-top-color:#E5E4E7;border-right-color:#E5E4E7;border-bottom-color:#E5E4E7;border-left-color:#E5E4E7; padding-right: 0px;padding-left: 0px; width:100%" >
+        <p><img width="300" height="200" alt="" src="images/template-content/shutterstock_23134795-2.jpg" style="float: left; margin-right: 10px"></p><p>Quis rhoncus varius in aliquam dui lorem vitae nonummy. Enim pellentesque fusce lacinia lacus vel mollis leo orci vestibulum sagittis mauris dolor tortor ligula a sed.</p><p>Magnis nunc sodales et quisque imperdiet urna posuere scelerisque. Purus ligula phasellus eros. Leo fames facilisi etiam nunc orci semper nulla nisi luctus augue. Nulla non cras ipsum adipiscing amet nullam. </p><p><span style="font-weight:bold;">Praesent. </span></p><p>In proin eros  sit curabitur. <br>  Principal Ville, Country 12345-6789</p><p>Nam orci imperdiet.<br>  Mi leo aliquam sem.</p><p>A. <a href="#">http://www.domain.com<br></a>A. <a href="#">email@domain.com</a></p>
+    </div>
+    </div>
+</div>
+]]>
+        </article>
+    </articles>
+    <menus>
+        <menu id="1" name="ct-horizontal-menu" title="Content / Horizontal Menu"/>
+        <menu id="2" name="ct-vertical-menu" title="Content / Vertical Menu"/>
+        <menu id="3" name="ct-special-menu" title="Content / Special Menu"/>
+    </menus>
+    <menuitems>
+        <menuitem id="1" menu="ct-horizontal-menu" title="Accueil" titleInBrowser="Accueil" alias="ct-menu-item-1" path="/accueil" menutype="hmenu" type="single-article" article="1" showTitle="no" category="1" default="1"/>
+        <menuitem id="2" menu="ct-vertical-menu" title="Accueil" titleInBrowser="Accueil" alias="ct-menu-item-2" path="/accueil" menutype="vmenu" type="single-article" article="1" showTitle="no" category="1"/>
+        <menuitem id="3" menu="ct-horizontal-menu" title="Contacts" titleInBrowser="Contacts" alias="ct-menu-item-3" path="/contacts" menutype="hmenu" type="single-article" article="2" showTitle="yes" category="1"/>
+        <menuitem id="4" menu="ct-vertical-menu" title="Contacts" titleInBrowser="Contacts" alias="ct-menu-item-4" path="/contacts" menutype="vmenu" type="single-article" article="2" showTitle="yes" category="1"/>
+        <menuitem id="5" menu="ct-special-menu" title="Special Blog Page" titleInBrowser="" alias="ct-menu-item-5" menutype="menu" type="category-blog-layout" category="1"/>
+        <menuitem id="6" menu="ct-special-menu" title="Special Single Page" titleInBrowser="" alias="ct-menu-item-6" menutype="menu" type="single-article" showTitle="yes" category="1"/>
+    </menuitems>
+    <modules>
+        <module id="1" title="Content / Horizontal Menu" showTitle="true" position="position-1" type="menu" menu="ct-horizontal-menu"/>
+        <module id="2" title="Nouveau Bloc" showTitle="true" position="position-7" type="custom">
+            <![CDATA[<p>Fusce volutpat eget risus nunc nunc ac sem odio mollis. sed nullam nec eget dolor egestas leo venenatis lacus fusce pharetra vulputate id tincidunt dui consectetuer.</p>]]>
+        </module>
+        <module id="3" title="Nouveau Bloc 2" showTitle="true" position="position-20" style="art-block" type="custom">
+            <![CDATA[<p><br></p>]]>
+        </module>
+        <module id="4" title="Nouveau Bloc 3" showTitle="true" position="position-20" style="art-block" type="custom">
+            <![CDATA[<p>bvybrueozabrhoez</p>]]>
+        </module>
+        <module id="5" title="Footer1" showTitle="false" position="position-31" type="custom">
+            <![CDATA[
+        &nbsp;<a href="http://asglm.fr" class="art-rss-tag-icon" style="line-height: 32px;"></a>&nbsp; © G. Venant 2015 - ...
+    ]]>
+        </module>
+    </modules>
+    <parameters>
+        <parameter id="1" name="siteTitle" value="A.S.G.L.M."/>
+    </parameters>
+</data>
