@@ -7,7 +7,7 @@ services:
   joomla:
     #image: joomla:3.9.18-php7.4
     build:
-      context: /home/joffroy/vhost/j4dev/ASGLM/
+      context: /home/joffroy/vhost/j4dev/ASGLM_Test/
       dockerfile: ./dockerfile
     restart: "no"
     links:
@@ -15,10 +15,10 @@ services:
     ports:
       - 9080:80
     volumes:
-      - /home/joffroy/vhost/j4dev/ASGLM/uploads.ini:/usr/local/etc/php/conf.d/upload-limit.ini
-      - /home/joffroy/vhost/j4dev/ASGLM/www:/var/www/html:rw
-      # - /home/joffroy/vhost/j4dev/ASGLM/docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-      # - /home/joffroy/vhost/j4dev/ASGLM/docker/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+      - /home/joffroy/vhost/j4dev/ASGLM_Test/uploads.ini:/usr/local/etc/php/conf.d/upload-limit.ini
+      - /home/joffroy/vhost/j4dev/ASGLM_Test/www:/var/www/html:rw
+      # - /home/joffroy/vhost/j4dev/ASGLM_Test/docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      # - /home/joffroy/vhost/j4dev/ASGLM_Test/docker/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
     environment:
       JOOMLA_DB_HOST: joomladb
       JOOMLA_DB_PASSWORD: example
@@ -29,7 +29,7 @@ services:
     image: mysql:5.6
     restart: "no"
     volumes:
-      - /home/joffroy/vhost/j4dev/ASGLM/db:/var/lib/mysql:rw
+      - /home/joffroy/vhost/j4dev/ASGLM_Test/db:/var/lib/mysql:rw
 
     networks:
       - data
