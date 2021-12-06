@@ -41,6 +41,6 @@ services:
     links:
       - joomladb
     ports:
-      - "90:80"
+      - "91:80"
     environment:
       PMA_HOST: joomladb
