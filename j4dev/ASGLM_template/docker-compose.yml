@@ -1,0 +1,52 @@
+version: '3.8'
+
+networks:
+  data_%INSTANE_NAME%: {}
+
+services:
+  joomla:
+    #image: joomla:3.9.18-php7.4
+    build:
+      context: %CONTEXT_NAME%
+      dockerfile: ./dockerfile
+    restart: "no"
+    links:
+      - joomladb:mysql
+    ports:
+      - %EXTERNAL_PORT_JOOMLA%:80
+    volumes:
+      - %VOLUMES_UPLOADS_INI%:/usr/local/etc/php/conf.d/upload-limit.ini
+      - %VOLUMES_WWW%:/var/www/html:rw
+    environment:
+      JOOMLA_DB_HOST: joomladb
+      JOOMLA_DB_PASSWORD: example
+    networks:
+      - data_%INSTANE_NAME%
+    healthcheck:
+      test: ["CMD-SHELL", "test $$(curl --write-out '%{http_code}' --silent --output /dev/null http://localhost/installation/index.php) -eq 200 || exit 1"]
+      timeout: 10s
+      interval: 5s
+      retries: 10
+
+  joomladb:
+    image: mysql:5.6
+    restart: "no"
+    volumes:
+      - %VOLUMES_DB%:/var/lib/mysql:rw
+    networks:
+      - data_%INSTANE_NAME%
+    ports:
+      - %EXTERNAL_PORT_DB%:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - joomladb
+    ports:
+      - "%EXTERNAL_PORT_DB_ADMIN%:80"
+    environment:
+      PMA_HOST: joomladb
+    networks:
+      - data_%INSTANE_NAME%
