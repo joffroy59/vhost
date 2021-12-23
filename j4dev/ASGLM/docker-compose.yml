@@ -1,7 +1,7 @@
 version: '3.8'
 
 networks:
-  data: {}
+  data1: {}
 
 services:
   joomla:
@@ -23,16 +23,17 @@ services:
       JOOMLA_DB_HOST: joomladb
       JOOMLA_DB_PASSWORD: example
     networks:
-      - data
+      - data1
 
   joomladb:
     image: mysql:5.6
     restart: "no"
     volumes:
       - /home/joffroy/vhost/j4dev/ASGLM/db:/var/lib/mysql:rw
-
     networks:
-      - data
+      - data1
+    ports:
+      - 13306:3306
     environment:
       MYSQL_ROOT_PASSWORD: example
 
@@ -44,3 +45,5 @@ services:
       - "90:80"
     environment:
       PMA_HOST: joomladb
+    networks:
+      - data1
