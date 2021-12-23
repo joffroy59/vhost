@@ -2,21 +2,31 @@
 /**
  * @package Helix Ultimate Framework
  * @author JoomShaper https://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2018 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or Later
 */
 
 defined ('_JEXEC') or die();
 
+use HelixUltimate\Framework\Platform\Helper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 
 $app = Factory::getApplication();
-$doc = JFactory::getDocument();
-$params = $app->getTemplate(true)->params;
-$theme_url = URI::base(true) . '/templates/'. $this->template;
+$doc = Factory::getDocument();
+$template = HelixUltimate\Framework\Platform\Helper::loadTemplateData();
+$params = $template->params;
+
+$theme_url = Uri::base(true) . '/templates/'. $this->template;
+
+/** If SP Page Builder page as a error page is activated- */
+/* if ($params->get('error_sppb'))
+{
+	Helper::renderPage($this->error->getCode(), $params->get('error_sppb_id'));
+}
+ */
 ?>
 
 <!doctype html>
@@ -27,7 +37,7 @@ $theme_url = URI::base(true) . '/templates/'. $this->template;
 		<title><?php echo $this->title; ?> <?php echo htmlspecialchars($this->error->getMessage(), ENT_QUOTES, 'UTF-8'); ?></title>
 
 		<?php if ($favicon = $params->get('favicon')) : ?>
-			<link rel="icon" href="<?php echo URI::base(true) . '/' . $favicon; ?>" />
+			<link rel="icon" href="<?php echo Uri::base(true) . '/' . $favicon; ?>" />
 		<?php else: ?>
 			<link rel="icon" href="<?php echo $theme_url .'/images/favicon.ico'; ?>" />
 		<?php endif; ?>
@@ -35,7 +45,7 @@ $theme_url = URI::base(true) . '/templates/'. $this->template;
 		<?php if(file_exists( \JPATH_THEMES . '/' . $this->template . '/css/bootstrap.min.css' )) : ?>
 			<link href="<?php echo $theme_url . '/css/bootstrap.min.css'; ?>" rel="stylesheet">
 		<?php else: ?>
-			<link href="<?php echo URI::base(true) . '/plugins/system/helixultimate/css/bootstrap.min.css'; ?>" rel="stylesheet">
+			<link href="<?php echo Uri::base(true) . '/plugins/system/helixultimate/css/bootstrap.min.css'; ?>" rel="stylesheet">
 		<?php endif; ?>
 
 		<?php if(file_exists( \JPATH_THEMES . '/' . $this->template . '/css/custom.css' )) : ?>
@@ -45,33 +55,28 @@ $theme_url = URI::base(true) . '/templates/'. $this->template;
 		<link href="<?php echo $theme_url . '/css/font-awesome.min.css'; ?>" rel="stylesheet">
 		<link href="<?php echo $theme_url . '/css/template.css'; ?>" rel="stylesheet">
 
-		<?php $preset = (isset(json_decode($params->get('preset', (object) ['preset' => 'preset1']))->preset) && json_decode($params->get('preset'))->preset) ? json_decode($params->get('preset'))->preset : 'preset1'; ?>
+		<?php
+			$preset = $params->get('preset', json_encode(['preset' => 'preset1']));
+
+			if (!empty($preset->preset))
+			{
+				$preset = $preset->preset;
+			}
+		?>
 		<link href="<?php echo $theme_url . '/css/presets/' . $preset . '.css'; ?>" rel="stylesheet">
-		
 	</head>
 	<body>
 		<div class="container">
 			<?php if($params->get('error_logo')) : ?>
 				<a href="<?php echo $this->baseurl; ?>/index.php">
-					<img class="error-logo" src="<?php echo URI::base(true) . '/' . $params->get('error_logo'); ?>" alt="<?php echo htmlspecialchars($this->title); ?>">
+					<img class="error-logo" src="<?php echo Uri::base(true) . '/' . $params->get('error_logo'); ?>" alt="<?php echo htmlspecialchars($this->title); ?>">
 				</a>
 			<?php endif; ?>
 
 			<h1 class="error-code"><?php echo $this->error->getCode(); ?></h1>
 			<h2 class="error-message"><?php echo htmlspecialchars($this->error->getMessage(), ENT_QUOTES, 'UTF-8'); ?></h2>
 
-			<a href="<?php echo $this->baseurl; ?>/index.php" class="btn btn-secondary"><span class="fa fa-home" aria-hidden="true"></span> <?php echo Text::_('JERROR_LAYOUT_HOME_PAGE'); ?></a>
-
-			<?php
-			$modules = JModuleHelper::getModules( '404' );
-			$attribs['style'] = 'sp_xhtml';
-			if(!empty($modules) && count($modules)): // Render modules if published in 404 position ?>
-				<div class="error-modules">
-					<?php foreach ($modules as $key => $module) :
-						echo JModuleHelper::renderModule( $module, $attribs );
-					endforeach; ?>
-				</div>
-			<?php endif; ?>
+			<a href="<?php echo $this->baseurl; ?>/index.php" class="btn btn-secondary"><span class="fas fa-home" aria-hidden="true"></span> <?php echo Text::_('JERROR_LAYOUT_HOME_PAGE'); ?></a>
 
 			<?php if ($this->debug) : ?>
 				<div class="error-debug mt-3">
@@ -95,7 +100,7 @@ $theme_url = URI::base(true) . '/templates/'. $this->template;
 		<?php if($params->get('error_bg')) : ?>
 			<style>
 				body {
-					background-image: url(<?php echo JURI::base(true) . '/' . $params->get('error_bg'); ?>)
+					background-image: url(<?php echo Uri::base(true) . '/' . $params->get('error_bg'); ?>)
 				}
 			</style>
 		<?php endif; ?>

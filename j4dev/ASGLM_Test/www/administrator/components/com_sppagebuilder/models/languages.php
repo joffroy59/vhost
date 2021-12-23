@@ -2,15 +2,17 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\MVC\Model\ListModel;
+
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
-jimport('joomla.application.component.modellist');
-
-class SppagebuilderModelLanguages extends JModelList {
+class SppagebuilderModelLanguages extends ListModel {
 
 	public function __construct($config = array()) {
 		parent::__construct($config);
@@ -19,7 +21,7 @@ class SppagebuilderModelLanguages extends JModelList {
 	protected function getListQuery() {
 		$db = $this->getDbo();
 		$query = $db->getQuery(true);
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 
 		$query->select(
 			$this->getState(
@@ -29,17 +31,20 @@ class SppagebuilderModelLanguages extends JModelList {
 		);
 
 		$query->from('#__sppagebuilder_languages as a');
+
 		return $query;
 	}
 
-	public function storeInstall($language) {
-		$db = JFactory::getDbo();
-		$input = JFactory::getApplication()->input;
+	public function storeInstall($language)
+	{
+		$db = Factory::getDbo();
+		$input = Factory::getApplication()->input;
 		$language_name = $input->get('language', 'en-GB', 'STRING');
 		$result = $this->checkInstall($language->lang_tag);
 		$version = $language->version;
 
-		if($result) { // Update
+		if ($result)
+		{ // Update
 			//self::updateLang($language);
 			$values = array(
 				'title' => $language->title,
@@ -48,7 +53,9 @@ class SppagebuilderModelLanguages extends JModelList {
 				'version' => $language->version,
 			);
 			$version = self::updateLang($values, $language->lang_key);
-		} else {
+		}
+		else
+		{
 			$values = array(
 				$db->quote($language->title),
 				$db->quote($language->description),
@@ -61,22 +68,25 @@ class SppagebuilderModelLanguages extends JModelList {
 		}
 
 		return $version;
-		//return $result;
 	}
 
-	private function checkInstall($language = 'en-GB') {
-		$db = JFactory::getDbo();
-    $query = $db->getQuery(true);
-    $query->select($db->quoteName(array('id', 'state')));
-    $query->from($db->quoteName('#__sppagebuilder_languages'));
-    $query->where($db->quoteName('lang_tag') . ' = ' . $db->quote($language));
-    $db->setQuery($query);
+	private function checkInstall($language = 'en-GB')
+	{
+		$db = Factory::getDbo();
+		$query = $db->getQuery(true);
 
-    return $db->loadObject();
+		$query->select($db->quoteName(array('id', 'state')));
+		$query->from($db->quoteName('#__sppagebuilder_languages'));
+		$query->where($db->quoteName('lang_tag') . ' = ' . $db->quote($language));
+
+		$db->setQuery($query);
+
+		return $db->loadObject();
 	}
 
-	private function insertInstall($values = array()) {
-		$db = JFactory::getDbo();
+	private function insertInstall($values = array())
+	{
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$columns = array('title', 'description', 'lang_tag', 'lang_key', 'version', 'state');
 		$query
@@ -91,9 +101,10 @@ class SppagebuilderModelLanguages extends JModelList {
 		return $insertid;
 	}
 
-	public function updateLang($values = array(), $lang_tag = 'en-GB') {
+	public function updateLang($values = array(), $lang_tag = 'en-GB')
+	{
 
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 
 		// Change state to database
 		$query = $db->getQuery(true);

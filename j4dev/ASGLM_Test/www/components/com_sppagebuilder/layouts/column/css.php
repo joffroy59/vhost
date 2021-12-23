@@ -2,16 +2,27 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Uri\Uri;
+
 $options = $displayData['options'];
 $custom_class  = (isset($options->class)) ? ' ' . $options->class : '';
 $data_attr = '';
-$doc = JFactory::getDocument();
+$doc = Factory::getDocument();
+
+//Image lazy load
+$config = ComponentHelper::getParams('com_sppagebuilder');	
+$lazyload = $config->get('lazyloadimg', '0');
+$placeholder = $config->get('lazyplaceholder', '');
+$lazy_bg_image = '';
+$placeholder_bg_image = '';
 
 // Style
 $style ='';
@@ -47,19 +58,31 @@ if(isset($options->boxshadow) && $options->boxshadow){
 if (isset($options->color) && $options->color) $style .= 'color:'.$options->color.';';
 if (isset($options->background) && $options->background) $style .= 'background-color:'.$options->background.';';
 
-if (isset($options->background_image) && $options->background_image) {
+$background_image = (isset($options->background_image) && $options->background_image) ? $options->background_image : '';
+$background_image_src = isset($background_image->src) ? $background_image->src : $background_image;
 
-	if(strpos($options->background_image, "http://") !== false || strpos($options->background_image, "https://") !== false){
-		$style .= 'background-image:url(' . $options->background_image.');';
+if($background_image_src) {
+	if($lazyload){
+		if($placeholder){
+			$placeholder_bg_image .= 'background-image:url(' . $placeholder.');';
+		}
+		if(strpos($background_image_src, "http://") !== false || strpos($background_image_src, "https://") !== false){
+			$lazy_bg_image .= 'background-image:url(' . $background_image_src.');';
+		} else {
+			$lazy_bg_image .= 'background-image:url('. Uri::base(true) . '/' . $background_image_src.');';
+		}
 	} else {
-		$style .= 'background-image:url('. JURI::base(true) . '/' . $options->background_image.');';
+		if(strpos($background_image_src, "http://") !== false || strpos($background_image_src, "https://") !== false){
+			$style .= 'background-image:url(' . $background_image_src.');';
+		} else {
+			$style .= 'background-image:url('. Uri::base(true) . '/' . $background_image_src.');';
+		}
 	}
 
 	if (isset($options->background_repeat) && $options->background_repeat) $style .= 'background-repeat:'.$options->background_repeat.';';
 	if (isset($options->background_size) && $options->background_size) $style .= 'background-size:'.$options->background_size.';';
 	if (isset($options->background_attachment) && $options->background_attachment) $style .= 'background-attachment:'.$options->background_attachment.';';
 	if (isset($options->background_position) && $options->background_position) $style .= 'background-position:'.$options->background_position.';';
-
 }
 
 if($style) {

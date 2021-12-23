@@ -1,5 +1,11 @@
 <?php
+
 namespace RocketTheme\Toolbox\File;
+
+use RuntimeException;
+use function function_exists;
+use function is_array;
+use function is_object;
 
 /**
  * Implements PHP File reader.
@@ -10,50 +16,55 @@ namespace RocketTheme\Toolbox\File;
  */
 class PhpFile extends File
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $extension = '.php';
 
-    /**
-     * @var array|File[]
-     */
+    /** @var static[] */
     static protected $instances = [];
+
+    /**
+     * @param array|null $var
+     * @return array
+     */
+    public function content($var = null)
+    {
+        /** @var array $content */
+        $content = parent::content($var);
+
+        return $content;
+    }
 
     /**
      * Saves PHP file and invalidates opcache.
      *
      * @param  mixed  $data  Optional data to be saved, usually array.
-     * @throws \RuntimeException
+     * @return void
+     * @throws RuntimeException
      */
     public function save($data = null)
     {
         parent::save($data);
 
         // Invalidate configuration file from the opcache.
-        if (\function_exists('opcache_invalidate')) {
-            // PHP 5.5.5+
+        if (null !== $this->filename && function_exists('opcache_invalidate')) {
             @opcache_invalidate($this->filename, true);
-        } elseif (\function_exists('apc_invalidate')) {
-            // APC
-            @apc_invalidate($this->filename);
         }
     }
 
     /**
      * Check contents and make sure it is in correct format.
      *
-     * @param array|object $var
+     * @param mixed $var
      * @return array
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function check($var)
     {
-        if (!(\is_array($var) || \is_object($var))) {
-            throw new \RuntimeException('Provided data is not an array');
+        if (!(is_array($var) || is_object($var))) {
+            throw new RuntimeException('Provided data is not an array');
         }
 
-        return $var;
+        return (array)$var;
     }
 
     /**
@@ -61,7 +72,7 @@ class PhpFile extends File
      *
      * @param array $var
      * @return string
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function encode($var)
     {
@@ -72,16 +83,15 @@ class PhpFile extends File
     /**
      * Method to get an array as an exported string.
      *
-     * @param array $a      The array to get as a string.
-     * @param int   $level  Used internally to indent rows.
-     *
+     * @param array $a The array to get as a string.
+     * @param int $level Used internally to indent rows.
      * @return string
      */
     protected function encodeArray(array $a, $level = 0)
     {
         $r = [];
         foreach ($a as $k => $v) {
-            if (\is_array($v) || \is_object($v)) {
+            if (is_array($v) || is_object($v)) {
                 $r[] = var_export($k, true) . ' => ' . $this->encodeArray((array) $v, $level + 1);
             } else {
                 $r[] = var_export($k, true) . ' => ' . var_export($v, true);
@@ -89,6 +99,7 @@ class PhpFile extends File
         }
 
         $space = str_repeat('    ', $level);
+
         return "[\n    {$space}" . implode(",\n    {$space}", $r) . "\n{$space}]";
     }
 
@@ -100,6 +111,6 @@ class PhpFile extends File
      */
     protected function decode($var)
     {
-        return (array) include $this->filename;
+        return (array)include $this->filename;
     }
 }

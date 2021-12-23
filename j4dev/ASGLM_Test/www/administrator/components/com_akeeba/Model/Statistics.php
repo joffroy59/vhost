@@ -1,34 +1,37 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
+use Akeeba\Backup\Admin\Model\Exceptions\FrozenRecordError;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
-use FOF30\Container\Container;
-use FOF30\Date\Date;
-use FOF30\Model\DataModel\Exception\RecordNotLoaded;
-use FOF30\Model\Model;
-use JFactory;
-use JFile;
-use JLoader;
-use JPagination;
-use JText;
+use FOF40\Container\Container;
+use FOF40\Date\Date;
+use FOF40\Model\DataModel\Exception\RecordNotLoaded;
+use FOF40\Model\Model;
+use Joomla\CMS\Access\Access;
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Pagination\Pagination;
+use Joomla\CMS\User\User;
+use RuntimeException;
 
 class Statistics extends Model
 {
 	/**
 	 * The JPagination object, used in the GUI
 	 *
-	 * @var  JPagination
+	 * @var  Pagination
 	 */
 	private $pagination;
 
@@ -249,7 +252,6 @@ class Statistics extends Model
 		// Get failed backups
 		$filters = [
 			['field' => 'status', 'operand' => '=', 'value' => 'fail'],
-			['field' => 'origin', 'operand' => '<>', 'value' => 'restorepoint'],
 			['field' => 'backupstart', 'operand' => '>', 'value' => $last],
 		];
 
@@ -368,7 +370,7 @@ ENDBODY;
 				$mailer->setBody($email_body);
 				$mailer->Send();
 			}
-			catch (\Exception $e)
+			catch (Exception $e)
 			{
 				// Joomla! 3.5 is written by incompetent bonobos
 			}
@@ -400,15 +402,15 @@ ENDBODY;
 
 		if ((!is_numeric($id)) || ($id <= 0))
 		{
-			throw new RecordNotLoaded(JText::_('COM_AKEEBA_BUADMIN_ERROR_INVALIDID'));
+			throw new RecordNotLoaded(Text::_('COM_AKEEBA_BUADMIN_ERROR_INVALIDID'));
 		}
 
-		// Try to delete files
+		// Try to delete files. This will check (and stop) if any record is a frozen one
 		$this->deleteFile();
 
 		if (!Platform::getInstance()->delete_statistics($id))
 		{
-			throw new \RuntimeException($db->getError(), 500);
+			throw new RuntimeException($db->getError(), 500);
 		}
 
 		return true;
@@ -421,17 +423,21 @@ ENDBODY;
 	 */
 	public function deleteFile()
 	{
-		JLoader::import('joomla.filesystem.file');
-
 		$id = $this->getState('id', 0);
 
 		if ((!is_numeric($id)) || ($id <= 0))
 		{
-			throw new RecordNotLoaded(JText::_('COM_AKEEBA_BUADMIN_ERROR_INVALIDID'));
+			throw new RecordNotLoaded(Text::_('COM_AKEEBA_BUADMIN_ERROR_INVALIDID'));
 		}
 
 		// Get the backup statistics record and the files to delete
 		$stat     = (array) Platform::getInstance()->get_statistics($id);
+
+		if ($stat['frozen'])
+		{
+			throw new FrozenRecordError(Text::_('COM_AKEEBA_BUADMIN_FROZENRECORD_ERROR'));
+		}
+
 		$allFiles = Factory::getStatistics()->get_all_filenames($stat, false);
 
 		// Remove the custom log file if necessary
@@ -456,7 +462,7 @@ ENDBODY;
 
 			if (!$new_status)
 			{
-				$new_status = JFile::delete($filename);
+				$new_status = File::delete($filename);
 			}
 
 			$status = $status ? $new_status : false;
@@ -470,23 +476,19 @@ ENDBODY;
 	 *
 	 * @param   array  $filters  Filters to apply. See Platform::get_statistics_list
 	 *
-	 * @return  JPagination
-	 *
+	 * @return  Pagination
 	 */
 	public function &getPagination($filters = null)
 	{
 		if (empty($this->pagination))
 		{
-			// Import the pagination library
-			JLoader::import('joomla.html.pagination');
-
 			// Prepare pagination values
 			$total      = Platform::getInstance()->get_statistics_count($filters);
 			$limitstart = $this->getState('limitstart', 0);
 			$limit      = $this->getState('limit', 10);
 
 			// Create the pagination object
-			$this->pagination = new JPagination($total, $limitstart, $limit);
+			$this->pagination = new Pagination($total, $limitstart, $limit);
 		}
 
 		return $this->pagination;
@@ -501,6 +503,30 @@ ENDBODY;
 	{
 		$this->container->params->set('show_howtorestoremodal', 0);
 		$this->container->params->save();
+	}
+
+	/**
+	 * Freeze or melt a backup report
+	 *
+	 * @param array $ids        Array of backup IDs that should be updated
+	 * @param int   $freeze     1= freeze, 0= melt
+	 *
+	 * @throws Exception
+	 */
+	public function freezeUnfreezeRecords(array $ids, $freeze)
+	{
+		if (!$ids)
+		{
+			return;
+		}
+
+		$freeze = (int) $freeze;
+
+		foreach ($ids as $id)
+		{
+			// If anything wrong happens, let the exception bubble up, so it will be reported
+			Platform::getInstance()->set_or_update_statistics($id, ['frozen' => $freeze]);
+		}
 	}
 
 	/**
@@ -531,7 +557,7 @@ ENDBODY;
 			{
 				if (!@unlink($logPath))
 				{
-					JFile::delete($logPath);
+					File::delete($logPath);
 				}
 			}
 		}
@@ -541,16 +567,15 @@ ENDBODY;
 	 * Returns the Super Users' email information. If you provide a comma separated $email list we will check that these
 	 * emails do belong to Super Users and that they have not blocked reception of system emails.
 	 *
-	 * @param   null|string  $email  A list of Super Users to email
+	 * @param   null|string  $email  A list of Super Users to email, null for all Super Users
 	 *
-	 * @return  array  The list of Super User emails
+	 * @return  User[]  The list of Super User objects
 	 */
 	private function getSuperUsers($email = null)
 	{
-		// Get a reference to the database object
-		$db = $this->container->db;
-
 		// Convert the email list to an array
+		$emails = [];
+
 		if (!empty($email))
 		{
 			$temp   = explode(',', $email);
@@ -558,110 +583,46 @@ ENDBODY;
 
 			foreach ($temp as $entry)
 			{
-				$entry    = trim($entry);
-				$emails[] = $db->q($entry);
+				$emails[] = trim($entry);
 			}
 
 			$emails = array_unique($emails);
+			$emails = array_map('strtolower', $emails);
 		}
-		else
+
+		// Get all usergroups with Super User access
+		$db     = $this->getContainer()->db;
+		$q      = $db->getQuery(true)
+			->select([$db->qn('id')])
+			->from($db->qn('#__usergroups'));
+		$groups = $db->setQuery($q)->loadColumn();
+
+		// Get the groups that are Super Users
+		$groups = array_filter($groups, function ($gid) {
+			return Access::checkGroup($gid, 'core.admin');
+		});
+
+		$userList = [];
+
+		foreach ($groups as $gid)
 		{
-			$emails = [];
+			$uids = Access::getUsersByGroup($gid);
+
+			array_walk($uids, function ($uid, $index) use (&$userList) {
+				$userList[$uid] = $this->container->platform->getUser($uid);
+			});
 		}
 
-		// Get a list of groups which have Super User privileges
-		$ret = [];
-
-		// Get a list of groups with core.admin (Super User) permissions
-		try
+		if (empty($emails))
 		{
-			$query = $db->getQuery(true)
-				->select($db->qn('rules'))
-				->from($db->qn('#__assets'))
-				->where($db->qn('parent_id') . ' = ' . $db->q(0));
-			$db->setQuery($query, 0, 1);
-			$rulesJSON = $db->loadResult();
-			$rules     = json_decode($rulesJSON, true);
-
-			$rawGroups = $rules['core.admin'];
-			$groups    = [];
-
-			if (empty($rawGroups))
-			{
-				return $ret;
-			}
-
-			foreach ($rawGroups as $g => $enabled)
-			{
-				if ($enabled)
-				{
-					$groups[] = $db->q($g);
-				}
-			}
-
-			if (empty($groups))
-			{
-				return $ret;
-			}
-		}
-		catch (Exception $exc)
-		{
-			return $ret;
+			return $userList;
 		}
 
-		// Get the user IDs of users belonging to the groups with the core.admin (Super User) privilege
-		try
-		{
-			$query = $db->getQuery(true)
-				->select($db->qn('user_id'))
-				->from($db->qn('#__user_usergroup_map'))
-				->where($db->qn('group_id') . ' IN(' . implode(',', $groups) . ')');
-			$db->setQuery($query);
-			$rawUserIDs = $db->loadColumn(0);
+		$userList = array_filter($userList, function (User $user) use ($emails) {
+			return in_array(strtolower($user->email), $emails);
+		});
 
-			if (empty($rawUserIDs))
-			{
-				return $ret;
-			}
-
-			$userIDs = [];
-
-			foreach ($rawUserIDs as $id)
-			{
-				$userIDs[] = $db->q($id);
-			}
-		}
-		catch (Exception $exc)
-		{
-			return $ret;
-		}
-
-		// Get the user information for the Super Users
-		try
-		{
-			$query = $db->getQuery(true)
-				->select([
-					$db->qn('id'),
-					$db->qn('username'),
-					$db->qn('email'),
-				])->from($db->qn('#__users'))
-				->where($db->qn('id') . ' IN(' . implode(',', $userIDs) . ')')
-				->where($db->qn('sendEmail') . ' = ' . $db->q('1'));
-
-			if (!empty($emails))
-			{
-				$query->where($db->qn('email') . 'IN(' . implode(',', $emails) . ')');
-			}
-
-			$db->setQuery($query);
-			$ret = $db->loadObjectList();
-		}
-		catch (Exception $exc)
-		{
-			return $ret;
-		}
-
-		return $ret;
+		return $userList;
 	}
 
 	/**

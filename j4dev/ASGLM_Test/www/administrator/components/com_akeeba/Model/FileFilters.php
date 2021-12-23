@@ -1,20 +1,20 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\Model\Mixin\ExclusionFilter;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF30\Container\Container;
-use FOF30\Model\Model;
+use FOF40\Container\Container;
+use FOF40\Model\Model;
 
 /**
  * File Filters model
@@ -121,6 +121,8 @@ class FileFilters extends Model
 				$result             = $filters->isFilteredExtended($test, $root, 'dir', 'children', $byFilter);
 				$status['skipdirs'] = (!$result) ? 0 : (($byFilter == 'skipdirs') ? 1 : 2);
 
+				$status['link']  = @is_link($directory . '/' . $folder);
+
 				// Add to output array
 				$folders_out[ $folder ] = $status;
 			}
@@ -155,6 +157,7 @@ class FileFilters extends Model
 				$result          = $filters->isFilteredExtended($test, $root, 'file', 'all', $byFilter);
 				$status['files'] = (!$result) ? 0 : (($byFilter == 'files') ? 1 : 2);
 				$status['size']  = $this->formatSize(@filesize($directory . '/' . $file), 1);
+				$status['link']  = @is_link($directory . '/' . $file);
 
 				// Add to output array
 				$files_out[$file] = $status;
@@ -461,7 +464,7 @@ class FileFilters extends Model
 
 		foreach ($uom as $unit => $byteSize)
 		{
-			if (doubleval($bytes) >= $byteSize)
+			if (floatval($bytes) >= $byteSize)
 			{
 				return sprintf($format, $bytes / $byteSize) . ' ' . $unit;
 			}

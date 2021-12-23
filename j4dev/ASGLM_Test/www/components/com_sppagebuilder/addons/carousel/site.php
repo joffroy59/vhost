@@ -2,18 +2,20 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2019 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Layout\FileLayout;
+
 //no direct accees
 defined ('_JEXEC') or die ('Restricted access');
 
-class SppagebuilderAddonCarousel extends SppagebuilderAddons {
+class SppagebuilderAddonCarousel extends SppagebuilderAddons
+{
 
 	public function render() {
-		//Get FontAwesome Version
-		$config = JComponentHelper::getParams('com_sppagebuilder');
-		$font_awesome_version = $config->get('fontawesome_version', '4');
 
 		$settings = $this->addon->settings;
 		$class = (isset($settings->class) && $settings->class) ? ' ' . $settings->class : '';
@@ -43,10 +45,12 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 		if(isset($settings->sp_carousel_item) && count((array) $settings->sp_carousel_item)){
 			foreach ($settings->sp_carousel_item as $key => $value) {
 				$button_url = (isset($value->button_url) && $value->button_url) ? $value->button_url : '';
+				$bg_image = (isset($value->bg) && $value->bg) ? $value->bg : '';
+				$bg_image_src = isset($bg_image->src) ? $bg_image->src : $bg_image;
 	
-				$output   .= '<div class="sppb-item sppb-item-'. $this->addon->id . $key . ' ' . ((isset($value->bg) && $value->bg) ? ' sppb-item-has-bg' : '') . (($key == 0) ? ' active' : '') .'">';
+				$output   .= '<div class="sppb-item sppb-item-'. $this->addon->id . $key . ' ' . ($bg_image_src ? ' sppb-item-has-bg' : '') . (($key == 0) ? ' active' : '') .'">';
 				$alt_text = isset($value->title) ? $value->title : '';
-				$output  .= (isset($value->bg) && $value->bg) ? '<img src="' . $value->bg . '" alt="'.$alt_text.'">' : '';
+				$output  .= $bg_image_src ? '<img src="' . $bg_image_src . '" alt="'.$alt_text.'">' : '';
 
 				$output  .= '<div class="sppb-carousel-item-inner">';
 				$output  .= '<div class="sppb-carousel-caption">';
@@ -68,10 +72,6 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 						$icon_arr = array_filter(explode(' ', $button_icon));
 						if (count($icon_arr) === 1) {
 							$button_icon = 'fa ' . $button_icon;
-						} else if (count($icon_arr) === 2) {
-							if ($font_awesome_version == '4') {
-								$button_icon = 'fa ' . $icon_arr[1];
-							}
 						}
 
 						if($button_icon_position == 'left') {
@@ -96,8 +96,8 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 		$output	.= '</div>';
 
 		if($arrows) {
-			$output	.= '<a href="#sppb-carousel-'. $this->addon->id .'" class="sppb-carousel-arrow left sppb-carousel-control" data-slide="prev" aria-label="'.JText::_('COM_SPPAGEBUILDER_ARIA_PREVIOUS').'"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>';
-			$output	.= '<a href="#sppb-carousel-'. $this->addon->id .'" class="sppb-carousel-arrow right sppb-carousel-control" data-slide="next" aria-label="'.JText::_('COM_SPPAGEBUILDER_ARIA_NEXT').'"><i class="fa fa-chevron-right" aria-hidden="true"></i></a>';
+			$output	.= '<a href="#sppb-carousel-'. $this->addon->id .'" class="sppb-carousel-arrow left sppb-carousel-control" data-slide="prev" aria-label="'.Text::_('COM_SPPAGEBUILDER_ARIA_PREVIOUS').'"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>';
+			$output	.= '<a href="#sppb-carousel-'. $this->addon->id .'" class="sppb-carousel-arrow right sppb-carousel-control" data-slide="next" aria-label="'.Text::_('COM_SPPAGEBUILDER_ARIA_NEXT').'"><i class="fa fa-chevron-right" aria-hidden="true"></i></a>';
 		}
 
 		$output .= '</div>';
@@ -114,7 +114,7 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 		foreach ($this->addon->settings->sp_carousel_item as $key => $value) {
 
 			if(isset($value->button_text)) {
-				$css_path = new JLayoutFile('addon.css.button', $layout_path);
+				$css_path = new FileLayout('addon.css.button', $layout_path);
 				$css .= $css_path->render(array('addon_id' => $addon_id, 'options' => $value, 'id' => 'btn-' . ($this->addon->id + $key) ));
 			}
 
@@ -124,7 +124,7 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 			$title_css .= (isset($value->title_color) && !empty($value->title_color)) ? 'color:' . $value->title_color . ';' : '';
 
 			if(isset($value->title_font_family) && $value->title_font_family) {
-				$font_path = new JLayoutFile('addon.css.fontfamily', $layout_path);
+				$font_path = new FileLayout('addon.css.fontfamily', $layout_path);
 				$font_path->render(array('font'=>$value->title_font_family));
 				$title_css .= 'font-family: ' . $value->title_font_family . ';';
 			}
@@ -171,7 +171,7 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 			$content_css .= (isset($value->content_color) && $value->content_color) ? 'color:' . $value->content_color . ';' : '';
 
 			if(isset($value->content_font_family) && $value->content_font_family) {
-				$font_path = new JLayoutFile('addon.css.fontfamily', $layout_path);
+				$font_path = new FileLayout('addon.css.fontfamily', $layout_path);
 				$font_path->render(array('font'=>$value->content_font_family));
 				$content_css .= 'font-family: ' . $value->content_font_family . ';';
 			}
@@ -214,7 +214,7 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 				$css .= '}';
 			}
 
-			$selector_css = new JLayoutFile('addon.css.selector', $layout_path);
+			$selector_css = new FileLayout('addon.css.selector', $layout_path);
 			$css .= $selector_css->render(
 				array(
 					'options'=>$value,
@@ -222,9 +222,6 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 					'selector'=>'#sppb-item-' . ($this->addon->id . $key)
 				)
 			);
-
-			// echo $css;
-			// die();
 
 			// Tablet CSS
 			$tablet_css = '';
@@ -716,33 +713,22 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 			<# } #>
 			<div class="sppb-carousel-inner {{ data.alignment }}">
 				<#
-				function _isValidIcon(icon, delta=false) {
-					let defaultIcons = "fa-ban";
-					let icon_arr = icon ? icon.split(" ") : "";
-					let iconName = icon_arr.length > 1 ? icon_arr[1] : icon_arr[0];
-					let iconKey = iconName ? iconName.replace(/-/g,"_") : "";
-					if (faIconList.version === 5 && typeof faIconList.missingIcons.f4[iconKey] !== "undefined") {
-					  return delta ? iconName+ " icon is not available in FontAwesome 5" : "fa "+defaultIcons;
-					}
-					if (faIconList.version === 4 && typeof faIconList.missingIcons.f5[iconKey] !== "undefined") {
-					  return delta ? iconName + " icon is not available in FontAwesome 4" : "fa "+defaultIcons;
-					}
-					if (delta) {
-						return false
-					} else {
-						return icon_arr.length === 1 ? "fa "+icon : faIconList.version === 4 ? "fa " + icon_arr[1] : icon;
-					}
-				}
 				_.each(data.sp_carousel_item, function (carousel_item, key){
+					var carouselBg = {}
+					if (typeof carousel_item.bg !== "undefined" && typeof carousel_item.bg.src !== "undefined") {
+						carouselBg = carousel_item.bg
+					} else {
+						carouselBg = {src: carousel_item.bg}
+					}
 					var classNames = (key == 0) ? "active" : "";
-					classNames += (carousel_item.bg) ? " sppb-item-has-bg" : "";
+					classNames += carouselBg.src ? " sppb-item-has-bg" : "";
 					classNames += " sppb-item-"+data.id+""+key;
 				#>
 					<div class="sppb-item {{ classNames }}">
-						<# if(carousel_item.bg && carousel_item.bg.indexOf("http://") == -1 && carousel_item.bg.indexOf("https://") == -1){ #>
-							<img src=\'{{ pagebuilder_base + carousel_item.bg }}\' alt="{{ carousel_item.title }}">
-						<# } else if(carousel_item.bg){ #>
-							<img src=\'{{ carousel_item.bg }}\' alt="{{ carousel_item.title }}">
+						<# if(carouselBg.src && carouselBg.src?.indexOf("http://") == -1 && carouselBg.src?.indexOf("https://") == -1){ #>
+							<img src=\'{{ pagebuilder_base + carouselBg.src }}\' alt="{{ carousel_item.title }}">
+						<# } else if(carouselBg.src){ #>
+							<img src=\'{{ carouselBg.src }}\' alt="{{ carousel_item.title }}">
 						<# } #>
 						<div class="sppb-carousel-item-inner">
 							<div class="sppb-carousel-caption">
@@ -762,17 +748,16 @@ class SppagebuilderAddonCarousel extends SppagebuilderAddons {
 												btnClass += carousel_item.button_block ? " "+carousel_item.button_block : "" ;
 												var button_text = carousel_item.button_text;
 
-												let icon_class = _isValidIcon(carousel_item.button_icon);
-												let icon_name = _isValidIcon(carousel_item.button_icon, true);
+												let icon_arr = (typeof carousel_item.button_icon !== "undefined" && carousel_item.button_icon) ? carousel_item.button_icon.split(" ") : "";
+												let icon_name = icon_arr.length === 1 ? "fa "+carousel_item.button_icon : carousel_item.button_icon;
 
 												if(carousel_item.button_icon_position == "left"){
-													button_text = (carousel_item.button_icon) ? \'<i class="\'+icon_class+\'"></i> \'+carousel_item.button_text : carousel_item.button_text ;
+													button_text = (carousel_item.button_icon) ? \'<i class="\'+icon_name+\'"></i> \'+carousel_item.button_text : carousel_item.button_text ;
 												}else{
-													button_text = (carousel_item.button_icon) ? carousel_item.button_text+\' <i class="\'+icon_class+\'"></i>\' : carousel_item.button_text ;
+													button_text = (carousel_item.button_icon) ? carousel_item.button_text+\' <i class="\'+icon_name+\'"></i>\' : carousel_item.button_text ;
 												}
 											#>
 											<a href=\'{{ carousel_item.button_url }}\' target="{{ carousel_item.button_target }}" id="btn-{{ data.id + "" + key}}" class="sppb-btn{{ btnClass }}">{{{ button_text }}}</a>
-											<# if(icon_name) { #> <div class="sppb-icon-not-found">{{icon_name}}</div> <# } #>
 										<# } #>
 									<# } #>
 								</div>

@@ -7,7 +7,7 @@
 	<license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
 	<authorEmail>alex3493@yandex.ru</authorEmail>
 	<authorUrl>smartcalc.es</authorUrl>
-	<version>3.4.7</version>
+	<version>3.4.9</version>
 	<description>MOD_SMARTCOUNTDOWN3_XML_DESCRIPTION</description>
 	<files>
 		<filename module="mod_smartcountdown3">mod_smartcountdown3.php</filename>
@@ -23,7 +23,7 @@
 		<filename>index.html</filename>
 		<filename>mod_smartcountdown3.xml</filename>
 	</files>
-	
+
 	<config>
 		<fields name="params">
 			<fieldset name="basic">
@@ -56,6 +56,7 @@
 						<option value="0:86400">MOD_SMARTCOUNTDOWN3_SHOW_COUNTUP_86400</option>
 					</group>
 					<option value="-1:-2">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_TO_END</option>
+					<option value="0:-2">MOD_SMARTCOUNTDOWN3_SHOW_COUNTDOWN_TO_END_ONLY</option>
 				</field>
 				<field name="title_before_down" type="textarea" class="input-xlarge"
 					label="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_DOWN_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_BEFORE_DOWN_DESC"
@@ -77,7 +78,7 @@
 				<field name="preview0" type="preview"
 					label="MOD_SMARTCOUNTDOWN3_PREVIEW_LABEL" description="MOD_SMARTCOUNTDOWN3_PREVIEW_DESC" />
 			</fieldset>
-			
+
 			<fieldset name="layout" addfieldpath="/modules/mod_smartcountdown3/fields">
 				<field name="units" type="checkboxes" checked="years,months,days,hours,minutes,seconds" class="checkbox inline"
 					label="MOD_SMARTCOUNTDOWN3_UNITS_LABEL" description="MOD_SMARTCOUNTDOWN3_UNITS_DESC">
@@ -115,7 +116,7 @@
 				<field name="labels_size" type="integer"  class="input-mini"
 					label="MOD_SMARTCOUNTDOWN3_LABELS_SIZE_LABEL" description="MOD_SMARTCOUNTDOWN3_LABELS_SIZE_DESC"
 					first="10" last="50" step="1" default="14" />
-					
+
 				<field name="units_spacing_horz" type="list"
 					label="MOD_SMARTCOUNTDOWN3_UNITS_SPACING_HORZ_LABEL" description="MOD_SMARTCOUNTDOWN3_UNITS_SPACING_HORZ_DESC"
 					default="">
@@ -134,11 +135,11 @@
 					<option value="0.5em 0">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_NORMAL</option>
 					<option value="0.25em 0">MOD_SMARTCOUNTDOWN3_UNITS_SPACING_CONDENSED</option>
 				</field>
-				
+
 				<field name="preview" type="preview"
 					label="MOD_SMARTCOUNTDOWN3_PREVIEW_LABEL" description="MOD_SMARTCOUNTDOWN3_PREVIEW_DESC" />
 			</fieldset>
-			
+
 			<fieldset name="override_layout" description="MOD_SMARTCOUNTDOWN3_OVERRIDE_LAYOUT_DESC">
 				<field name="counter_layout" type="list"
 					label="MOD_SMARTCOUNTDOWN3_COUNTER_LAYOUT_LABEL" description="MOD_SMARTCOUNTDOWN3_COUNTER_LAYOUT_DESC"
@@ -154,7 +155,7 @@
 					<option value="vert">MOD_SMARTCOUNTDOWN3_EVENT_TEXT_POS_VERT</option>
 					<option value="horz">MOD_SMARTCOUNTDOWN3_EVENT_TEXT_POS_HORZ</option>
 				</field>
-				<field name="lables_pos" type="list"
+				<field name="labels_pos" type="list"
 					label="MOD_SMARTCOUNTDOWN3_LABELS_POS_LABEL" description="MOD_SMARTCOUNTDOWN3_LABELS_POS_DESC"
 					default="">
 					<option value="">MOD_SMARTCOUNTDOWN3_LAYOUT_OVERRIDE_NONE</option>
@@ -201,7 +202,7 @@
 				<field name="preview2" type="preview"
 					label="MOD_SMARTCOUNTDOWN3_PREVIEW_LABEL" description="MOD_SMARTCOUNTDOWN3_PREVIEW_DESC" />
 			</fieldset>
-			
+
 			<fieldset name="redirection">
 				<field name="counter_clickable" type="list" default="0"
 					label="MOD_SMARTCOUNTDOWN3_COUNTER_CLICKABLE_LABEL" description="MOD_SMARTCOUNTDOWN3_COUNTER_CLICKABLE_DESC"
@@ -227,7 +228,7 @@
 				<field name="event_goto_url" type="url" default="" filter="url" size="50" class="input-xxlarge"
 					label="MOD_SMARTCOUNTDOWN3_EVENT_GOTO_URL_LABEL" description="MOD_SMARTCOUNTDOWN3_EVENT_GOTO_URL_DESC" />
 			</fieldset>
-			
+
 			<fieldset name="styles">
 				<field name="module_style" type="text"
 					label="MOD_SMARTCOUNTDOWN3_MODULE_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_MODULE_STYLE_DESC"
@@ -237,7 +238,7 @@
 					size="50" class="inputbox input-xxlarge" />
 				<field name="title_after_style" type="text"
 					label="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_TITLE_AFTER_STYLE_DESC"
-					size="50" class="inputbox input-xxlarge" />	
+					size="50" class="inputbox input-xxlarge" />
 				<field name="digits_style" type="text"
 					label="MOD_SMARTCOUNTDOWN3_DIGITS_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_DIGITS_STYLE_DESC"
 					size="50" class="inputbox input-xxlarge" />
@@ -245,7 +246,7 @@
 					label="MOD_SMARTCOUNTDOWN3_LABELS_STYLE_LABEL" description="MOD_SMARTCOUNTDOWN3_LABELS_STYLE_DESC"
 					size="50" class="inputbox input-xxlarge" />
 			</fieldset>
-			
+
 			<fieldset name="advanced">
 				<field name="moduleclass_sfx" type="text"
 					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL" description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />

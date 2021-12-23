@@ -3,15 +3,15 @@
 * @file
 * @brief    sigplus Image Gallery Plus image processing library list control
 * @author   Levente Hunyadi
-* @version  1.4.2
-* @remarks  Copyright (C) 2009-2010 Levente Hunyadi
-* @remarks  Licensed under GNU/GPLv3, see http://www.gnu.org/licenses/gpl-3.0.html
-* @see      http://hunyadi.info.hu/projects/sigplus
+* @version  1.5.0
+* @remarks  Copyright (C) 2009-2017 Levente Hunyadi
+* @remarks  Licensed under GNU/GPLv3, see https://www.gnu.org/licenses/gpl-3.0.html
+* @see      https://hunyadi.info.hu/projects/sigplus
 */
 
 /*
 * sigplus Image Gallery Plus plug-in for Joomla
-* Copyright 2009-2010 Levente Hunyadi
+* Copyright 2009-2017 Levente Hunyadi
 *
 * sigplus is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,45 +24,17 @@
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 // Check to ensure this file is within the rest of the framework
 defined('JPATH_BASE') or die();
 
-if (!function_exists('is_gd_supported')) {
-	function is_gd_supported() {
-		$supported = extension_loaded('gd');
-		if (!$supported) {
-			return false;
-		}
-		
-		$supported = function_exists('gd_info');  // might fail in rare cases even if GD is available
-		if (!$supported) {
-			return false;
-		}
-		$gd = gd_info();
-		$supported = isset($gd['GIF Read Support']) && $gd['GIF Read Support']
-				&& isset($gd['GIF Create Support']) && $gd['GIF Create Support']
-				&& (isset($gd['JPG Support']) && $gd['JPG Support'] || isset($gd['JPEG Support']) && $gd['JPEG Support'])
-				&& isset($gd['PNG Support']) && $gd['PNG Support'];
-		return $supported;
-	}
-}
-
-if (!function_exists('is_imagick_supported')) {
-	function is_imagick_supported() {
-		$supported = extension_loaded('imagick');
-		if (!$supported) {
-			return false;
-		}
-
-		$supported = class_exists('Imagick');
-		return $supported;
-	}
-}
+require_once dirname(__FILE__).DIRECTORY_SEPARATOR.'constants.php';
 
 jimport('joomla.form.formfield');
+
+require_once JPATH_ROOT.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR.'content'.DIRECTORY_SEPARATOR.SIGPLUS_PLUGIN_FOLDER.DIRECTORY_SEPARATOR.'core'.DIRECTORY_SEPARATOR.'librarian.php';
 
 /**
 * Renders a control that lists all supported image processing libraries.
@@ -106,14 +78,17 @@ class JFormFieldImageLibraryList extends JFormField {
 		$items = array();
 		foreach ($this->element->option as $o) {
 			$val = (string)$o['value'];  // attribute "value"
-			$textkey = (string)$o;  // element content
+			$textkey = (string)$o;  // element text content
 			$items[$val] = $textkey;
 		}
 
 		// test which image processing libraries are supported
 		$supported = array();
 		if (is_gd_supported()) {
-			$supported['gd'] = 'GD';
+			$supported['gd'] = 'GD';  // localized when control HTML code is generated
+		}
+		if (is_gmagick_supported()) {
+			$supported['gmagick'] = 'GraphicsMagick';
 		}
 		if (is_imagick_supported()) {
 			$supported['imagick'] = 'ImageMagick';

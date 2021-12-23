@@ -1,46 +1,71 @@
 <?php
 /**
- * @package SP Page Builder
- * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2015 JoomShaper
+ * @package SP_Page_Builder
+ * @author JoomShaper <support@joomshaper.com>
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper <http://www.joomshaper.com>
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
-*/
-//no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+ */
+// No direct accees
+defined('_JEXEC') or die('restricted aceess');
 
-jimport('joomla.application.component.modelitem');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Multilanguage;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Model\ItemModel;
+use Joomla\CMS\Table\Table;
 
+JLoader::register('SppagebuilderHelperRoute', JPATH_ROOT . '/components/com_sppagebuilder/helpers/route.php');
 
-class SppagebuilderModelPage extends JModelItem
+/**
+ * Page Builder Page Model class
+ *
+ * @since 1.0.0
+ */
+class SppagebuilderModelPage extends ItemModel
 {
-
 	protected $_context = 'com_sppagebuilder.page';
 
 
+	/**
+	 * Populate State function
+	 *
+	 * @return void
+	 *
+	 * @since 1.0.0
+	 */
 	protected function populateState()
 	{
-		$app = JFactory::getApplication('site');
+		$app = Factory::getApplication('site');
 
 		$pageId = $app->input->getInt('id');
 		$this->setState('page.id', $pageId);
 
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 
 		if ((!$user->authorise('core.edit.state', 'com_sppagebuilder')) && (!$user->authorise('core.edit', 'com_sppagebuilder')))
 		{
 			$this->setState('filter.published', 1);
 		}
 
-		$this->setState('filter.language', JLanguageMultilang::isEnabled());
+		$this->setState('filter.language', Multilanguage::isEnabled());
 	}
 
+	/**
+	 * Get Item function
+	 *
+	 * @param	int $pageId	page id
+	 *
+	 * @return mixed
+	 *
+	 * @since 1.0.0
+	 */
 	public function getItem( $pageId = null )
 	{
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 
-		$pageId = (!empty($pageId))? $pageId : (int)$this->getState('page.id');
+		$pageId = (!empty($pageId)) ? $pageId : (int) $this->getState('page.id');
 
-		if ( $this->_item == null )
+		if ($this->_item == null)
 		{
 			$this->_item = array();
 		}
@@ -56,7 +81,7 @@ class SppagebuilderModelPage extends JModelItem
 					->where('a.id = ' . (int) $pageId);
 
 				$query->select('l.title AS language_title')
-					->leftJoin( $db->quoteName('#__languages') . ' AS l ON l.lang_code = a.language');
+					->leftJoin($db->quoteName('#__languages') . ' AS l ON l.lang_code = a.language');
 
 				$query->select('ua.name AS author_name')
 					->leftJoin('#__users AS ua ON ua.id = a.created_by');
@@ -75,32 +100,41 @@ class SppagebuilderModelPage extends JModelItem
 
 				if ($this->getState('filter.language'))
 				{
-					$query->where('a.language in (' . $db->quote(JFactory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')');
+					$query->where('a.language in (' . $db->quote(Factory::getLanguage()->getTag()) . ',' . $db->quote('*') . ')');
 				}
 
 				$db->setQuery($query);
 				$data = $db->loadObject();
 
-				if (empty($data)) {
-					return JError::raiseError(404, JText::_('COM_SPPAGEBUILDER_ERROR_PAGE_NOT_FOUND'));
+				if (empty($data))
+				{
+					throw new Exception(Text::_('COM_SPPAGEBUILDER_ERROR_PAGE_NOT_FOUND'), 404);
 				}
 
-				if ($access = $this->getState('filter.access')) {
+				if ($access = $this->getState('filter.access'))
+				{
 					$data->access_view = true;
-				}else{
-					$user = JFactory::getUser();
+				}
+				else
+				{
+					$user = Factory::getUser();
 					$groups = $user->getAuthorisedViewLevels();
 
-					 $data->access_view = in_array($data->access, $groups);
+					$data->access_view = in_array($data->access, $groups);
 				}
+
+				$data->link = SppagebuilderHelperRoute::getPageRoute($data->id, $data->language);
+				$data->formLink = SppagebuilderHelperRoute::getFormRoute($data->id, $data->language);
 
 				$this->_item[$pageId] = $data;
 			}
 			catch (Exception $e)
 			{
-				if ($e->getCode() == 404 )
+				if ($e->getCode() == 404)
 				{
-					JError::raiseError(404, $e->getMessage());
+					$app = Factory::getApplication();
+					$app->enqueueMessage($e->getMessage(), 'error');
+					$app->setHeader('status', 404, true);
 				}
 				else
 				{
@@ -113,56 +147,6 @@ class SppagebuilderModelPage extends JModelItem
 		return $this->_item[$pageId];
 	}
 
-	// Get form
-	public function getForm($data = array(), $loadData = true)
-	{
-		// Get the form.
-		$form = $this->loadForm('com_users.profile', 'profile', array('control' => 'jform', 'load_data' => $loadData));
-
-		if (empty($form))
-		{
-			return false;
-		}
-
-		// Check for username compliance and parameter set
-		$isUsernameCompliant = true;
-
-		if ($this->loadFormData()->username)
-		{
-			$username = $this->loadFormData()->username;
-			$isUsernameCompliant  = !(preg_match('#[<>"\'%;()&\\\\]|\\.\\./#', $username) || strlen(utf8_decode($username)) < 2
-				|| trim($username) != $username);
-		}
-
-		$this->setState('user.username.compliant', $isUsernameCompliant);
-
-		if (!JComponentHelper::getParams('com_users')->get('change_login_name') && $isUsernameCompliant)
-		{
-			$form->setFieldAttribute('username', 'class', '');
-			$form->setFieldAttribute('username', 'filter', '');
-			$form->setFieldAttribute('username', 'description', 'COM_USERS_PROFILE_NOCHANGE_USERNAME_DESC');
-			$form->setFieldAttribute('username', 'validate', '');
-			$form->setFieldAttribute('username', 'message', '');
-			$form->setFieldAttribute('username', 'readonly', 'true');
-			$form->setFieldAttribute('username', 'required', 'false');
-		}
-
-		// When multilanguage is set, a user's default site language should also be a Content Language
-		if (JLanguageMultilang::isEnabled())
-		{
-			$form->setFieldAttribute('language', 'type', 'frontend_language', 'params');
-		}
-
-		// If the user needs to change their password, mark the password fields as required
-		if (JFactory::getUser()->requireReset)
-		{
-			$form->setFieldAttribute('password1', 'required', 'true');
-			$form->setFieldAttribute('password2', 'required', 'true');
-		}
-
-		return $form;
-	}
-
 	/**
 	 * Increment the hit counter for the page.
 	 *
@@ -173,55 +157,84 @@ class SppagebuilderModelPage extends JModelItem
 	public function hit($pk = 0)
 	{
 		$pk = (!empty($pk)) ? $pk : (int) $this->getState('page.id');
-		$table = JTable::getInstance('Page', 'SppagebuilderTable');
+		$table = Table::getInstance('Page', 'SppagebuilderTable');
 		$table->load($pk);
 		$table->hit($pk);
 
 		return true;
 	}
 
-	public function getMySections() {
-      $db = JFactory::getDbo();
-      $query = $db->getQuery(true);
-      $query->select($db->quoteName(array('id', 'title', 'section')));
-      $query->from($db->quoteName('#__sppagebuilder_sections'));
-      //$query->where($db->quoteName('profile_key') . ' LIKE '. $db->quote('\'custom.%\''));
-      $query->order('id ASC');
-      $db->setQuery($query);
-      $results = $db->loadObjectList();
-      return json_encode($results);
-    }
+	/**
+	 * Get saved section from database function
+	 *
+	 * @return mixed
+	 *
+	 * @since 1.0.0
+	 */
+	public function getMySections()
+	{
+		$db = Factory::getDbo();
+		$query = $db->getQuery(true);
+		$query->select($db->quoteName(array('id', 'title', 'section')));
+		$query->from($db->quoteName('#__sppagebuilder_sections'));
+		$query->order('id ASC');
+		$db->setQuery($query);
 
-    public function deleteSection($id){
-      $db = JFactory::getDbo();
+		$results = $db->loadObjectList();
 
-      $query = $db->getQuery(true);
+		return json_encode($results);
+	}
 
-      // delete all custom keys for user 1001.
-      $conditions = array(
-          $db->quoteName('id') . ' = '.$id
-      );
+	/**
+	 * Delete saved section from database.
+	 *
+	 * @param	string $id	Section Id.
+	 *
+	 * @return mixed
+	 *
+	 * @since 1.0.0
+	 */
+	public function deleteSection($id)
+	{
+		$db = Factory::getDbo();
 
-      $query->delete($db->quoteName('#__sppagebuilder_sections'));
-      $query->where($conditions);
+		$query = $db->getQuery(true);
 
-      $db->setQuery($query);
+		// Delete all custom keys for user 1001.
+		$conditions = array(
+		  $db->quoteName('id') . ' = ' . $id
+		);
 
-      return $db->execute();
-    }
+		$query->delete($db->quoteName('#__sppagebuilder_sections'));
+		$query->where($conditions);
 
-    public function saveSection($title, $section){
-      $db = JFactory::getDbo();
-      $user = JFactory::getUser();
-      $obj = new stdClass();
-      $obj->title = $title;
-      $obj->section = $section;
-      $obj->created = JFactory::getDate()->toSql();
-      $obj->created_by = $user->get('id');
+		$db->setQuery($query);
 
-      $db->insertObject('#__sppagebuilder_sections', $obj);
+		return $db->execute();
+	}
 
-      return $db->insertid();
-    }
+	/**
+	 * Save Section function
+	 *
+	 * @param	string $title		Title
+	 * @param	string $section		Section
+	 *
+	 * @return	mixed
+	 * @since 1.0.0
+	 */
+	public function saveSection($title, $section)
+	{
+		$db = Factory::getDbo();
+		$user = Factory::getUser();
+		$obj = new stdClass;
+		$obj->title = $title;
+		$obj->section = $section;
+		$obj->created = Factory::getDate()->toSql();
+		$obj->created_by = $user->get('id');
+
+		$db->insertObject('#__sppagebuilder_sections', $obj);
+
+		return $db->insertid();
+	}
 
 }

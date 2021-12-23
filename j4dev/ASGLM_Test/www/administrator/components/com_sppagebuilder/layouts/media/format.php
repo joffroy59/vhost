@@ -1,10 +1,22 @@
 <?php
+/**
+ * @package SP Page Builder
+ * @author JoomShaper http://www.joomshaper.com
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
+ * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
+ */
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Uri\Uri;
+
+//no direct accees
 defined('_JEXEC') or die();
 
 $media = '';
 $item = $displayData['media'];
-$ext = JFile::getExt($item->path);
-$app = JFactory::getApplication();
+$ext = File::getExt($item->path);
+$app = Factory::getApplication();
 $support = $app->input->post->get('support', 'image', 'STRING');
 $filename = $item->title . '.' . $ext;
 
@@ -26,24 +38,22 @@ if(!$innerHTML) {
 	if($support == 'all') {
 		$class = ' sp-pagebuilder-media-supported';
 	}
-	$media .= '<li class="sp-pagebuilder-media-item' . $class . ' sp-pagebuilder-media-type-' . $item->type . '" data-id="' . $item->id . '" data-type="' . $item->type . '" data-src="'. JURI::root(true) . '/' . $item->path .'" data-path="'. $item->path .'">';
+	$media .= '<li class="sp-pagebuilder-media-item' . $class . ' sp-pagebuilder-media-type-' . $item->type . '" data-id="' . $item->id . '" data-type="' . $item->type . '" data-src="'. Uri::root(true) . '/' . $item->path .'" data-path="'. $item->path .'">';
 }
 
 if($item->type == 'image') {
-	$media .= '<div>';
-	$media .= '<div>';
-	$media .= '<div>';
-	$media .= '<div>';
+
 	if(isset($item->thumb) && $item->thumb) {
-		$media .= '<img title="'. $filename .'" src="'. JURI::root(true) . '/' . $item->thumb .'">';
+		$thumbnail = Uri::root(true) . '/' . $item->thumb;
 	} else {
-		$media .= '<img title="'. $filename .'" src="'. JURI::root(true) . '/' . $item->path .'">';
+		$thumbnail = Uri::root(true) . '/' . $item->path;
 	}
+
+	$media .= '<div class="sp-pagebuilder-media-item-image">';
+	$media .= '<div title="'.$filename.'" class="sp-pagebuilder-media-title">' . $filename .'</div>';
+	$media .= '<div class="sp-pagebuilder-media-item-thumbnail" style="background-image: url('. $thumbnail .');"></div>';
 	$media .= '</div>';
-	$media .= '</div>';
-	$media .= '</div>';
-	$media .= '<span title="'.$filename.'" class="sp-pagebuilder-media-title"><span><i class="fa fa-picture-o"></i> ' . $filename .'</span></span>';
-	$media .= '</div>';
+
 } else {
 
 	if($item->type == 'video') {
@@ -83,20 +93,12 @@ if($item->type == 'image') {
 			$icon_class = 'file-archive-o';
 		}
 	}
-	$media .= '<div>';
-	$media .= '<div>';
-	$media .= '<div>';
-	$media .= '<div>';
-	$media .= '<div>';
-	$media .= '<div class="sp-pagebuilder-media-'.$box_class.'">';
-	$media .= '<i title="'.$filename.'" class="fa fa-'.$icon_class.'"></i>';
+
+	$media .= '<div class="sp-pagebuilder-media-item-'. $box_class .'">';
+	$media .= '<div title="'.$filename.'" class="sp-pagebuilder-media-title">' . $filename .'</div>';
+	$media .= '<div class="sp-pagebuilder-media-item-preview"><i class="fa fa-'.$icon_class.'" area-hidden="true"></i></div>';
 	$media .= '</div>';
-	$media .= '</div>';
-	$media .= '</div>';
-	$media .= '</div>';
-	$media .= '</div>';
-	$media .= '<span title="'.$filename.'" class="sp-pagebuilder-media-title"><span><i class="fa fa-'.$icon_class.'"></i> ' . $filename .'</span></span>';
-	$media .= '</div>';
+
 }
 
 if(!$innerHTML) {

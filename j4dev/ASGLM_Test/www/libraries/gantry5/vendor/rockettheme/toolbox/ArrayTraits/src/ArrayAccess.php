@@ -1,4 +1,5 @@
 <?php
+
 namespace RocketTheme\Toolbox\ArrayTraits;
 
 /**
@@ -7,17 +8,16 @@ namespace RocketTheme\Toolbox\ArrayTraits;
  * @package RocketTheme\Toolbox\ArrayTraits
  * @author RocketTheme
  * @license MIT
- *
- * @property array $items
  */
 trait ArrayAccess
 {
     /**
-     * Whether or not an offset exists.
+     * Tests if an offset exists.
      *
-     * @param mixed $offset  An offset to check for.
-     * @return bool          Returns TRUE on success or FALSE on failure.
+     * @param string|int $offset An offset to check for.
+     * @return bool Returns TRUE on success or FALSE on failure.
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return isset($this->items[$offset]);
@@ -26,9 +26,10 @@ trait ArrayAccess
     /**
      * Returns the value at specified offset.
      *
-     * @param mixed $offset  The offset to retrieve.
-     * @return mixed         Can return all value types.
+     * @param string|int $offset The offset to retrieve.
+     * @return mixed Can return all value types.
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return isset($this->items[$offset]) ? $this->items[$offset] : null;
@@ -37,9 +38,11 @@ trait ArrayAccess
     /**
      * Assigns a value to the specified offset.
      *
-     * @param mixed $offset  The offset to assign the value to.
-     * @param mixed $value   The value to set.
+     * @param string|int|null $offset The offset to assign the value to.
+     * @param mixed $value The value to set.
+     * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         if (null === $offset) {
@@ -52,12 +55,14 @@ trait ArrayAccess
     /**
      * Unsets an offset.
      *
-     * @param mixed $offset  The offset to unset.
+     * @param string|int $offset  The offset to unset.
+     * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         // Hack to make Iterator trait work together with unset.
-        if (isset($this->iteratorUnset) && $offset == key($this->items)) {
+        if (isset($this->iteratorUnset) && (string)$offset === (string)key($this->items)) {
             $this->iteratorUnset = true;
         }
 

@@ -2,16 +2,21 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Controller\BaseController;
+
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
-jimport('joomla.application.component.controller');
-jimport('joomla.filesystem.folder');
 
-class SppagebuilderController extends JControllerLegacy {
+class SppagebuilderController extends BaseController {
 
 	protected $default_view = 'pages';
 
@@ -20,10 +25,10 @@ class SppagebuilderController extends JControllerLegacy {
 		$layout = $this->input->get('layout', 'pages');
 		$id     = $this->input->getInt('id');
 
-		if ($view == 'page' && $layout == 'edit' && !$this->checkEditId('com_sppagebuilder.edit.page', $id)) {
-			$this->setError(JText::sprintf('JLIB_APPLICATION_ERROR_UNHELD_ID', $id));
-			$this->setMessage($this->getError(), 'error');
-			$this->setRedirect(JRoute::_('index.php?option=com_sppagebuilder&view=pages', false));
+		if ($view == 'page' && $layout == 'edit' && !$this->checkEditId('com_sppagebuilder.edit.page', $id))
+		{
+			$this->setMessage(Text::sprintf('JLIB_APPLICATION_ERROR_UNHELD_ID', $id), 'error');
+			$this->setRedirect(Route::_('index.php?option=com_sppagebuilder&view=pages', false));
 
 			return false;
 		}
@@ -33,14 +38,17 @@ class SppagebuilderController extends JControllerLegacy {
 	
 	public function resetcss() {
 		$css_folder_path = JPATH_ROOT . '/media/com_sppagebuilder/css';
-		if(JFolder::exists($css_folder_path)) {
-			JFolder::delete($css_folder_path);
+
+		if (Folder::exists($css_folder_path))
+		{
+			Folder::delete($css_folder_path);
 		}
+		
 		die();
 	}
 
 	public function export(){
-		$input  = JFactory::getApplication()->input;
+		$input  = Factory::getApplication()->input;
 		$template = $input->get('template','[]','RAW');
 		$filename = 'template'. rand(10000,99999);
 

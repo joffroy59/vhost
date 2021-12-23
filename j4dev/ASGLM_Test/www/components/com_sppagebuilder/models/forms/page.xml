@@ -4,7 +4,7 @@
 		<field name="title" type="text" label="JGLOBAL_TITLE" size="40" class="sp-pagebuilder-form-control" default="" required="true" />
 		<field name="id" type="hidden" />
 		<field name="text" id="sptext" type="hidden" filter="raw" />
-		<field name="catid" type="categoryedit" extension="com_sppagebuilder" label="COM_SPPAGEBUILDER_CATEGORY" addfieldpath="/administrator/components/com_categories/models/fields">
+		<field name="catid" type="categoryedit" extension="com_sppagebuilder" label="COM_SPPAGEBUILDER_CATEGORY" addfieldpath="/administrator/components/com_sppagebuilder/models/fields">
 			<option value="0">COM_SPPAGEBUILDER_SELECT_CATEGORY</option>
 		</field>
 

@@ -229,7 +229,7 @@ define(['jquery', 'fab/element', 'fab/encoder', 'fab/fabrik', 'fab/autocomplete-
          */
         _addOption: function (opt, l, v, rowOpt) {
             var sel = typeOf(this.options.value) === 'array' ?
-                    this.options.value : Array.from(this.options.value),
+                    this.options.value : Array.mfrom(this.options.value),
                 i = opt.getElement('input'),
                 subOpts = this.getSubOptions(),
                 subOptsRows = this.getSubOptsRow(),
@@ -384,17 +384,30 @@ define(['jquery', 'fab/element', 'fab/encoder', 'fab/fabrik', 'fab/autocomplete-
                     json.each(function (o) {
                         jsonValues.push(o.value);
                         if (!existingValues.contains(o.value) && o.value !== null) {
+                            if (o.selected) {
+                                self.options.value = o.value;
+                                changed = true;
+                            }
                             sel = self.options.value === o.value;
+                            if (sel && self.activePopUp) {
+                                changed = true;
+                            }
                             self.addOption(o.value, o.text, sel);
-                            changed = true;
+                        }
+                        else {
+                            if (o.selected) {
+                                if (self.options.value !== o.value) {
+                                    changed = true;
+                                    self.update(o.value);
+                                }
+                            }
                         }
                     });
 
                     existingValues.each(function (ev) {
                         if (!jsonValues.contains(ev)) {
-                            sel = self.getValue() === ev;
+                            sel = changed = self.getValue() === ev;
                             self.removeOption(ev, sel);
-                            changed = true;
                         }
                     });
 

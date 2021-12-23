@@ -1,5 +1,10 @@
 <?php
+
 namespace RocketTheme\Toolbox\File;
+
+use BadMethodCallException;
+use RuntimeException;
+use function strlen;
 
 /**
  * Implements Gettext Mo File reader (readonly).
@@ -10,20 +15,31 @@ namespace RocketTheme\Toolbox\File;
  */
 class MoFile extends File
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $extension = '.mo';
-
+    /** @var int */
     protected $pos = 0;
+    /** @var string */
     protected $str;
+    /** @var int */
     protected $len;
+    /** @var string */
     protected $endian;
 
-    /**
-     * @var array|File[]
-     */
+    /** @var static[] */
     static protected $instances = [];
+
+    /**
+     * @param array|null $var
+     * @return array
+     */
+    public function content($var = null)
+    {
+        /** @var array $content */
+        $content = parent::content($var);
+
+        return $content;
+    }
 
     /**
      * File can never be written.
@@ -38,11 +54,13 @@ class MoFile extends File
     /**
      * Prevent saving file.
      *
-     * @throws \BadMethodCallException
+     * @param mixed $data
+     * @return void
+     * @throws BadMethodCallException
      */
     public function save($data = null)
     {
-        throw new \BadMethodCallException('save() not supported for .mo files.');
+        throw new BadMethodCallException('save() not supported for .mo files.');
     }
 
     /**
@@ -56,15 +74,15 @@ class MoFile extends File
     }
 
     /**
-     * @param $var
+     * @param string $var
      * @return array
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function decode($var)
     {
         $this->endian = 'V';
         $this->str = $var;
-        $this->len = \strlen($var);
+        $this->len = strlen($var);
 
         $magic = $this->readInt() & 0xffffffff;
 
@@ -75,7 +93,7 @@ class MoFile extends File
             // Big endian.
             $this->endian = 'N';
         } else {
-            throw new \RuntimeException('Not a Gettext file (.mo).');
+            throw new RuntimeException('Not a Gettext file (.mo).');
         }
 
         // Skip revision number.
@@ -87,11 +105,19 @@ class MoFile extends File
         // Offset of translation table.
         $translations = $this->readInt();
 
+        if ($originals === false || $translations === false) {
+            throw new RuntimeException('Bad Gettext file.');
+        }
+
         // Each table consists of string length and offset of the string.
         $this->seek($originals);
         $table_originals = $this->readIntArray($total * 2);
         $this->seek($translations);
         $table_translations = $this->readIntArray($total * 2);
+
+        if ($table_originals === false || $table_translations === false) {
+            throw new RuntimeException('Bad Gettext file.');
+        }
 
         $items = [];
         for ($i = 0; $i < $total; $i++) {
@@ -113,48 +139,58 @@ class MoFile extends File
     }
 
     /**
-     * @return int
+     * @return int|false
      */
     protected function readInt()
     {
         $read = $this->read(4);
-
         if ($read === false) {
             return false;
         }
 
         $read = unpack($this->endian, $read);
+        if ($read === false) {
+            return false;
+        }
 
         return array_shift($read);
     }
 
     /**
-     * @param $count
-     * @return array
+     * @param int $count
+     * @return array|false
      */
     protected function readIntArray($count)
     {
-        return unpack($this->endian . $count, $this->read(4 * $count));
+        $read = $this->read(4 * $count);
+
+        return is_string($read) ? unpack($this->endian . (string)$count, $read) : false;
     }
 
     /**
-     * @param $bytes
-     * @return string
+     * @param int $bytes
+     * @return string|false
      */
     private function read($bytes)
     {
         $data = substr($this->str, $this->pos, $bytes);
         $this->seek($this->pos + $bytes);
+
+        if (strlen($data) < $bytes) {
+            return false;
+        }
+
         return $data;
     }
 
     /**
-     * @param $pos
-     * @return mixed
+     * @param int $pos
+     * @return int
      */
     private function seek($pos)
     {
         $this->pos = $pos < $this->len ? $pos : $this->len;
+
         return $this->pos;
     }
 }

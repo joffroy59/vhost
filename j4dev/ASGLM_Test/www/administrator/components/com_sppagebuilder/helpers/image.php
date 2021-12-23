@@ -2,11 +2,11 @@
 /**
 * @package SP Page Builder
 * @author JoomShaper http://www.joomshaper.com
-* @copyright Copyright (c) 2010 - 2016 JoomShaper
+* @copyright Copyright (c) 2010 - 2021 JoomShaper
 * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+defined ('_JEXEC') or die ('Restricted access');
 
 class SppagebuilderHelperImage {
 
@@ -19,19 +19,21 @@ class SppagebuilderHelperImage {
 		list($this->width, $this->height) = getimagesize($src);
 	}
 
-	public function createThumb($size = array(), $folder, $base_name, $ext) {
+	public function getDimension() {
+		return [$this->width, $this->height];
+	}
 
-		switch($ext) {
-			case 'bmp': $img = imagecreatefromwbmp($this->src); break;
-			case 'gif': $img = imagecreatefromgif($this->src); break;
-			case 'jpg': $img = imagecreatefromjpeg($this->src); break;
-			case 'jpeg': $img = imagecreatefromjpeg($this->src); break;
-			case 'png': $img = imagecreatefrompng($this->src); break;
-		}
+	/**
+	 * Create thumb image with specifice height and width and with their ratio
+	 */
+	public function createThumb($destination, $base_name, $ext, $size = array(), $quality = 100 ) {
 
-		if(count((array) $size)) {
+		$img = $this->createImageFromType($ext);
+
+		if(count((array) $size) && $img != null ) {
 			$targetWidth = $size[0];
 			$targetHeight = $size[1];
+
 			$ratio_thumb = $targetWidth/$targetHeight;
 			$ratio_original = $this->width/$this->height;
 
@@ -57,17 +59,40 @@ class SppagebuilderHelperImage {
 
 			imagecopyresampled($new, $img, 0, 0, $x, $y, $targetWidth, $targetHeight, $width, $height);
 
-			$dest = dirname($this->src) . '/' . $folder . '/' . $base_name . '.' . $ext;
+			$dest = $destination . '/' . $base_name . '.' . $ext;
 
-			switch($ext) {
-				case 'bmp': imagewbmp($new, $dest); break;
-				case 'gif': imagegif($new, $dest); break;
-				case 'jpg': imagejpeg($new, $dest, 100); break;
-				case 'jpeg': imagejpeg($new, $dest, 100); break;
-				case 'png': imagepng($new, $dest); break;
-			}
+			$this->cloneImage($ext, $new, $dest, $quality);
+
+			return true;
 		}
 
 		return false;
+	}
+ 
+	/**
+	 * Clone Image from original to destination source based on extension
+	 */
+	private function cloneImage($ext, $new, $dest, $quality){
+		switch($ext) {
+			case 'bmp': imagewbmp($new, $dest); break;
+			case 'gif': imagegif($new, $dest); break;
+			case 'jpg': imagejpeg($new, $dest, $quality); break;
+			case 'jpeg': imagejpeg($new, $dest, $quality); break;
+			case 'png': imagepng($new, $dest, floor($quality/11)); break;
+		}
+	}
+
+	/**
+	 * Create Image from their specifice extension
+	 */
+	private function createImageFromType($ext) {
+		switch($ext) {
+			case 'bmp': $img = imagecreatefromwbmp($this->src); break;
+			case 'gif': $img = imagecreatefromgif($this->src); break;
+			case 'jpg': $img = imagecreatefromjpeg($this->src); break;
+			case 'jpeg': $img = imagecreatefromjpeg($this->src); break;
+			case 'png': $img = imagecreatefrompng($this->src); break;
+		}
+		return $img;
 	}
 }

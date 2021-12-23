@@ -3,10 +3,10 @@
 * @file
 * @brief    sigplus Image Gallery Plus module for Joomla
 * @author   Levente Hunyadi
-* @version  1.4.2
+* @version  1.5.0
 * @remarks  Copyright (C) 2009-2010 Levente Hunyadi
-* @remarks  Licensed under GNU/GPLv3, see http://www.gnu.org/licenses/gpl-3.0.html
-* @see      http://hunyadi.info.hu/projects/sigplus
+* @remarks  Licensed under GNU/GPLv3, see https://www.gnu.org/licenses/gpl-3.0.html
+* @see      https://hunyadi.info.hu/projects/sigplus
 */
 
 /*
@@ -24,45 +24,91 @@
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
 
-class SIGPlusModuleException extends Exception {
-	/** The text of a critical error message. */
-	public function __construct($errormsg) {
-		$this->message = '<p><strong>[sigplus] Critical error:</strong> '.$errormsg.'</p>';
+jimport('joomla.plugin.plugin');
+jimport('joomla.html.parameter');
+
+/**
+* Triggered when a mandatory dependency is missing or there is a version mismatch.
+*/
+class SigPlusNovoModuleDependencyException extends Exception {
+	protected $version_module;
+	protected $version_plugin;
+
+	/**
+	* Creates a new exception instance.
+	* @param {string} $key Error message language key.
+	*/
+	public function __construct($key, $version = null) {
+		$this->version_module = SIGPLUS_VERSION_MODULE;
+		$this->version_plugin = isset($version) ? $version : 'SIGPLUS_UNKNOWN';
+
+		$message = '['.$key.'] '.JText::_($key);  // get localized message text
+		$search = array();
+		$replace = array();
+		foreach (get_object_vars($this) as $property => $value) {
+			$search[] = '{$'.$property.'}';  // replace placeholders in message text
+			$text = (string) $this->$property;
+			if (preg_match('/^[A-Z][0-9A-Z_]*$/', $text)) {  // could be a language key
+				$text = JText::_($text);
+			}
+			$replace[] = htmlspecialchars($text);
+		}
+		$message = str_replace($search, $replace, $message);
+		parent::__construct($message);
 	}
 }
 
-class SIGPlusModuleHelper {
-	private static $imported = null;
+class SigPlusNovoModuleHelper {
+	private static $core;
 
 	/**
 	* Imports module dependencies.
 	*/
 	public static function import() {
-		if (!is_null(self::$imported)) {
-			return self::$imported;
+		if (isset(self::$core)) {
+			return self::$core;
 		}
 
-		$import = JPATH_PLUGINS.DIRECTORY_SEPARATOR.'content'.DIRECTORY_SEPARATOR.'sigplus'.DIRECTORY_SEPARATOR.'core.php';
-		if (!is_file($import)) {
-			$errormsg = '<kbd>mod_sigplus</kbd> (sigplus module) requires <kbd>plg_sigplus</kbd> (sigplus plug-in) to be installed. The latest version of <kbd>plg_sigplus</kbd> is available from <a href="http://joomlacode.org/gf/project/sigplus/frs/">JoomlaCode</a>.';
-			self::$imported = false;
-			throw new SIGPlusModuleException($errormsg);
-		}
-		require_once $import;
+		self::$core = false;
 
-		if (!defined('SIGPLUS_VERSION') || !defined('SIGPLUS_VERSION_MODULE') || SIGPLUS_VERSION !== SIGPLUS_VERSION_MODULE) {
-			$errormsg = '<kbd>mod_sigplus</kbd> (sigplus module) requires a matching version of <kbd>plg_sigplus</kbd> (sigplus plug-in) to be installed. Currently you have <kbd>mod_sigplus</kbd> version '.SIGPLUS_VERSION_MODULE.' but your version of <kbd>plg_sigplus</kbd> is '.SIGPLUS_VERSION.'. The latest version of <kbd>plg_sigplus</kbd> and <kbd>mod_sigplus</kbd> is available from <a href="http://joomlacode.org/gf/project/sigplus/frs/">JoomlaCode</a>.';
-			self::$imported = false;
-			throw new SIGPlusModuleException($errormsg);
+		// load sigplus content plug-in
+		if (!JPluginHelper::importPlugin('content', SIGPLUS_PLUGIN_FOLDER)) {
+			throw new SigPlusNovoModuleDependencyException('SIGPLUS_EXCEPTION_DEPENDENCY_MISSING');
 		}
 
-		self::$imported = true;
-		return true;
+		if (!defined('SIGPLUS_VERSION')) {
+			throw new SigPlusNovoModuleDependencyException('SIGPLUS_EXCEPTION_DEPENDENCY_MISMATCH');
+		}
+
+		if (SIGPLUS_VERSION_MODULE !== '$__'.'VERSION'.'__$' && SIGPLUS_VERSION_MODULE !== SIGPLUS_VERSION) {
+			throw new SigPlusNovoModuleDependencyException('SIGPLUS_EXCEPTION_DEPENDENCY_MISMATCH', SIGPLUS_VERSION);
+		}
+
+		// load sigplus content plug-in parameters
+		$plugin = JPluginHelper::getPlugin('content', SIGPLUS_PLUGIN_FOLDER);
+		$params = json_decode($plugin->params);
+
+		// create configuration parameter objects
+		$configuration = new SigPlusNovoConfigurationParameters();
+		$configuration->service = new SigPlusNovoServiceParameters();
+		$configuration->service->setParameters($params);
+		$configuration->gallery = new SigPlusNovoGalleryParameters();
+		$configuration->gallery->setParameters($params);
+
+		if (SIGPLUS_LOGGING || $configuration->service->debug_server) {
+			SigPlusNovoLogging::setService(new SigPlusNovoHTMLLogging());
+		} else {
+			SigPlusNovoLogging::setService(new SigPlusNovoNoLogging());
+		}
+
+		self::$core = new SigPlusNovoCore($configuration);
+
+		return self::$core;
 	}
 }

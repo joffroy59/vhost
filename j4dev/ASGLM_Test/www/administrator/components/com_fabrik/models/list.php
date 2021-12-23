@@ -4,7 +4,7 @@
  *
  * @package     Joomla.Administrator
  * @subpackage  Fabrik
- * @copyright   Copyright (C) 2005-2016  Media A-Team, Inc. - All rights reserved.
+ * @copyright   Copyright (C) 2005-2020  Media A-Team, Inc. - All rights reserved.
  * @license     GNU/GPL http://www.gnu.org/copyleft/gpl.html
  * @since       1.6
  */
@@ -759,9 +759,23 @@ class FabrikAdminModelList extends FabModelAdmin
 			}
 		}
 
+		/*
 		$row->set('publish_down', FabrikAdminHelper::prepareSaveDate($row->get('publish_down')));
 		$row->set('created', FabrikAdminHelper::prepareSaveDate($row->get('created')));
 		$row->set('publish_up', FabrikAdminHelper::prepareSaveDate($row->get('publish_up')));
+		*/
+
+		// Set the publish date to now
+		if ($row->get('published') == 1 && (int) $row->get('publish_up') === 0)
+		{
+			$row->set('publish_up', JFactory::getDate()->toSql());
+		}
+
+		if ($row->get('published') == 1 && intval($row->get('publish_down')) === 0)
+		{
+			$row->set('publish_down', $this->getDbo()->getNullDate());
+		}
+
 		$pk = FArrayHelper::getValue($data, 'db_primary_key');
 
 		if ($pk == '')

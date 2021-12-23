@@ -3,13 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine;
 
-
+defined('AKEEBAENGINE') || die();
 
 use DirectoryIterator;
 use stdClass;
@@ -483,7 +483,7 @@ class Configuration
 		$rawData  = file_get_contents($jsonPath);
 		$jsonData = empty($rawData) ? [] : json_decode($rawData, true);
 
-		foreach ($jsonData as $section => $nodes)
+		foreach ($jsonData ?? [] as $section => $nodes)
 		{
 			if (is_array($nodes))
 			{

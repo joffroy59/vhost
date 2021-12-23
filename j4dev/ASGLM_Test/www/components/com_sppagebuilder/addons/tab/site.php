@@ -2,31 +2,33 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2019 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Uri\Uri;
+
 //no direct accees
 defined ('_JEXEC') or die ('Restricted access');
 
 class SppagebuilderAddonTab extends SppagebuilderAddons {
 
 	public function render() {
-        //Get FontAwesome Version
-        $config = JComponentHelper::getParams('com_sppagebuilder');
-        $font_awesome_version = $config->get('fontawesome_version', '4');
         
         $settings = $this->addon->settings;
 		$class = (isset($settings->class) && $settings->class) ? $settings->class : '';
 		$style = (isset($settings->style) && $settings->style) ? $settings->style : '';
 		$title = (isset($settings->title) && $settings->title) ? $settings->title : '';
 		$nav_icon_postion = (isset($settings->nav_icon_postion) && $settings->nav_icon_postion) ? $settings->nav_icon_postion : '';
+		$nav_image_postion = (isset($settings->nav_image_postion) && $settings->nav_image_postion) ? $settings->nav_image_postion : '';
 		$heading_selector = (isset($settings->heading_selector) && $settings->heading_selector) ? $settings->heading_selector : 'h3';
-		$nav_text_align = (isset($settings->nav_text_align) && $settings->nav_text_align) ? $settings->nav_text_align : 'sppb-text-left';
+        $nav_text_align = (isset($settings->nav_text_align) && $settings->nav_text_align) ? $settings->nav_text_align : 'sppb-text-left';
+        $nav_position = (isset($settings->nav_position) && $settings->nav_position) ? $settings->nav_position : 'nav-left';
 
 		//Output
 		$output  = '<div class="sppb-addon sppb-addon-tab ' . $class . '">';
 		$output .= ($title) ? '<'.$heading_selector.' class="sppb-addon-title">' . $title . '</'.$heading_selector.'>' : '';
-		$output .= '<div class="sppb-addon-content sppb-tab ' . $style . '-tab">';
+		$output .= '<div class="sppb-addon-content sppb-tab sppb-' . $style . '-tab sppb-tab-'.$nav_position.'">';
 
 		//Tab Title
 		$output .='<ul class="sppb-nav sppb-nav-' . $style . '" role="tablist">';
@@ -36,32 +38,62 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
             $icon_right = '';
             $icon_left = '';
             $icon_block = '';
-            $title = (isset($tab->title) && $tab->title) ? ' '. $tab->title . ' ' : '';
+            //Image
+            $image_top = '';
+            $image_bottom = '';
+            $image_right = '';
+            $image_left = '';
+            //Lazy load image
+            $tab_image = isset($tab->image) && $tab->image ? $tab->image : '';
+            $tab_image_src = isset($tab_image->src) ? $tab_image->src : $tab_image;
+            $tab_image_width = (isset($tab_image->width) && $tab_image->width) ? $tab_image->width : '';
+            $tab_image_height = (isset($tab_image->height) && $tab_image->height) ? $tab_image->height : '';
+            
+            $placeholder = $tab_image_src == '' ? false : $this->get_image_placeholder($tab_image_src);
+            
+            if(strpos($tab_image_src, "http://") !== false || strpos($tab_image_src, "https://") !== false){
+                $tab_image_src = $tab_image_src;
+            } else {
+                if($tab_image_src){
+                    $tab_image_src = Uri::base() . $tab_image_src;
+                }
+            }
 
-            if(isset($tab->icon) && $tab->icon){
-                $icon_arr = array_filter(explode(' ', $tab->icon));
-                if (count($icon_arr) === 1) {
-                    $tab->icon = 'fa ' . $tab->icon;
-                } else if (count($icon_arr) === 2) {
-                    if ($font_awesome_version == '4') {
-                        $tab->icon = 'fa ' . $icon_arr[1];
+            $title = (isset($tab->title) && $tab->title) ? ' '. $tab->title . ' ' : '';
+            $subtitle = (isset($tab->subtitle) && $tab->subtitle) ? '<span class="sppb-tab-subtitle">'. $tab->subtitle . '</span>' : '';
+
+            if(isset($tab->image_or_icon) && $tab->image_or_icon == 'image'){
+                if($tab_image_src && $nav_image_postion == 'top'){
+                    $image_top = '<img class="sppb-tab-image tab-image-block'.($placeholder ? ' sppb-element-lazy' : '').'" src="' . ($placeholder ? $placeholder : $tab_image_src) . '" alt="'.trim(strip_tags($title)).'" '.($placeholder ? 'data-large="'.$tab_image_src.'"' : '').' '.($tab_image_width ? 'width="'.$tab_image_width.'"' : '').' '.($tab_image_height ? 'height="'.$tab_image_height.'"' : '').' loading="lazy"/>';
+                } elseif ($tab_image_src && $nav_image_postion == 'bottom') {
+                    $image_bottom = '<img class="sppb-tab-image tab-image-block'.($placeholder ? ' sppb-element-lazy' : '').'" src="' . ($placeholder ? $placeholder : $tab_image_src) . '" alt="'.trim(strip_tags($title)).'" '.($placeholder ? 'data-large="'.$tab_image_src.'"' : '').' '.($tab_image_width ? 'width="'.$tab_image_width.'"' : '').' '.($tab_image_height ? 'height="'.$tab_image_height.'"' : '').' loading="lazy"/>';
+                } elseif ($tab_image_src && $nav_image_postion == 'right') {
+                    $image_right = '<img class="sppb-tab-image'.($placeholder ? ' sppb-element-lazy' : '').'" src="' . ($placeholder ? $placeholder : $tab_image_src) . '" alt="'.trim(strip_tags($title)).'" '.($placeholder ? 'data-large="'.$tab_image_src.'"' : '').' '.($tab_image_width ? 'width="'.$tab_image_width.'"' : '').' '.($tab_image_height ? 'height="'.$tab_image_height.'"' : '').' loading="lazy"/>';
+                } else {
+                    $image_left = $tab_image_src ? '<img class="sppb-tab-image'.($placeholder ? ' sppb-element-lazy' : '').'" src="' . ($placeholder ? $placeholder : $tab_image_src) . '" alt="'.trim(strip_tags($title)).'" '.($placeholder ? 'data-large="'.$tab_image_src.'"' : '').' '.($tab_image_width ? 'width="'.$tab_image_width.'"' : '').' '.($tab_image_height ? 'height="'.$tab_image_height.'"' : '').' loading="lazy"/>' : '';
+                }
+            } else {
+                if(isset($tab->icon) && $tab->icon){
+                    $icon_arr = array_filter(explode(' ', $tab->icon));
+                    if (count($icon_arr) === 1) {
+                        $tab->icon = 'fa ' . $tab->icon;
+                    }
+                    if($tab->icon && $nav_icon_postion == 'top'){
+                        $icon_top = '<span class="sppb-tab-icon tab-icon-block" aria-label="'.trim(strip_tags($title)).'"><i class="' . $tab->icon . '" aria-hidden="true"></i></span>';
+                    } elseif ($tab->icon && $nav_icon_postion == 'bottom') {
+                        $icon_bottom = '<span class="sppb-tab-icon tab-icon-block" aria-label="'.trim(strip_tags($title)).'"><i class="' . $tab->icon . '" aria-hidden="true"></i></span>';
+                    } elseif ($tab->icon && $nav_icon_postion == 'right') {
+                        $icon_right = '<span class="sppb-tab-icon" aria-label="'.trim(strip_tags($title)).'"><i class="' . $tab->icon . '" aria-hidden="true"></i></span>';
+                    } else {
+                        $icon_left = '<span class="sppb-tab-icon" aria-label="'.trim(strip_tags($title)).'"><i class="' . $tab->icon . '" aria-hidden="true"></i></span>';
                     }
                 }
-                if($tab->icon && $nav_icon_postion == 'top'){
-                    $icon_top = '<span class="sppb-tab-icon tab-icon-block" aria-label="'.trim(strip_tags($title)).'"><i class="' . $tab->icon . '" aria-hidden="true"></i></span>';
-                } elseif ($tab->icon && $nav_icon_postion == 'bottom') {
-                    $icon_bottom = '<span class="sppb-tab-icon tab-icon-block" aria-label="'.trim(strip_tags($title)).'"><i class="' . $tab->icon . '" aria-hidden="true"></i></span>';
-                } elseif ($tab->icon && $nav_icon_postion == 'right') {
-                    $icon_right = '<span class="sppb-tab-icon" aria-label="'.trim(strip_tags($title)).'"><i class="' . $tab->icon . '" aria-hidden="true"></i></span>';
-                } else {
-                    $icon_left = '<span class="sppb-tab-icon" aria-label="'.trim(strip_tags($title)).'"><i class="' . $tab->icon . '" aria-hidden="true"></i></span>';
-                }
             }
-            if($nav_icon_postion == 'top' || $nav_icon_postion == 'bottom'){
-                $icon_block = 'tab-icon-block-wrap';
+            if($nav_icon_postion == 'top' || $nav_icon_postion == 'bottom' || $nav_image_postion == 'top' || $nav_image_postion == 'bottom'){
+                $icon_block = 'tab-img-or-icon-block-wrap';
             }
             $output .='<li class="'. ( ($key==0) ? "active" : "").'">';
-            $output .= '<a data-toggle="sppb-tab" id="sppb-content-'. ($this->addon->id + $key) .'" class="'.$nav_text_align.' '.$icon_block.'" href="#sppb-tab-'. ($this->addon->id + $key) .'" role="tab" aria-controls="sppb-tab-'. ($this->addon->id + $key) .'" aria-selected="'. ( ($key==0) ? "true" : "false").'">'. $icon_top . $icon_left . $title . $icon_right . $icon_bottom .'</a>';
+            $output .= '<a data-toggle="sppb-tab" id="sppb-content-'. ($this->addon->id + $key) .'" class="'.($style == 'custom' ? $nav_text_align : '').' '.$icon_block.'" href="#sppb-tab-'. ($this->addon->id + $key) .'" role="tab" aria-controls="sppb-tab-'. ($this->addon->id + $key) .'" aria-selected="'. ( ($key==0) ? "true" : "false").'">'. $image_top . $image_left . $icon_top . $icon_left . $title . $image_right . $image_bottom . $icon_right . $icon_bottom . $subtitle .'</a>';
             $output .='</li>';
 		}
 		$output .='</ul>';
@@ -82,6 +114,7 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
 	public function css() {
         $addon_id = '#sppb-addon-' . $this->addon->id;
         $settings = $this->addon->settings;
+        $nav_position = (isset($settings->nav_position) && $settings->nav_position) ? $settings->nav_position : 'nav-left';
 		$tab_style = (isset($settings->style) && $settings->style) ? $settings->style : '';
         $style = '';
         $style .= (isset($settings->active_tab_color) && $settings->active_tab_color) ? 'color: ' . $settings->active_tab_color . ';': '';
@@ -136,13 +169,24 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
         $nav_margin_sm = (isset($settings->nav_margin_sm) && trim($settings->nav_margin_sm)) ? 'padding: ' . $settings->nav_margin_sm . ';': '';
         $nav_margin_xs = (isset($settings->nav_margin_xs) && trim($settings->nav_margin_xs)) ? 'padding: ' . $settings->nav_margin_xs . ';': '';
         //Nav Gutter
-        $nav_gutter_right = (isset($settings->nav_gutter) && $settings->nav_gutter) ? 'padding-right: ' . $settings->nav_gutter . 'px;': 'padding-right: 15px;';
-        $nav_gutter_right_sm = (isset($settings->nav_gutter_sm) && $settings->nav_gutter_sm) ? 'padding-right: ' . $settings->nav_gutter_sm . 'px;': 'padding-right: 15px;';
-        $nav_gutter_right_xs = (isset($settings->nav_gutter_xs) && $settings->nav_gutter_xs) ? 'padding-right: ' . $settings->nav_gutter_xs . 'px;': 'padding-right: 15px;';
+        if($nav_position == 'nav-right'){
+            $nav_gutter_right = (isset($settings->nav_gutter) && $settings->nav_gutter) ? 'padding-left: ' . $settings->nav_gutter . 'px;': 'padding-left: 15px;';
+            $nav_gutter_right_sm = (isset($settings->nav_gutter_sm) && $settings->nav_gutter_sm) ? 'padding-left: ' . $settings->nav_gutter_sm . 'px;': 'padding-left: 15px;';
+            $nav_gutter_right_xs = (isset($settings->nav_gutter_xs) && $settings->nav_gutter_xs) ? 'padding-left: ' . $settings->nav_gutter_xs . 'px;': 'padding-left: 15px;';
+
+            $nav_gutter_left = (isset($settings->nav_gutter) && $settings->nav_gutter) ? 'padding-right: ' . $settings->nav_gutter . 'px;': 'padding-right: 15px;';
+            $nav_gutter_left_sm = (isset($settings->nav_gutter_sm) && $settings->nav_gutter_sm) ? 'padding-right: ' . $settings->nav_gutter_sm . 'px;': 'padding-right: 15px;';
+            $nav_gutter_left_xs = (isset($settings->nav_gutter_xs) && $settings->nav_gutter_xs) ? 'padding-right: ' . $settings->nav_gutter_xs . 'px;': 'padding-right: 15px;';
+        } else {
+            $nav_gutter_right = (isset($settings->nav_gutter) && $settings->nav_gutter) ? 'padding-right: ' . $settings->nav_gutter . 'px;': 'padding-right: 15px;';
+            $nav_gutter_right_sm = (isset($settings->nav_gutter_sm) && $settings->nav_gutter_sm) ? 'padding-right: ' . $settings->nav_gutter_sm . 'px;': 'padding-right: 15px;';
+            $nav_gutter_right_xs = (isset($settings->nav_gutter_xs) && $settings->nav_gutter_xs) ? 'padding-right: ' . $settings->nav_gutter_xs . 'px;': 'padding-right: 15px;';
+            
+            $nav_gutter_left = (isset($settings->nav_gutter) && $settings->nav_gutter) ? 'padding-left: ' . $settings->nav_gutter . 'px;': 'padding-left: 15px;';
+            $nav_gutter_left_sm = (isset($settings->nav_gutter_sm) && $settings->nav_gutter_sm) ? 'padding-left: ' . $settings->nav_gutter_sm . 'px;': 'padding-left: 15px;';
+            $nav_gutter_left_xs = (isset($settings->nav_gutter_xs) && $settings->nav_gutter_xs) ? 'padding-left: ' . $settings->nav_gutter_xs . 'px;': 'padding-left: 15px;';
+        }
         
-        $nav_gutter_left = (isset($settings->nav_gutter) && $settings->nav_gutter) ? 'padding-left: ' . $settings->nav_gutter . 'px;': 'padding-left: 15px;';
-        $nav_gutter_left_sm = (isset($settings->nav_gutter_sm) && $settings->nav_gutter_sm) ? 'padding-left: ' . $settings->nav_gutter_sm . 'px;': 'padding-left: 15px;';
-        $nav_gutter_left_xs = (isset($settings->nav_gutter_xs) && $settings->nav_gutter_xs) ? 'padding-left: ' . $settings->nav_gutter_xs . 'px;': 'padding-left: 15px;';
         //Content Style
         $content_style = '';
         $content_style .= (isset($settings->content_backround) && $settings->content_backround) ? 'background-color: ' . $settings->content_backround . ';': '';
@@ -200,6 +244,23 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
         
         $icon_style_xs = (isset($settings->icon_fontsize_xs) && $settings->icon_fontsize_xs) ?  'font-size: ' . $settings->icon_fontsize_xs .'px;' : '';
         $icon_style_xs .= (isset($settings->icon_margin_xs) && trim($settings->icon_margin_xs)) ?  'margin: ' . $settings->icon_margin_xs . ';' : '';
+
+        //Image Style
+        $image_style = '';
+        $image_style .= (isset($settings->image_height) && $settings->image_height) ?  'height: ' . $settings->image_height .'px;' : '';
+        $image_style .= (isset($settings->image_width) && $settings->image_width) ?  'width: ' . $settings->image_width .'px;' : '';
+        $image_style .= (isset($settings->image_margin) && trim($settings->image_margin)) ?  'margin: ' . $settings->image_margin . ';' : '';
+        
+        $image_style_sm = '';
+        $image_style_sm .= (isset($settings->image_height_sm) && $settings->image_height_sm) ?  'height: ' . $settings->image_height_sm .'px;' : '';
+        $image_style_sm .= (isset($settings->image_width_sm) && $settings->image_width_sm) ?  'width: ' . $settings->image_width_sm .'px;' : '';
+        $image_style_sm .= (isset($settings->image_margin_sm) && trim($settings->image_margin_sm)) ?  'margin: ' . $settings->image_margin_sm . ';' : '';
+        
+        $image_style_xs = '';
+        $image_style_xs .= (isset($settings->image_height_xs) && $settings->image_height_xs) ?  'height: ' . $settings->image_height_xs .'px;' : '';
+        $image_style_xs .= (isset($settings->image_width_xs) && $settings->image_width_xs) ?  'width: ' . $settings->image_width_xs .'px;' : '';
+        $image_style_xs .= (isset($settings->image_margin_xs) && trim($settings->image_margin_xs)) ?  'margin: ' . $settings->image_margin_xs . ';' : '';
+
         //Css output            
 		$css = '';
 		if($tab_style == 'pills') {
@@ -247,6 +308,9 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
             $css .= $addon_id . ' .sppb-tab-icon {';
             $css .= $icon_style;
             $css .= '}';
+            $css .= $addon_id . ' .sppb-tab-image {';
+            $css .= $image_style;
+            $css .= '}';
             //Nav Hover Style
             $hover_style = '';
             $hover_style .= (isset($settings->hover_tab_color) && $settings->hover_tab_color) ? 'color: ' . $settings->hover_tab_color . ';': '';
@@ -274,7 +338,7 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                 $css .= '}';
             }
         }
-        if (!empty($font_style_sm) || !empty($nav_width_sm) || !empty($content_style_sm) || !empty($nav_margin_sm)) {
+        if (!empty($font_style_sm) || !empty($nav_width_sm) || !empty($content_style_sm) || !empty($nav_margin_sm) || !empty($image_style_sm)) {
             $css .= '@media (min-width: 768px) and (max-width: 991px) {';
             
             $css .= $addon_id . ' .sppb-nav-custom {';
@@ -303,10 +367,13 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
             $css .= $addon_id . ' .sppb-tab-icon {';
             $css .= $icon_style_sm;
             $css .= '}';
+            $css .= $addon_id . ' .sppb-tab-image {';
+            $css .= $image_style_sm;
+            $css .= '}';
             
             $css .= '}';
         }
-        if (!empty($font_style_xs) || !empty($nav_width_xs) || !empty($content_style_xs) || !empty($nav_margin_xs)) {
+        if (!empty($font_style_xs) || !empty($nav_width_xs) || !empty($content_style_xs) || !empty($nav_margin_xs) || !empty($image_style_xs)) {
             $css .= '@media (max-width: 767px) {';
             
             $css .= $addon_id . ' .sppb-nav-custom {';
@@ -335,6 +402,9 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
             $css .= $addon_id . ' .sppb-tab-icon {';
             $css .= $icon_style_xs;
             $css .= '}';
+            $css .= $addon_id . ' .sppb-tab-image {';
+            $css .= $image_style_xs;
+            $css .= '}';
             
             $css .= '}';
         }
@@ -345,7 +415,8 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
 	public static function getTemplate(){
 		$output = '
 		<style type="text/css">
-			<# 
+            <# 
+                var navPosition = data.nav_position || "nav-left";
                 var box_shadow = "";
                 if(data.show_boxshadow){
                     box_shadow += (!_.isEmpty(data.shadow_horizontal) && data.shadow_horizontal) ?  data.shadow_horizontal + \'px \' : "0 ";
@@ -354,7 +425,8 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                     box_shadow += (!_.isEmpty(data.shadow_spread) && data.shadow_spread) ?  data.shadow_spread + \'px \' : "0 ";
                     box_shadow += (!_.isEmpty(data.shadow_color) && data.shadow_color) ?  data.shadow_color : "rgba(0, 0, 0, .5)";
                 }
-                if(data.style == "pills"){ #>
+                if(data.style == "pills"){
+            #>
                     #sppb-addon-{{ data.id }} .sppb-nav-pills > li.active > a,
                     #sppb-addon-{{ data.id }} .sppb-nav-pills > li.active > a:hover,
                     #sppb-addon-{{ data.id }} .sppb-nav-pills > li.active > a:focus{
@@ -463,17 +535,46 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                         margin: {{data.icon_margin}};
                     <# } #>
                 }
+                #sppb-addon-{{ data.id }} .sppb-tab-image {
+                    <# if(_.isObject(data.image_height)){ #>
+                        height: {{data.image_height.md}}px;
+                    <# } else { #>
+                        height: {{data.image_height}}px;
+                    <# }
+                    if(_.isObject(data.image_width)){
+                    #>
+                        width: {{data.image_width.md}}px;
+                    <# } else { #>
+                        width: {{data.image_width}}px;
+                    <# }
+                    if(_.isObject(data.image_margin)){
+                    #>
+                        margin: {{data.image_margin.md}};
+                    <# } else { #>
+                        margin: {{data.image_margin}};
+                    <# } #>
+                }
                 #sppb-addon-{{ data.id }} .sppb-nav-custom {
                     <# if(_.isObject(data.nav_width)){ #>
                         width: {{data.nav_width.md}}%;
                     <# } else { #>
                         width: {{data.nav_width}}%;
-                    <# } #>
-                    <# if(_.isObject(data.nav_gutter)){ #>
-                        padding-right: {{data.nav_gutter.md}}px;
-                    <# } else { #>
-                        padding-right: {{data.nav_gutter}}px;
-                    <# } #>
+                    <# }
+                    if(navPosition == "nav-right") {
+                    #>
+                        <# if(_.isObject(data.nav_gutter)){ #>
+                            padding-left: {{data.nav_gutter.md}}px;
+                        <# } else { #>
+                            padding-left: {{data.nav_gutter}}px;
+                        <# } #>
+                    <# } else { 
+                        if(_.isObject(data.nav_gutter)){
+                    #>
+                            padding-right: {{data.nav_gutter.md}}px;
+                        <# } else { #>
+                            padding-right: {{data.nav_gutter}}px;
+                        <# }
+                    } #>
                 }
                 #sppb-addon-{{ data.id }} .sppb-tab-custom-content {
                     <# if(_.isObject(data.nav_width)){ #>
@@ -481,10 +582,18 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                     <# } else { #>
                         width: {{100-data.nav_width}}%; 
                     <# } #>
-                    <# if(_.isObject(data.nav_gutter)){ #>
-                        padding-left: {{data.nav_gutter.md}}px;
+                    <# if(navPosition == "nav-right"){ #>
+                        <# if(_.isObject(data.nav_gutter)){ #>
+                            padding-right: {{data.nav_gutter.md}}px;
+                        <# } else { #>
+                            padding-right: {{data.nav_gutter}}px;
+                        <# } #>
                     <# } else { #>
-                        padding-left: {{data.nav_gutter}}px;
+                        <# if(_.isObject(data.nav_gutter)){ #>
+                            padding-left: {{data.nav_gutter.md}}px;
+                        <# } else { #>
+                            padding-left: {{data.nav_gutter}}px;
+                        <# } #>
                     <# } #>
                 }
                 #sppb-addon-{{ data.id }} .sppb-tab-custom-content > div {
@@ -559,7 +668,11 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                         #sppb-addon-{{ data.id }} .sppb-nav-custom {
                             width: {{data.nav_width.sm}}%;
                             <# if(_.isObject(data.nav_gutter)){ #>
-                                padding-right: {{data.nav_gutter.sm}}px;
+                                <# if(navPosition == "nav-right") { #>
+                                    padding-left: {{data.nav_gutter.sm}}px;
+                                <# } else { #>
+                                    padding-right: {{data.nav_gutter.sm}}px;
+                                <# } #>
                             <# } #>
                         }
                         #sppb-addon-{{ data.id }} .sppb-tab-custom-content {
@@ -569,7 +682,11 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                                 width: 100%;
                             <# } #>
                             <# if(_.isObject(data.nav_gutter)){ #>
-                                padding-left: {{data.nav_gutter.sm}}px;
+                                <# if(navPosition == "nav-right") { #>
+                                    padding-right: {{data.nav_gutter.sm}}px;
+                                <# } else { #>
+                                    padding-left: {{data.nav_gutter.sm}}px;
+                                <# } #>
                             <# } #>
                         }
                     <# } #>
@@ -585,6 +702,19 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                         <# }
                         if(_.isObject(data.content_lineheight)){ #>
                             line-height:{{data.content_lineheight.sm}}px;
+                        <# } #>
+                    }
+                    #sppb-addon-{{ data.id }} .sppb-tab-image {
+                        <# if(_.isObject(data.image_height)){ #>
+                            height: {{data.image_height.sm}}px;
+                        <# }
+                        if(_.isObject(data.image_width)){
+                        #>
+                            width: {{data.image_width.sm}}px;
+                        <# }
+                        if(_.isObject(data.image_margin)){
+                        #>
+                            margin: {{data.image_margin.sm}};
                         <# } #>
                     }
                 }
@@ -617,7 +747,11 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                         #sppb-addon-{{ data.id }} .sppb-nav-custom {
                             width: {{data.nav_width.xs}}%;
                             <# if(_.isObject(data.nav_gutter)){ #>
-                                padding-right: {{data.nav_gutter.xs}}px;
+                                <# if(navPosition == "nav-right") { #>
+                                    padding-left: {{data.nav_gutter.xs}}px;
+                                <# } else { #>
+                                    padding-right: {{data.nav_gutter.xs}}px;
+                                <# } #>
                             <# } #>
                         }
                         #sppb-addon-{{ data.id }} .sppb-tab-custom-content {
@@ -627,7 +761,11 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                                 width: 100%;
                             <# } #>
                             <# if(_.isObject(data.nav_gutter)){ #>
-                                padding-left: {{data.nav_gutter.xs}}px;
+                                <# if(navPosition == "nav-right") { #>
+                                    padding-right: {{data.nav_gutter.xs}}px;
+                                <# } else { #>
+                                    padding-left: {{data.nav_gutter.xs}}px;
+                                <# } #>
                             <# } #>
                         }
                     <# } #>
@@ -645,35 +783,31 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                             line-height:{{data.content_lineheight.xs}}px;
                         <# } #>
                     }
+                    #sppb-addon-{{ data.id }} .sppb-tab-image {
+                        <# if(_.isObject(data.image_height)){ #>
+                            height: {{data.image_height.xs}}px;
+                        <# }
+                        if(_.isObject(data.image_width)){
+                        #>
+                            width: {{data.image_width.xs}}px;
+                        <# }
+                        if(_.isObject(data.image_margin)){
+                        #>
+                            margin: {{data.image_margin.xs}};
+                        <# } #>
+                    }
                 }
             <# } #>
 		</style>
 		<div class="sppb-addon sppb-addon-tab {{ data.class }}">
-            <# if( !_.isEmpty( data.title ) ){ #>
+            <# if( !_.isEmpty( data.title )){ #>
                 <{{ data.heading_selector }} class="sppb-addon-title">{{{ data.title }}}</{{ data.heading_selector }}>
             <# } 
             let icon_postion = (data.nav_icon_postion == \'top\' || data.nav_icon_postion == \'bottom\') ? \'tab-icon-block\' : \'\';
             #>
-            <div class="sppb-addon-content sppb-tab {{data.style}}-tab">
+            <div class="sppb-addon-content sppb-tab sppb-{{data.style}}-tab sppb-tab-{{navPosition}}">
                 <ul class="sppb-nav sppb-nav-{{ data.style }}">
                     <#
-                    function _isValidIcon(icon, delta=false) {
-                        let defaultIcons = "fa-ban";
-                        let icon_arr = icon ? icon.split(" ") : "";
-                        let iconName = icon_arr.length > 1 ? icon_arr[1] : icon_arr[0];
-                        let iconKey = iconName ? iconName.replace(/-/g,"_") : "";
-                        if (faIconList.version === 5 && typeof faIconList.missingIcons.f4[iconKey] !== "undefined") {
-                        return delta ? iconName+ " icon is not available in FontAwesome 5" : "fa "+defaultIcons;
-                        }
-                        if (faIconList.version === 4 && typeof faIconList.missingIcons.f5[iconKey] !== "undefined") {
-                        return delta ? iconName + " icon is not available in FontAwesome 4" : "fa "+defaultIcons;
-                        }
-                        if (delta) {
-                            return false
-                        } else {
-                            return icon_arr.length === 1 ? "fa "+icon : faIconList.version === 4 ? "fa " + icon_arr[1] : icon;
-                        }
-                    }
                         _.each(data.sp_tab_item, function(tab, key){
                             var active = "";
                             if(key == 0){
@@ -681,35 +815,62 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                             }
 
                             var title = "";
+                            var subtitle = "";
                             var icon_top ="";
                             var icon_bottom = "";
                             var icon_right = "";
                             var icon_left = "";
                             var icon_block = "";
-                            let icon_class = _isValidIcon(tab.icon);
-                            let icon_name = _isValidIcon(tab.icon, true); 
                             
-                            if(!_.isEmpty(tab.icon) && tab.icon && data.nav_icon_postion == "top"){
-                                icon_top = \'<span class="sppb-tab-icon tab-icon-block"><i class="\' + icon_class + \'"></i></span>\';
-                            } else if (!_.isEmpty(tab.icon) && tab.icon && data.nav_icon_postion == "bottom") {
-                                icon_bottom = \'<span class="sppb-tab-icon tab-icon-block"><i class="\' + icon_class + \'"></i></span>\';
-                            } else if (!_.isEmpty(tab.icon) && tab.icon && data.nav_icon_postion == "right") {
-                                icon_right = \'<span class="sppb-tab-icon"><i class="\' + icon_class + \'"></i></span>\';
+                            let icon_arr = (typeof tab.icon !== "undefined" && tab.icon) ? tab.icon.split(" ") : "";
+				            let icon_name = icon_arr.length === 1 ? "fa "+tab.icon : tab.icon;
+
+                            var image_top ="";
+                            var image_bottom = "";
+                            var image_right = "";
+                            var image_left = "";
+
+                            var tabImg = {}
+                            if (typeof tab.image !== "undefined" && typeof tab.image.src !== "undefined") {
+                                tabImg = tab.image
                             } else {
-                                icon_left = \'<span class="sppb-tab-icon"><i class="\' + icon_class + \'"></i></span>\';
+                                tabImg = {src: tab.image}
                             }
+                            
+                            if(!_.isEmpty(tab.image_or_icon) && tab.image_or_icon == "image"){
+                                if(!_.isEmpty(tabImg.src) && tabImg.src && data.nav_image_postion == "top"){
+                                    image_top = \'<img class="sppb-tab-image tab-image-block" src="\' + tabImg.src + \'"/>\';
+                                } else if (!_.isEmpty(tab.icon) && tab.icon && data.nav_image_postion == "bottom") {
+                                    image_bottom = \'<img class="sppb-tab-image tab-image-block" src="\' + tabImg.src + \'"/>\';
+                                } else if (!_.isEmpty(tab.icon) && tab.icon && data.nav_image_postion == "right") {
+                                    image_right = \'<img class="sppb-tab-image" src="\' + tabImg.src + \'"/>\';
+                                } else {
+                                    image_left = \'<img class="sppb-tab-image" src="\' + tabImg.src + \'"/>\';
+                                }
+                            } else { 
+                                if(!_.isEmpty(tab.icon) && tab.icon && data.nav_icon_postion == "top"){
+                                    icon_top = \'<span class="sppb-tab-icon tab-icon-block"><i class="\' + icon_name + \'"></i></span>\';
+                                } else if (!_.isEmpty(tab.icon) && tab.icon && data.nav_icon_postion == "bottom") {
+                                    icon_bottom = \'<span class="sppb-tab-icon tab-icon-block"><i class="\' + icon_name + \'"></i></span>\';
+                                } else if (!_.isEmpty(tab.icon) && tab.icon && data.nav_icon_postion == "right") {
+                                    icon_right = \'<span class="sppb-tab-icon"><i class="\' + icon_name + \'"></i></span>\';
+                                } else {
+                                    icon_left = \'<span class="sppb-tab-icon"><i class="\' + icon_name + \'"></i></span>\';
+                                }
+                            }
+                            
                             if(tab.title){
                                 title = tab.title;
                             }
-                            if(data.nav_icon_postion == "top" || data.nav_icon_postion == "bottom"){
-                                icon_block = "tab-icon-block-wrap";
+                            if(tab.subtitle){
+                                subtitle = `<span class="sppb-tab-subtitle">${tab.subtitle}</span>`;
+                            }
+                            if(data.nav_icon_postion == "top" || data.nav_icon_postion == "bottom" || data.nav_image_postion == "top" || data.nav_image_postion == "bottom"){
+                                icon_block = "tab-img-or-icon-block-wrap";
                             }
                     #>
                         <li class="{{ active }}">
-                        <a data-toggle="sppb-tab" class="{{data.nav_text_align}} {{icon_block}}" href="#sppb-tab-{{ data.id }}{{ key }}">{{{icon_top}}} {{{icon_left}}} {{title}} {{{icon_right}}} {{{icon_bottom}}}</a>
-                        <# if(icon_name) { #>
-                            <div class="sppb-icon-not-found">{{icon_name}}</div>
-                         <# } #>
+                        <a data-toggle="sppb-tab" class="{{data.style === "custom" ? data.nav_text_align : ""}} {{icon_block}}" href="#sppb-tab-{{ data.id }}{{ key }}">{{{icon_top}}} {{{icon_left}}} {{{image_top}}} {{{image_left}}} {{title}} {{{icon_right}}} {{{icon_bottom}}} {{{image_right}}} {{{image_bottom}}} {{{subtitle}}}</a>
                         </li>
                     <# }); #>
                 </ul>
@@ -725,7 +886,7 @@ class SppagebuilderAddonTab extends SppagebuilderAddons {
                             <#
                             var htmlContent = "";
                             _.each(tab.content, function(content){
-                                    htmlContent += content;
+                                htmlContent += content;
                             });
                             #>
                             {{{ htmlContent }}}

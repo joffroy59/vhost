@@ -2,7 +2,7 @@
 /**
  * @package Helix Ultimate Framework
  * @author JoomShaper https://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2018 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or Later
 */
 
@@ -25,14 +25,14 @@ $output .= '<div class="container-inner">';
 $output .= '<div class="row">';
 
 $output .= '<div id="sp-top1" class="col-lg-6">';
-$output .= '<div class="sp-column text-center text-lg-left">';
+$output .= '<div class="sp-column text-center text-lg-start">';
 $social = new HelixUltimateFeatureSocial($data->params);
 $output .= $social->renderFeature();
 $output .= '</div>';
 $output .= '</div>';
 
 $output .= '<div id="sp-top2" class="col-lg-6">';
-$output .= '<div class="sp-column text-center text-lg-right">';
+$output .= '<div class="sp-column text-center text-lg-end">';
 $contact = new HelixUltimateFeatureContact($data->params);
 $output .= $contact->renderFeature();
 $output .= '</div>';

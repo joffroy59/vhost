@@ -2,7 +2,7 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2019 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 
@@ -12,9 +12,6 @@ defined ('_JEXEC') or die ('Restricted access');
 class SppagebuilderAddonIcon extends SppagebuilderAddons {
 
 	public function render() {
-		//Get FontAwesome Version
-        $config = JComponentHelper::getParams('com_sppagebuilder');
-		$font_awesome_version = $config->get('fontawesome_version', '4');
 		
 		$settings = $this->addon->settings;
 		$class = (isset($settings->class) && $settings->class) ? $settings->class : '';
@@ -33,10 +30,6 @@ class SppagebuilderAddonIcon extends SppagebuilderAddons {
 			$icon_arr = array_filter(explode(' ', $name));
 			if (count($icon_arr) === 1) {
 				$name = 'fa ' . $name;
-			} else if (count($icon_arr) === 2) {
-				if ($font_awesome_version == '4') {
-					$name = 'fa ' . $icon_arr[1];
-				}
 			}
 
 			$output  .= '<i class="' . $name . '" aria-hidden="true"></i>';
@@ -422,36 +415,18 @@ class SppagebuilderAddonIcon extends SppagebuilderAddons {
 		}
 		</style>
 		<#
-		function _isValidIcon(icon, delta=false) {
-			let defaultIcons = "fa-ban";
-			let icon_arr = icon ? icon.split(" ") : "";
-			let iconName = icon_arr.length > 1 ? icon_arr[1] : icon_arr[0];
-			let iconKey = iconName ? iconName.replace(/-/g,"_") : "";
-			if (faIconList.version === 5 && typeof faIconList.missingIcons.f4[iconKey] !== "undefined") {
-			  return delta ? iconName+ " icon is not available in FontAwesome 5" : "fa "+defaultIcons;
-			}
-			if (faIconList.version === 4 && typeof faIconList.missingIcons.f5[iconKey] !== "undefined") {
-			  return delta ? iconName + " icon is not available in FontAwesome 4" : "fa "+defaultIcons;
-			}
-			if (delta) {
-				return false
-			} else {
-				return icon_arr.length === 1 ? "fa "+icon : faIconList.version === 4 ? "fa " + icon_arr[1] : icon;
-			}
-		}
 		if(data.name){
 		#>
 			<div class="sppb-icon {{ data.alignment }} {{ data.class }}">
 				<# if(!_.isEmpty(data.link)){ #>
 					<a target="{{data.target}}" href=\'{{ data.link }}\'>
-				<# } 
-                let icon_class = _isValidIcon(data.name);
-                let icon_name = _isValidIcon(data.name, true);
+				<# }
+				let icon_arr = (typeof data.name !== "undefined" && data.name) ? data.name.split(" ") : "";
+                let icon_name = icon_arr.length === 1 ? "fa "+data.name : data.name;
 				#>
 				<span class="sppb-icon-inner">
-					<i class="{{ icon_class }}"></i>
+					<i class="{{ icon_name }}"></i>
 				</span>
-				<# if(icon_name) { #> <div class="sppb-icon-not-found">{{icon_name}}</div> <# } #>
 				<# if(!_.isEmpty(data.link)){ #>
 					</a>
 				<# } #>

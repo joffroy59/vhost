@@ -1,14 +1,14 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\View\Backup;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\Helper\Status;
 use Akeeba\Backup\Admin\Helper\Utils;
@@ -17,13 +17,8 @@ use Akeeba\Backup\Admin\Model\ControlPanel;
 use Akeeba\Backup\Admin\View\ViewTraits\ProfileIdAndName;
 use Akeeba\Backup\Admin\View\ViewTraits\ProfileList;
 use Akeeba\Engine\Factory;
-use FOF30\Date\Date;
-use FOF30\View\DataView\Html as BaseView;
-use JFactory;
-use JHtml;
-use JLoader;
-use JText;
-use JUri;
+use FOF40\View\DataView\Html as BaseView;
+use Joomla\CMS\Language\Text;
 
 /**
  * View controller for the Backup Now page
@@ -110,32 +105,11 @@ class Html extends BaseView
 	public $unwriteableOutput = false;
 
 	/**
-	 * Should I show the JPS password field? 0/1.
-	 *
-	 * @var  int
-	 */
-	public $showJPSPassword = 0;
-
-	/**
-	 * JPS password
+	 * has the user configured an ANGIE password?
 	 *
 	 * @var  string
 	 */
-	public $jpsPassword = '';
-
-	/**
-	 * Should I show the ANGIE password field? 0/1.
-	 *
-	 * @var  int
-	 */
-	public $showANGIEPassword = 0;
-
-	/**
-	 * ANGIE password
-	 *
-	 * @var  string
-	 */
-	public $ANGIEPassword = '';
+	public $hasANGIEPassword = '';
 
 	/**
 	 * Should I autostart the backup?
@@ -185,10 +159,7 @@ class Html extends BaseView
 	public function onBeforeMain()
 	{
 		// Load the view-specific Javascript
-		$this->container->template->addJS('media://com_akeeba/js/Backup.min.js');
-
-		// Preload Joomla! behaviours
-		JLoader::import('joomla.utilities.date');
+		$this->container->template->addJS('media://com_akeeba/js/Backup.min.js', true, false, $this->container->mediaVersion);
 
 		// Load the models
 		/** @var  Backup $model */
@@ -204,9 +175,9 @@ class Html extends BaseView
 		$default_description = $this->getDefaultDescription();
 
 		// Load data from the model state
-		$backup_description  = $model->getState('description', $default_description, 'string');
-		$comment             = $model->getState('comment', '', 'html');
-		$returnurl           = Utils::safeDecodeReturnUrl($model->getState('returnurl', ''));
+		$backup_description = $model->getState('description', $default_description, 'string');
+		$comment            = $model->getState('comment', '', 'html');
+		$returnurl          = Utils::safeDecodeReturnUrl($model->getState('returnurl', ''));
 
 		// Get the maximum execution time and bias
 		$engineConfiguration = Factory::getConfiguration();
@@ -238,16 +209,7 @@ class Html extends BaseView
 		$this->autoResumeTimeout            = $engineConfiguration->get('akeeba.advanced.autoresume_timeout', 10);
 		$this->autoResumeRetries            = $engineConfiguration->get('akeeba.advanced.autoresume_maxretries', 3);
 		$this->promptForConfigurationWizard = $engineConfiguration->get('akeeba.flag.confwiz', 0) == 0;
-
-		if ($engineConfiguration->get('akeeba.advanced.archiver_engine', 'jpa') == 'jps')
-		{
-			$this->showJPSPassword = 1;
-			$this->jpsPassword     = $engineConfiguration->get('engine.archiver.jps.key', '');
-		}
-
-		// Always show ANGIE password: we add that feature to the Core version as well
-		$this->showANGIEPassword = 1;
-		$this->ANGIEPassword     = $engineConfiguration->get('engine.installer.angie.key', '');
+		$this->hasANGIEPassword = !empty(trim($engineConfiguration->get('engine.installer.angie.key', '')));
 	}
 
 	/**
@@ -257,14 +219,7 @@ class Html extends BaseView
 	 */
 	private function getDefaultDescription()
 	{
-		$tzDefault           = $this->container->platform->getConfig()->get('offset');
-		$user                = $this->container->platform->getUser();
-		$tz                  = $user->getParam('timezone', $tzDefault);
-		$dateNow             = new Date('now', $tz);
-		$default_description = JText::_('COM_AKEEBA_BACKUP_DEFAULT_DESCRIPTION') . ' ' .
-			$dateNow->format(JText::_('DATE_FORMAT_LC2'), true);
-
-		return $default_description;
+		return $this->getModel()->getDefaultDescription();
 	}
 
 	/**
@@ -277,18 +232,18 @@ class Html extends BaseView
 		$engineConfiguration = Factory::getConfiguration();
 		$script              = $engineConfiguration->get('akeeba.basic.backup_type', 'full');
 		$scripting           = Factory::getEngineParamsProvider()->loadScripting();
-		$domains             = array();
+		$domains             = [];
 
 		if (empty($scripting))
 		{
 			return $domains;
 		}
 
-		foreach ($scripting['scripts'][ $script ]['chain'] as $domain)
+		foreach ($scripting['scripts'][$script]['chain'] as $domain)
 		{
-			$description = JText::_($scripting['domains'][ $domain ]['text']);
-			$domain_key  = $scripting['domains'][ $domain ]['domain'];
-			$domains[]   = array($domain_key, $description);
+			$description = Text::_($scripting['domains'][$domain]['text']);
+			$domain_key  = $scripting['domains'][$domain]['domain'];
+			$domains[]   = [$domain_key, $description];
 		}
 
 		return $domains;

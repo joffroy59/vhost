@@ -3,15 +3,15 @@
 * @file
 * @brief    sigplus Image Gallery Plus module for Joomla
 * @author   Levente Hunyadi
-* @version  1.4.2
-* @remarks  Copyright (C) 2009-2010 Levente Hunyadi
-* @remarks  Licensed under GNU/GPLv3, see http://www.gnu.org/licenses/gpl-3.0.html
-* @see      http://hunyadi.info.hu/projects/sigplus
+* @version  1.5.0
+* @remarks  Copyright (C) 2009-2014 Levente Hunyadi
+* @remarks  Licensed under GNU/GPLv3, see https://www.gnu.org/licenses/gpl-3.0.html
+* @see      https://hunyadi.info.hu/projects/sigplus
 */
 
 /*
 * sigplus Image Gallery Plus module for Joomla
-* Copyright 2009-2010 Levente Hunyadi
+* Copyright 2009-2014 Levente Hunyadi
 *
 * sigplus is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,18 @@
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
 
 if (!defined('SIGPLUS_VERSION_MODULE')) {
-	define('SIGPLUS_VERSION_MODULE', '1.4.2');
+	define('SIGPLUS_VERSION_MODULE', '1.5.0');
+}
+
+if (!defined('SIGPLUS_PLUGIN_FOLDER')) {
+	define('SIGPLUS_PLUGIN_FOLDER', 'sigplus');
 }
 
 if (!defined('SIGPLUS_DEBUG')) {
@@ -44,32 +48,48 @@ if (!defined('SIGPLUS_LOGGING')) {
 }
 
 // include the helper file
-require_once 'helper.php';
+require_once dirname(__FILE__).DIRECTORY_SEPARATOR.'helper.php';
+
+$gallery_html = false;
 
 try {
 	// import dependencies
-	if (SIGPlusModuleHelper::import()) {
-		// get parameters from the module's configuration
-		$configuration = new SIGPlusConfiguration();
-		$configuration->setParameters($params);
-		if (preg_match('#^https?://#', $configuration->services->imagesfolder)) {  // remote image sources
-			$body = $configuration->services->imagesfolder;  // artificial body
-			$configuration->services->imagesfolder = 'images';  // folder never used
-		} else {
-			$body = '';
-		}
+	if (($core = SigPlusNovoModuleHelper::import()) !== false) {
+		$core->setParameterObject($params);  // get parameters from the module's configuration
 
-		$core = new SIGPlusCore($configuration);
-		$galleryhtml = $core->getGalleryHtml($body);  // use images directly from folder specified as image folder
-		$core->addGalleryEngines();
-	} else {
-		$galleryhtml = false;  // an error message already printed by another module instance
-	}
+		try {
+			if ($params instanceof stdClass) {
+				$imagesource = $params->source;
+			} else if ($params instanceof JRegistry) {  // Joomla 2.5 and earlier
+				$imagesource = $params->get('source');
+			}
+
+			// download image
+			try {
+				if ($core->downloadImage($imagesource)) {  // an image has been requested for download
+					jexit();  // do not produce a page
+				}
+			} catch (SigPlusNovoImageDownloadAccessException $e) {  // signal download errors but do not stop page processing
+				$app = JFactory::getApplication();
+				$app->enqueueMessage($e->getMessage(), 'error');
+			}
+
+			// generate image gallery
+			$gallery_html = $core->getGalleryHTML($imagesource, $id);
+			$core->addStyles($id);
+			$core->addScripts($id);
+
+			$core->resetParameters();
+		} catch (Exception $e) {
+			$core->resetParameters();
+			throw $e;
+		}
+	}  // an error message has already been printed by another module instance
 } catch (Exception $e) {
 	$app = JFactory::getApplication();
-	$app->enqueueMessage( $e->getMessage(), 'error' );
-	$galleryhtml = $e->getMessage();
+	$app->enqueueMessage($e->getMessage(), 'error');
+	$gallery_html = $e->getMessage();
 }
 
-// include the template for display
-require JModuleHelper::getLayoutPath('mod_sigplus');
+$moduleclass_sfx = htmlspecialchars($params->get('moduleclass_sfx'), ENT_COMPAT, 'UTF-8');
+require JModuleHelper::getLayoutPath('mod_sigplus', $params->get('layout', 'default'));

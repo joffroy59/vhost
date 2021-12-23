@@ -1,11 +1,13 @@
 <?php
 /**
  * @package   FOF
- * @copyright Copyright (c)2010-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2010-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 2, or later
  */
 
 namespace FOF30\Cli\Traits;
+
+defined('_JEXEC') || die;
 
 /**
  * Memory statistics
@@ -28,7 +30,7 @@ trait MemStatsAware
 	{
 		$unit = ['b', 'KB', 'MB', 'GB', 'TB', 'PB'];
 
-		return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
+		return @round($size / 1024 ** ($i = floor(log($size, 1024))), 2) . ' ' . $unit[$i];
 	}
 
 	/**

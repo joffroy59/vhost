@@ -42,18 +42,14 @@ class JFormFieldBackup extends JFormField {
 	public function getInput() {
 		$class = ( isset($this->element['class']) ? (string)$this->element['class'] : 'inputbox' );
 
-		// add script declaration to header and control to page
-		if (file_exists(JPATH_ROOT.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR.'content'.DIRECTORY_SEPARATOR.'sigplus'.DIRECTORY_SEPARATOR.'fields'.DIRECTORY_SEPARATOR.'backup.js')) {
-			// sigplus plug-in is installed, use backup.js found in plug-in folder
-			$document = JFactory::getDocument();
-			$document->addScript(JURI::root(true).'/plugins/content/sigplus/fields/backup.js');
-			return
-				'<button type="button" id="extension-settings-backup">'.JText::_('SIGPLUS_SETTINGS_BACKUP').'</button>'.
-				'<button type="button" id="extension-settings-restore">'.JText::_('SIGPLUS_SETTINGS_RESTORE').'</button>'.
-				'<br /><textarea id="extension-settings-list" rows="10" cols="40"></textarea>';
-		} else {
-			// sigplus plug-in is not installed, service not available
-			return '';
-		}
+		// add script declaration to header
+		$document = JFactory::getDocument();
+		$document->addScript(JURI::root(true).'/plugins/content/sigplus/fields/backup.js');
+
+		// add control to page
+		return
+			'<button type="button" id="extension-settings-backup">'.JText::_('SIGPLUS_SETTINGS_BACKUP').'</button>'.
+			'<button type="button" id="extension-settings-restore">'.JText::_('SIGPLUS_SETTINGS_RESTORE').'</button>'.
+			'<br /><textarea id="extension-settings-list" rows="10" cols="40"></textarea>';
 	}
 }

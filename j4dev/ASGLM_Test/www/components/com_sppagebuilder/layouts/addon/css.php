@@ -2,15 +2,23 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Layout\FileLayout;
+use Joomla\CMS\Uri\Uri;
+
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
-$doc = JFactory::getDocument();
+$doc = Factory::getDocument();
+$config = ComponentHelper::getParams('com_sppagebuilder');	
+$lazyload = $config->get('lazyloadimg', '0');
 
-$selector_css = new JLayoutFile('addon.css.selector', JPATH_ROOT . '/components/com_sppagebuilder/layouts');
+$selector_css = new FileLayout('addon.css.selector', JPATH_ROOT . '/components/com_sppagebuilder/layouts');
 
 $addon = $displayData['addon'];
 
@@ -32,30 +40,48 @@ if(isset($addon->settings->global_link_hover_color) && $addon->settings->global_
     $addon_link_hover_css .= "\tcolor: " . $addon->settings->global_link_hover_color . ";\n";
 }
 
-// Background
+// Background image
+$global_background_image = (isset($addon->settings->global_background_image) && $addon->settings->global_background_image) ? $addon->settings->global_background_image : '';
+$global_background_image_src = isset($global_background_image->src) ? $global_background_image->src : $global_background_image;
+
+if($global_background_image_src) {
+    if($lazyload){
+        if($placeholder){
+            $placeholder_bg_image .= 'background-image:url(' . $placeholder.');';
+        }
+        if(strpos($global_background_image_src, "http://") !== false || strpos($global_background_image_src, "https://") !== false){
+            $lazy_bg_image .= "\tbackground-image: url(" . $global_background_image_src . ");\n";
+        } else {
+            $lazy_bg_image .= "\tbackground-image: url(" . Uri::base(true) . '/' . $global_background_image_src . ");\n";
+        }
+    } else {
+        if(strpos($global_background_image_src, "http://") !== false || strpos($global_background_image_src, "https://") !== false){
+            $addon_css .= "\tbackground-image: url(" . $global_background_image_src . ");\n";
+        } else {
+            $addon_css .= "\tbackground-image: url(" . Uri::base(true) . '/' . $global_background_image_src . ");\n";
+        }
+    }
+
+    if(isset($addon->settings->global_background_repeat) && $addon->settings->global_background_repeat) {
+        $addon_css .= "\tbackground-repeat: " . $addon->settings->global_background_repeat . ";\n";
+    }
+
+    if(isset($addon->settings->global_background_size) && $addon->settings->global_background_size) {
+        $addon_css .= "\tbackground-size: " . $addon->settings->global_background_size . ";\n";
+    }
+
+    if(isset($addon->settings->global_background_attachment) && $addon->settings->global_background_attachment) {
+        $addon_css .= "\tbackground-attachment: " . $addon->settings->global_background_attachment . ";\n";
+    }
+    if(isset($addon->settings->global_background_position) && $addon->settings->global_background_position) {
+        $addon_css .= "background-position:" . $addon->settings->global_background_position . ";";
+    }
+}
+
+//Background Color
 if(isset($addon->settings->global_use_background) && $addon->settings->global_use_background) {
     if(isset($addon->settings->global_background_color) && $addon->settings->global_background_color) {
         $addon_css .= "\tbackground-color: " . $addon->settings->global_background_color . ";\n";
-    }
-
-    if(isset($addon->settings->global_background_image) && $addon->settings->global_background_image) {
-        if(strpos($addon->settings->global_background_image, "http://") !== false || strpos($addon->settings->global_background_image, "https://") !== false){
-            $addon_css .= "\tbackground-image: url(" . $addon->settings->global_background_image . ");\n";
-        } else {
-            $addon_css .= "\tbackground-image: url(" . JURI::base(true) . '/' . $addon->settings->global_background_image . ");\n";
-        }
-
-        if(isset($addon->settings->global_background_repeat) && $addon->settings->global_background_repeat) {
-            $addon_css .= "\tbackground-repeat: " . $addon->settings->global_background_repeat . ";\n";
-        }
-
-        if(isset($addon->settings->global_background_size) && $addon->settings->global_background_size) {
-            $addon_css .= "\tbackground-size: " . $addon->settings->global_background_size . ";\n";
-        }
-
-        if(isset($addon->settings->global_background_attachment) && $addon->settings->global_background_attachment) {
-            $addon_css .= "\tbackground-attachment: " . $addon->settings->global_background_attachment . ";\n";
-        }
     }
 }
 
@@ -147,7 +173,14 @@ if(isset($addon->settings->title) && $addon->settings->title) {
         $title_style .= (isset($addon->settings->title_lineheight) && $addon->settings->title_lineheight) ? 'line-height:' . $addon->settings->title_lineheight . 'px;' : '';
     }
 
-    $title_style .= (isset($addon->settings->title_letterspace) && $addon->settings->title_letterspace) ? 'letter-spacing:' . $addon->settings->title_letterspace . ';' : '';
+    $title_letterspace = (isset($settings->title_letterspace) && $settings->title_letterspace) ? $settings->title_letterspace : '';
+    $custom_letterspacing = (isset($settings->custom_letterspacing) && $settings->custom_letterspacing) ? $settings->custom_letterspacing : '';
+
+    if($title_letterspace != 'custom' && (!empty($title_letterspace))){
+        $title_style .= 'letter-spacing:' . $title_letterspace . ';';
+    } else if (!empty($custom_letterspacing)) {
+        $title_style .= 'letter-spacing:' . $custom_letterspacing . ';';
+    }
 
     // Font Style
     $modern_font_style = false;

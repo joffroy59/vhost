@@ -2,22 +2,25 @@
 /**
  * @package     SP Page Builder
  *
- * @copyright   Copyright (C) 2010 - 2018 JoomShaper. All rights reserved.
+ * @copyright   Copyright (c) 2010 - 2021 JoomShaper. All rights reserved.
  * @license     GNU General Public License version 2 or later.
  */
 
 defined('JPATH_PLATFORM') or die;
 
-jimport('joomla.form.formfield');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Form\FormField;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
 
-class JFormFieldResetcss extends JFormField {
+class JFormFieldResetcss extends FormField {
 
 	protected $type = 'Resetcss';
 
 	protected function getInput() {
 
-		Jhtml::_('jquery.framework');
-		$doc = JFactory::getDocument();
+		HTMLHelper::_('jquery.framework');
+		$doc = Factory::getDocument();
 		$doc->addScriptDeclaration('jQuery(function($) {
 			$("#btn-reset-css").on("click", function(event) {
 				event.preventDefault();
@@ -38,6 +41,6 @@ class JFormFieldResetcss extends JFormField {
 			});
 		});');
 
-		return '<a id="btn-reset-css" class="btn btn-default" data-text="'. JText::_('COM_SPPAGEBUILDER_RESET_CSS_TEXT') .'" data-loading="'. JText::_('COM_SPPAGEBUILDER_RESET_CSS_TEXT_LOADING') .'" href="#">'. JText::_('COM_SPPAGEBUILDER_RESET_CSS_TEXT') .'</a>';
+		return '<a id="btn-reset-css" class="btn btn-default" data-text="'. Text::_('COM_SPPAGEBUILDER_RESET_CSS_TEXT') .'" data-loading="'. JText::_('COM_SPPAGEBUILDER_RESET_CSS_TEXT_LOADING') .'" href="#">'. Text::_('COM_SPPAGEBUILDER_RESET_CSS_TEXT') .'</a>';
 	}
 }

@@ -3,13 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine;
 
-
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Base\Part;
 use Akeeba\Engine\Core\Database;
@@ -39,8 +39,6 @@ if (function_exists('ini_set') && !defined('AKEEBADEBUG'))
 {
 	ini_set('display_errors', false);
 }
-
-define('AKEEBA_CACERT_PEM', __DIR__ . '/cacert.pem');
 
 // Make sure the class autoloader is loaded
 require_once __DIR__ . '/Autoloader.php';
@@ -120,9 +118,9 @@ abstract class Factory
 
 		$engineInfo = unserialize($serialized_data);
 
-		static::$root                = isset($engineInfo['root']) ? $engineInfo['root'] : '';
-		static::$objectList          = isset($engineInfo['objectList']) ? $engineInfo['objectList'] : [];
-		static::$engineClassnames    = isset($engineInfo['engineClassnames']) ? $engineInfo['engineClassnames'] : [];
+		static::$root                = $engineInfo['root'] ?? '';
+		static::$objectList          = $engineInfo['objectList'] ?? [];
+		static::$engineClassnames    = $engineInfo['engineClassnames'] ?? [];
 		static::$temporaryObjectList = [];
 	}
 
@@ -160,18 +158,10 @@ abstract class Factory
 	public static function saveState($tag = null, $backupId = null)
 	{
 		$kettenrad = static::getKettenrad();
+		$tag = $tag ?: $kettenrad->getTag();
+		$backupId = $backupId ?: $kettenrad->getBackupId();
 
-		if (empty($tag))
-		{
-			$tag = $kettenrad->getTag();
-		}
-
-		if (empty($backupId))
-		{
-			$backupId = $kettenrad->getBackupId();
-		}
-
-		$saveTag = $tag . (empty($backupId) ? '' : ('.' . $backupId));
+		$saveTag = rtrim($tag . '.' . ($backupId ?: ''), '.');
 		$ret     = $kettenrad->getStatusArray();
 
 		if ($ret['HasRun'] == 1)
@@ -190,12 +180,24 @@ abstract class Factory
 		$logger->resetWarnings();
 
 		$serializedFactoryData = static::serialize();
-		$result                = $factoryStorage->set($serializedFactoryData, $saveTag);
+		$memoryFileExtension   = 'php';
+		$result                = $factoryStorage->set($serializedFactoryData, $saveTag, $memoryFileExtension);
+
+		/**
+		 * Some hosts, such as WPEngine, do not allow us to save the memory files in .php files. In this case we use the
+		 * far more insecure .dat extension.
+		 */
+		if ($result === false)
+		{
+			$memoryFileExtension = 'dat';
+			$result              = $factoryStorage->set($serializedFactoryData, $saveTag, $memoryFileExtension);
+		}
 
 		if ($result === false)
 		{
-			$saveKey      = $factoryStorage->get_storage_filename($saveTag);
+			$saveKey      = $factoryStorage->get_storage_filename($saveTag, $memoryFileExtension);
 			$errorMessage = "Cannot save factory state in storage, storage filename $saveKey";
+
 			$logger->error($errorMessage);
 
 			throw new RuntimeException($errorMessage);
@@ -221,17 +223,8 @@ abstract class Factory
 	 */
 	public static function loadState($tag = null, $backupId = null, $failIfMissing = true)
 	{
-		if (is_null($tag) && defined('AKEEBA_BACKUP_ORIGIN'))
-		{
-			$tag = AKEEBA_BACKUP_ORIGIN;
-		}
-
-		if (is_null($backupId) && defined('AKEEBA_BACKUP_ID'))
-		{
-			$tag = AKEEBA_BACKUP_ID;
-		}
-
-		$loadTag = $tag . (empty($backupId) ? '' : ('.' . $backupId));
+		$tag     = $tag ?: (defined('AKEEBA_BACKUP_ORIGIN') ? AKEEBA_BACKUP_ORIGIN : 'backend');
+		$loadTag = rtrim($tag . '.' . ($backupId ?: ''), '.');
 
 		// In order to load anything, we need to have the correct profile loaded. Let's assume
 		// that the latest backup record in this tag has the correct profile number set.
@@ -244,10 +237,17 @@ abstract class Factory
 			if (empty($profile) || ($profile <= 1))
 			{
 				// Only bother loading a configuration if none has been already loaded
+				$filters      = [
+					['field' => 'tag', 'value' => $tag],
+				];
+
+				if (!empty($backupId))
+				{
+					$filters[] = ['field' => 'backupid', 'value' => $backupId];
+				}
+
 				$statList = Platform::getInstance()->get_statistics_list([
-						'filters'  => [
-							['field' => 'tag', 'value' => $tag],
-						], 'order' => [
+						'filters' => $filters, 'order' => [
 							'by' => 'id', 'order' => 'DESC',
 						],
 					]
@@ -255,8 +255,8 @@ abstract class Factory
 
 				if (is_array($statList))
 				{
-					$stat    = array_pop($statList);
-					$profile = $stat['profile_id'];
+					$stat    = array_pop($statList) ?? [];
+					$profile = $stat['profile_id'] ?? 1;
 				}
 			}
 
@@ -298,21 +298,40 @@ abstract class Factory
 	 *
 	 * The configuration parameters are:
 	 *
-	 * global  bool  True to reset all origins, false to only reset the current origin (default: true)
-	 * log     bool  True to log our actions (default: false)
-	 * maxrun  int   Only backup records older than this number of seconds will be reset (default: 180)
+	 * * global  `bool`  True to reset all backups, regardless of the origin or profile ID
+	 * * log     `bool`  True to log our actions (default: false)
+	 * * maxrun  `int`   Only backup records older than this number of seconds will be reset (default: 180)
+	 *
+	 * Special considerations:
+	 *
+	 * * If global = true all backups from all origins are taken into account to determine which ones are stuck (over
+	 *   the maxrun threshold since their last database entry).
+	 *
+	 * * If global = false only backups from the current backup origin are taken into account.
+	 *
+	 * * If global = false AND the current origin is 'backend' all pending and idle backups with the 'backup' origin are
+	 *   considered stuck regardless of their age. In other words, maxrun is effectively set to 0. The idea is that only
+	 *   a single person, from a single browser, should be taking backend backups at a time. Resetting single origin
+	 *   backups is only ever meant to be called by the consumer when starting a backup.
+	 *
+	 * * Corollary to the above: starting a frontend, CLI or JSON API backup with the same backup profile DOES NOT reset
+	 *   a previously failed backup if the new backup starts less than 'maxrun' seconds since the last step of the
+	 *   failed backup started.
+	 *
+	 * * The time information for the backup age is taken from the database, namely the backupend field. If no time
+	 *   is recorded for the last step we use the backupstart field instead.
 	 *
 	 * @param   array  $config  Configuration parameters for the reset operation
 	 *
 	 * @return  void
-	 * @throws Exception
+	 * @throws  Exception
 	 */
 	public static function resetState($config = [])
 	{
 		$default_config = [
-			'global' => true, // Reset all origins when true
-			'log'    => false, // Log our actions
-			'maxrun' => 180, // Consider "pending" backups as failed after this many seconds
+			'global' => true,
+			'log'    => false,
+			'maxrun' => 180,
 		];
 
 		$config = (object) array_merge($default_config, $config);
@@ -323,98 +342,86 @@ abstract class Factory
 			Factory::getLog()->pause();
 		}
 
-		$originTag = null;
-
-		if (!$config->global)
-		{
-			// If we're not resetting globally, get a list of running backups per tag
-			$originTag = Platform::getInstance()->get_backup_origin();
-		}
+		// Get the origin to clear, depending on the 'global' setting
+		$originTag = $config->global ? null : Platform::getInstance()->get_backup_origin();
 
 		// Cache the factory before proceeding
 		$factory = static::serialize();
 
+		// Get all running backups for the selected origin (or all origins, if global was false).
 		$runningList = Platform::getInstance()->get_running_backups($originTag);
 
-		// Origins we have to clean
-		$origins = [
-			Platform::getInstance()->get_backup_origin(),
-		];
-
-		// 1. Detect failed backups
-		if (is_array($runningList) && !empty($runningList))
+		// Sanity check
+		if (!is_array($runningList))
 		{
-			// The current timestamp
-			$now = time();
-
-			// Mark running backups as failed
-			foreach ($runningList as $running)
-			{
-				if (empty($originTag))
-				{
-					// Check the timestamp of the log file to decide if it's stuck,
-					// but only if a tag is not set
-					$tstamp = Factory::getLog()->getLastTimestamp($running['origin']);
-
-					if (!is_null($tstamp))
-					{
-						// We can only check the timestamp if it's returned. If not, we assume the backup is stale
-						$difference = abs($now - $tstamp);
-
-						// Backups less than maxrun seconds old are not considered stale (default: 3 minutes)
-						if ($difference < $config->maxrun)
-						{
-							continue;
-						}
-					}
-				}
-
-				$filenames = Factory::getStatistics()->get_all_filenames($running, false);
-				$totalSize = 0;
-
-				// Process if there are files to delete...
-				if (!is_null($filenames))
-				{
-					// Delete the failed backup's archive, if exists
-					foreach ($filenames as $failedArchive)
-					{
-						if (file_exists($failedArchive))
-						{
-							$totalSize += (int) @filesize($failedArchive);
-							Platform::getInstance()->unlink($failedArchive);
-						}
-					}
-				}
-
-				// Mark the backup failed
-				if (!$running['total_size'])
-				{
-					$running['total_size'] = $totalSize;
-				}
-
-				$running['status']    = 'fail';
-				$running['multipart'] = 0;
-
-				Platform::getInstance()->set_or_update_statistics($running['id'], $running);
-
-				$backupId = isset($running['backupid']) ? ('.' . $running['backupid']) : '';
-
-				$origins[] = $running['origin'] . $backupId;
-			}
+			$runningList = [];
 		}
 
-		if (!empty($origins))
-		{
-			$origins = array_unique($origins);
+		// If the current origin is 'backend' we assume maxrun = 0 per the method docblock notes.
+		$maxRun = ($originTag == 'backend') ? 0 : $config->maxrun;
 
-			foreach ($origins as $originTag)
+		// Filter out entries by backup age
+		$now         = time();
+		$cutOff      = $now - $maxRun;
+		$runningList = array_filter($runningList, function (array $running) use ($cutOff, $maxRun) {
+			// No cutoff time: include all currently running backup records
+			if ($maxRun == 0)
 			{
-				static::loadState($originTag, null, false);
-				// Remove temporary files
-				Factory::getTempFiles()->deleteTempFiles();
-				// Delete any stale temporary data
-				static::getFactoryStorage()->reset($originTag);
+				return true;
 			}
+
+			// Try to get the last backup tick timestamp
+			try
+			{
+				$backupTickTime = !empty($running['backupend']) ? $running['backupend'] : $running['backupstart'];
+				$tz             = new \DateTimeZone('UTC');
+				$tstamp         = (new \DateTime($backupTickTime, $tz))->getTimestamp();
+			}
+			catch (Exception $e)
+			{
+				$tstamp = Factory::getLog()->getLastTimestamp($running['origin']);
+			}
+
+			if (is_null($tstamp))
+			{
+				return false;
+			}
+
+			// Only include still running backups whose last tick was BEFORE the cutoff time
+			return $tstamp <= $cutOff;
+		});
+
+		// Mark running backups as failed
+		foreach ($runningList as $running)
+		{
+			// Delete the failed backup's leftover archive parts
+			$filenames = Factory::getStatistics()->get_all_filenames($running, false);
+			$filenames = is_null($filenames) ? [] : $filenames;
+			$totalSize = 0;
+
+			foreach ($filenames as $failedArchive)
+			{
+				if (!@file_exists($failedArchive))
+				{
+					continue;
+				}
+
+				$totalSize += (int) @filesize($failedArchive);
+				Platform::getInstance()->unlink($failedArchive);
+			}
+
+			// Mark the backup failed
+			$running['status']     = 'fail';
+			$running['instep']     = 0;
+			$running['total_size'] = empty($running['total_size']) ? $totalSize : $running['total_size'];
+			$running['multipart']  = 0;
+
+			Platform::getInstance()->set_or_update_statistics($running['id'], $running);
+
+			// Remove the temporary data
+			$backupId = isset($running['backupid']) ? ('.' . $running['backupid']) : '';
+
+			self::removeTemporaryData($running['origin'] . $backupId);
 		}
 
 		// Reload the factory
@@ -874,6 +881,22 @@ abstract class Factory
 		}
 
 		return static::$temporaryObjectList[$class_name];
+	}
+
+	/**
+	 * Remote the temporary data for a specific backup tag.
+	 *
+	 * @param   string  $originTag  The backup tag to reset e.g. 'backend.id123' or 'frontend'.
+	 *
+	 * @return  void
+	 */
+	protected static function removeTemporaryData($originTag)
+	{
+		static::loadState($originTag, null, false);
+		// Remove temporary files
+		Factory::getTempFiles()->deleteTempFiles();
+		// Delete any stale temporary data
+		static::getFactoryStorage()->reset($originTag);
 	}
 }
 

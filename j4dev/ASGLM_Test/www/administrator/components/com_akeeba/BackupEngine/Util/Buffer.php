@@ -3,13 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util;
 
-
+defined('AKEEBAENGINE') || die();
 
 /**
  * Generic Buffer stream handler
@@ -187,4 +187,4 @@ class Buffer
 }
 
 // Register the stream
-stream_wrapper_register("buffer", "\\Akeeba\\Engine\\Util\\Buffer");
+stream_wrapper_register("buffer", Buffer::class);

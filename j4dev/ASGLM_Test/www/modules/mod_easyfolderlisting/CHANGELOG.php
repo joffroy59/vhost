@@ -20,6 +20,11 @@ Notes:
 > Issues are represented by exclamation sign (!)
 
 
+Easy Folder Listing v3.1
+================================================================================
+~ Fixed deprecated isAdmin() call exception
+~ Update all copyright notices to 2021
+
 Easy Folder Listing v3.0.4
 ================================================================================
 + Add fixed folderlist field [2019-01-24]

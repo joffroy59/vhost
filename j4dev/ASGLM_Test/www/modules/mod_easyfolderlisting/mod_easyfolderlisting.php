@@ -1,6 +1,6 @@
 <?php
 /**
-* @version		3.0.3
+* @version		3.1
 * @author		Michael A. Gilkes (jaido7@yahoo.com)
 * @copyright	Michael Albert Gilkes
 * @license		GNU/GPLv2
@@ -9,7 +9,7 @@
 /*
 
 Easy Folder Listing Module for Joomla!
-Copyright (C) 2010-2019 Michael Albert Gilkes
+Copyright (C) 2010-2021 Michael Albert Gilkes
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -48,7 +48,7 @@ try
 	//specify the folder
 	$folder = EasyFolderListingHelper::folderPath($params);
 	//Check to see if this is being called from Admin
-	if($app->isAdmin())
+	if($app->isClient('administrator'))
 	{
 		//set the working directory to the Joomla root
 		chdir("..");
@@ -58,7 +58,7 @@ try
 	$rows = EasyFolderListingHelper::getFormattedListing($params, $folder);
 
 	//Check to see if this is being called from Admin
-	if($app->isAdmin())
+	if($app->isClient('administrator'))
 	{
 		//return the working directory to what it was before
 		chdir("administrator");

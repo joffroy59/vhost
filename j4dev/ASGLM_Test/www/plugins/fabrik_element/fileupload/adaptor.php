@@ -4,7 +4,7 @@
  *
  * @package     Joomla
  * @subpackage  Fabrik
- * @copyright   Copyright (C) 2005-2016  Media A-Team, Inc. - All rights reserved.
+ * @copyright   Copyright (C) 2005-2020  Media A-Team, Inc. - All rights reserved.
  * @license     GNU/GPL http://www.gnu.org/copyleft/gpl.html
  */
 
@@ -113,7 +113,7 @@ abstract class FabrikStorageAdaptor
 	 *
 	 * @return  bool  returns false if error
 	 */
-	public abstract function stream($filepath, $chunkSize = 1024 * 1024);
+	public abstract function stream($filepath, $chunkSize = 1048576);
 
 	/**
 	 * Clean the file path

@@ -2,54 +2,59 @@
 /**
 * @package SP Page Builder
 * @author JoomShaper http://www.joomshaper.com
-* @copyright Copyright (c) 2010 - 2016 JoomShaper
+* @copyright Copyright (c) 2010 - 2021 JoomShaper
 * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
-//no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
 
-JHtml::_('jquery.framework');
-JHtml::_('jquery.ui', array('core', 'sortable'));
-JHtml::_('formbehavior.chosen', 'select');
+defined ('_JEXEC') or die ('Restricted access');
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Language\Text;
 
 require_once JPATH_COMPONENT_ADMINISTRATOR .'/builder/classes/base.php';
 require_once JPATH_COMPONENT_ADMINISTRATOR .'/builder/classes/config.php';
 
-if(!class_exists('SppagebuilderHelper')) {
-	require_once JPATH_COMPONENT_ADMINISTRATOR . '/helpers/sppagebuilder.php';
+$doc = Factory::getDocument();
+$app = Factory::getApplication();
+$params = ComponentHelper::getParams('com_sppagebuilder');
+
+SppagebuilderHelperSite::addStylesheet('pbfont.css', 'admin');
+
+if ($params->get('fontawesome', 1))
+{
+	SppagebuilderHelperSite::addStylesheet('font-awesome-5.min.css');
+	SppagebuilderHelperSite::addStylesheet('font-awesome-v4-shims.css');
 }
 
-if(!class_exists('SppagebuilderHelperSite')) {
-	require_once JPATH_ROOT . '/components/com_sppagebuilder/helpers/helper.php';
+if (!$params->get('disableanimatecss', 0))
+{
+	SppagebuilderHelperSite::addStylesheet('animate.min.css');
 }
 
-$doc = JFactory::getDocument();
-$app = JFactory::getApplication();
-$params = JComponentHelper::getParams('com_sppagebuilder');
-
-$doc->addStylesheet( JURI::base(true) . '/administrator/components/com_sppagebuilder/assets/css/pbfont.css' );
-if ($params->get('fontawesome_version') == '5') { 
-	$doc->addStyleSheet(JUri::base(true) . '/components/com_sppagebuilder/assets/css/font-awesome-5.min.css');
-} else {
-	$doc->addStyleSheet(JUri::base(true) . '/components/com_sppagebuilder/assets/css/font-awesome.min.css');
-}
-$doc->addStyleSheet(JUri::base(true).'/components/com_sppagebuilder/assets/css/sppagebuilder.css');
-$doc->addStyleSheet(JUri::base(true).'/components/com_sppagebuilder/assets/css/react-select.css');
-$doc->addStyleSheet(JUri::base(true).'/components/com_sppagebuilder/assets/css/edit.css');
-
-if ($params->get('addcontainer', 1)) {
-	$doc->addStyleSheet(JUri::base(true) . '/components/com_sppagebuilder/assets/css/sppagecontainer.css');
+if (!$params->get('disablecss', 0))
+{
+	SppagebuilderHelperSite::addStylesheet('sppagebuilder.css');
 }
 
-$doc->addScriptdeclaration('var pagebuilder_base="' . JURI::root() . '";');
-$doc->addScript( JUri::base(true).'/components/com_sppagebuilder/assets/js/edit.js' );
-$doc->addScript( JURI::root(true) . '/media/editors/tinymce/tinymce.min.js' );
-$doc->addScript( JUri::base(true). '/components/com_sppagebuilder/assets/js/actions.js' );
-$doc->addScript( JURI::base(true) . '/components/com_sppagebuilder/assets/js/jquery.vide.js' );
+SppagebuilderHelperSite::addStylesheet('react-select.css');
+SppagebuilderHelperSite::addStylesheet('edit.css');
 
-if($this->item->extension == 'com_content' && $this->item->extension_view == 'article'){
+HTMLHelper::_('jquery.framework');
+$doc->addScriptdeclaration('var pagebuilder_base="' . Uri::root() . '";');
+SppagebuilderHelper::loadEditor();
+SppagebuilderHelperSite::addScript('actions.js');
+SppagebuilderHelperSite::addScript('jquery.vide.js');
+
+if ($this->item->extension == 'com_content' && $this->item->extension_view == 'article')
+{
 	$extension_view = 'article';
-} else {
+}
+else
+{
 	$extension_view = 'page';
 }
 
@@ -59,17 +64,17 @@ $menuClassPrefix = '';
 $showPageHeading = 0;
 
 // check active menu item
-if ($menu) {
-	$menuClassPrefix 	= $menu->params->get('pageclass_sfx');
-	$showPageHeading 	= $menu->params->get('show_page_heading');
-	$menuheading 		= $menu->params->get('page_heading');
+if ($menu)
+{
+	$menuClassPrefix 	= $menu->getParams()->get('pageclass_sfx');
+	$showPageHeading 	= $menu->getParams()->get('show_page_heading');
+	$menuheading 		= $menu->getParams()->get('page_heading');
 }
 
 require_once JPATH_COMPONENT_ADMINISTRATOR . '/builder/classes/addon.php';
 $this->item->text = SpPageBuilderAddonHelper::__($this->item->text, true);
 
 SpPgaeBuilderBase::loadAddons();
-
 $fa_icon_list     = SpPgaeBuilderBase::getIconList(); // Icon List
 $animateNames     = SpPgaeBuilderBase::getAnimationsList(); // Animation Names
 $accessLevels     = SpPgaeBuilderBase::getAccessLevelList(); // Access Levels
@@ -82,7 +87,8 @@ $global_attributes = SpPgaeBuilderBase::addonOptions();
 $addons_list = SpAddonsConfig::$addons;
 
 usort($addons_list, function($a){
-	if (isset($a['pro']) && $a['pro']) {
+	if (isset($a['pro']) && $a['pro'])
+	{
 		return 1;
 	}
 });
@@ -91,21 +97,28 @@ $newAddonList = array();
 
 $templates = array('module', 'divider', 'text_block', 'testimonial', 'tab', 'image', 'icon', 'accordion', 'feature', 'empty_space', 'video', 'carousel', 'button', 'alert');
 
-foreach ($addons_list as $addon) {
+foreach ($addons_list as $addon)
+{
 	$default_value = SpPgaeBuilderBase::getSettingsDefaultValue($addon['attr']);
 	$addon['default'] = $default_value['default'];
-	if(isset($default_value['attr'])){
+
+	if (isset($default_value['attr']))
+	{
 		$addon['attr'] = $default_value['attr'];
 	}
+
 	$addon['visibility'] = true;
 
-	if(!isset($addon['category']) || empty($addon['category'])){
+	if (!isset($addon['category']) || empty($addon['category']))
+	{
 		$addon['category'] = 'General';
 	}
 
 	$addon_name = preg_replace('/^sp_/i', '', $addon['addon_name']);
 	$class_name = 'SppagebuilderAddon' . ucfirst($addon_name);
-	if(in_array($addon_name, $templates) && method_exists($class_name, 'getTemplate')){
+
+	if (in_array($addon_name, $templates) && method_exists($class_name, 'getTemplate'))
+	{
 		$addon['js_template'] = true;
 	}
 
@@ -137,34 +150,23 @@ $doc->addScriptdeclaration('var rowSettings=' . json_encode( $rowSettings ) . ';
 $doc->addScriptdeclaration('var colSettings=' . json_encode( $columnSettings ) . ';');
 $doc->addScriptdeclaration('var sppbVersion="' . SppagebuilderHelper::getVersion() . '";');
 // Media
-$mediaParams = JComponentHelper::getParams('com_media');
+$mediaParams = ComponentHelper::getParams('com_media');
 $doc->addScriptdeclaration('var sppbMediaPath=\'/'. $mediaParams->get('file_path', 'images') .'\';');
 $doc->addScriptdeclaration('var extensionView=\'' . $extension_view . '\';');
 
 
-if (!$this->item->text) {
+if (!$this->item->text)
+{
 	$doc->addScriptdeclaration('var initialState=[];');
-} else {
-	$doc->addScriptdeclaration('var initialState=' . $this->item->text . ';');
 }
-
-$conf   = JFactory::getConfig();
-$editor   = $conf->get('editor');
-
-if ($editor == 'jce') {
-	require_once(JPATH_ADMINISTRATOR . '/components/com_jce/includes/base.php');
-	wfimport('admin.models.editor');
-  $editor = new WFModelEditor();
-
-  $settings = $editor->getEditorSettings();
-
-  $app->triggerEvent('onBeforeWfEditorRender', array(&$settings));
-	echo $editor->render($settings);
+else
+{
+	$doc->addScriptdeclaration('var initialState=' . $this->item->text . ';');
 }
 ?>
 
 <div id="sp-page-builder" class="sp-pagebuilder <?php echo $menuClassPrefix; ?> page-<?php echo $this->item->id; ?>" data-pageid="<?php echo $this->item->id; ?>">
-	<form action="<?php echo JRoute::_('index.php?option=com_sppagebuilder&id=' . (int) $this->item->id); ?>" method="post" name="adminForm" id="adminForm" class="form-validate page-builder-form" style="display: none;">
+	<form action="<?php echo Route::_('index.php?option=com_sppagebuilder&id=' . (int) $this->item->id); ?>" method="post" name="adminForm" id="adminForm" class="form-validate page-builder-form" style="display: none;">
 		<div id="page-options">
 			<?php $fieldsets = $this->form->getFieldsets(); ?>
 			
@@ -176,7 +178,7 @@ if ($editor == 'jce') {
 							<?php echo $field->label; ?>
 							<?php echo $field->input; ?>
 							<?php if($field->getAttribute('desc')) : ?>
-								<span class="sp-pagebuilder-form-help"><?php echo JText::_($field->getAttribute('desc')); ?></span>
+								<span class="sp-pagebuilder-form-help"><?php echo Text::_($field->getAttribute('desc')); ?></span>
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
@@ -192,7 +194,7 @@ if ($editor == 'jce') {
 								<?php echo $field->label; ?>
 								<?php echo $field->input; ?>
 								<?php if($field->getAttribute('desc')) : ?>
-									<span class="sp-pagebuilder-form-help"><?php echo JText::_($field->getAttribute('desc')); ?></span>
+									<span class="sp-pagebuilder-form-help"><?php echo Text::_($field->getAttribute('desc')); ?></span>
 								<?php endif; ?>
 							</div>
 						<?php endforeach; ?>
@@ -209,7 +211,7 @@ if ($editor == 'jce') {
 								<?php echo $field->label; ?>
 								<?php echo $field->input; ?>
 								<?php if($field->getAttribute('desc')) : ?>
-									<span class="sp-pagebuilder-form-help"><?php echo JText::_($field->getAttribute('desc')); ?></span>
+									<span class="sp-pagebuilder-form-help"><?php echo Text::_($field->getAttribute('desc')); ?></span>
 								<?php endif; ?>
 							</div>
 						<?php endforeach; ?>
@@ -220,17 +222,17 @@ if ($editor == 'jce') {
 
         <input type="hidden" id="form_task" name="task" value="page.apply" />
         <?php
-            $app = JFactory::getApplication();
-            $input = $app->input;
-            $Itemid = $input->get('Itemid', 0, 'INT');
+			$app = Factory::getApplication();
+			$input = $app->input;
+			$Itemid = $input->get('Itemid', 0, 'INT');
 
-            $url = JRoute::_('index.php?option=com_sppagebuilder&view=page&id=' . $this->item->id . '&Itemid=' . $Itemid);
-            $root = JURI::base();
-            $root = new JURI($root);
-            $pageUrl = $root->getScheme() . '://' . $root->getHost() . $url;
+			$url = Route::_('index.php?option=com_sppagebuilder&view=page&id=' . $this->item->id . '&Itemid=' . $Itemid);
+			$root = Uri::base();
+			$root = new Uri($root);
+			$pageUrl = $root->getScheme() . '://' . $root->getHost() . $url;
         ?>
         <input type="hidden" id="return_page" name="return_page" value="<?php echo base64_encode($pageUrl); ?>" />
-        <?php echo JHtml::_('form.token'); ?>
+        <?php echo HTMLHelper::_('form.token'); ?>
 	</form>
 
 	<div id="sp-pagebuilder-container">
@@ -247,8 +249,8 @@ if ($editor == 'jce') {
 			$lang = '&lang='.$lang_array[0];
 		}
 
-		$iframe_url = JURI::root(true) . '/index.php?option=com_sppagebuilder&amp;view=form&amp;id=' . $this->item->id .'&amp;layout=edit-iframe&amp;Itemid='.$Itemid.$lang;
-		$iframe_sef_url = JRoute::_($iframe_url);
+		$iframe_url = Uri::root(true) . '/index.php?option=com_sppagebuilder&amp;view=form&amp;id=' . $this->item->id .'&amp;layout=edit-iframe&amp;Itemid='.$Itemid.$lang;
+		$iframe_sef_url = Route::_($iframe_url);
 	?>
 	<iframe name="sp-pagebuilder-view" id="sp-pagebuilder-view" data-url="<?php echo $iframe_sef_url; ?>"></iframe>
 	<div id="sp-pagebuilder-page-tools" class="sp-pagebuilder-page-tools"></div>
@@ -259,11 +261,14 @@ if ($editor == 'jce') {
 </div>
 
 <?php
-foreach ($newAddonList as $addon) {
+foreach ($newAddonList as $addon)
+{
 	$addon_name = $addon['addon_name'];
 	$addon_name = preg_replace('/^sp_/i', '', $addon['addon_name']);
-  $class_name = 'SppagebuilderAddon' . ucfirst($addon_name);
-	if(in_array($addon_name, $templates) && method_exists($class_name, 'getTemplate')){
+ 	$class_name = 'SppagebuilderAddon' . ucfirst($addon_name);
+	
+	 if (in_array($addon_name, $templates) && method_exists($class_name, 'getTemplate'))
+	 {
 		?>
 		<script id="sppb-tmpl-addon-<?php echo $addon_name; ?>" type="x-tmpl-lodash">
 		<#
@@ -278,6 +283,7 @@ foreach ($newAddonList as $addon) {
 			var backgroundRepeat = data.global_background_repeat || '';
 			var backgroundSize = data.global_background_size || '';
 			var backgroundAttachment = data.global_background_attachment || '';
+			var backgroundPosition = data.global_background_position || '';
 			var modern_font_style = false;
 			var title_font_style = data.title_fontstyle || "";
 
@@ -287,10 +293,17 @@ foreach ($newAddonList as $addon) {
 			}
 
 			var backgroundImage = '';
-			if(data.global_use_background && data.global_background_image  && (data.global_background_image.indexOf('http://') != -1 || data.global_background_image.indexOf('https://') != -1)){
-				backgroundImage = 'url('+data.global_background_image+')';
-			} else if(data.global_use_background && data.global_background_image){
-				backgroundImage = 'url('+pagebuilder_base+data.global_background_image+')';
+			var globalBgImg = {}
+			if (typeof data.global_background_image !== "undefined" && typeof data.global_background_image.src !== "undefined") {
+				globalBgImg = data.global_background_image
+			} else {
+				globalBgImg = {src: data.global_background_image}
+			}
+
+			if(globalBgImg.src && (globalBgImg.src?.indexOf('http://') != -1 || globalBgImg.src?.indexOf('https://') != -1)){
+				backgroundImage = 'url('+globalBgImg.src+')';
+			} else if(globalBgImg.src){
+				backgroundImage = 'url('+pagebuilder_base+globalBgImg.src+')';
 			}
 
 			let borderWidth = '';
@@ -355,6 +368,7 @@ foreach ($newAddonList as $addon) {
 					background-repeat: {{ backgroundRepeat }};
 					background-size: {{ backgroundSize }};
 					background-attachment: {{ backgroundAttachment }};
+					background-position: {{ backgroundPosition }};
 					<# if(_.isObject(borderRadius)){ #>
 						border-radius: {{ borderRadius.md }}px;
 					<# } else { #>
@@ -563,4 +577,4 @@ foreach ($newAddonList as $addon) {
 ?>
 
 
-<script type="text/javascript" src="<?php echo JURI::base(true) . '/components/com_sppagebuilder/assets/js/engine.js'; ?>"></script>
+<script type="text/javascript" src="<?php echo Uri::base(true) . '/components/com_sppagebuilder/assets/js/engine.js?' . SppagebuilderHelperSite::getVersion(true) ; ?>"></script>

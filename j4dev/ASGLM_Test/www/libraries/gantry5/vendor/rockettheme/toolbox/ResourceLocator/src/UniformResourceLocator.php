@@ -2,6 +2,15 @@
 
 namespace RocketTheme\Toolbox\ResourceLocator;
 
+use BadMethodCallException;
+use Exception;
+use InvalidArgumentException;
+use RecursiveIteratorIterator;
+use RuntimeException;
+use function count;
+use function is_array;
+use function is_string;
+
 /**
  * Implements Uniform Resource Location.
  *
@@ -13,32 +22,31 @@ namespace RocketTheme\Toolbox\ResourceLocator;
  */
 class UniformResourceLocator implements ResourceLocatorInterface
 {
-    /**
-     * @var string  Base URL for all the streams.
-     */
+    /** @var string  Base URL for all the streams. */
     public $base;
 
-    /**
-     * @var array[]
-     */
+    /** @var array[] */
     protected $schemes = [];
 
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $cache = [];
 
+    /**
+     * UniformResourceLocator constructor.
+     *
+     * @param string|null $base
+     */
     public function __construct($base = null)
     {
         // Normalize base path.
-        $this->base = rtrim(str_replace('\\', '/', $base ?: getcwd()), '/');
+        $this->base = rtrim(str_replace('\\', '/', $base ?: getcwd() ?: ''), '/');
     }
 
     /**
      * Return iterator for the resource URI.
      *
-     * @param  string $uri
-     * @param  int    $flags    See constants from FilesystemIterator class.
+     * @param string $uri
+     * @param int|null $flags See constants from FilesystemIterator class.
      * @return UniformResourceIterator
      */
     public function getIterator($uri, $flags = null)
@@ -49,8 +57,8 @@ class UniformResourceLocator implements ResourceLocatorInterface
     /**
      * Return recursive iterator for the resource URI.
      *
-     * @param  string $uri
-     * @param  int    $flags    See constants from FilesystemIterator class.
+     * @param string $uri
+     * @param int|null $flags    See constants from FilesystemIterator class.
      * @return RecursiveUniformResourceIterator
      */
     public function getRecursiveIterator($uri, $flags = null)
@@ -75,7 +83,6 @@ class UniformResourceLocator implements ResourceLocatorInterface
      * Reset a locator scheme
      *
      * @param string $scheme The scheme to reset
-     *
      * @return $this
      */
     public function resetScheme($scheme)
@@ -92,18 +99,22 @@ class UniformResourceLocator implements ResourceLocatorInterface
      * @param string $scheme
      * @param string $prefix
      * @param string|array $paths
-     * @param bool|string  $override  True to add path as override, string
-     * @param bool  $force     True to add paths even if them do not exist.
-     * @throws \BadMethodCallException
+     * @param bool|string|string[]  $override  True to add path as override, string
+     * @param bool $force     True to add paths even if them do not exist.
+     * @return void
+     * @throws BadMethodCallException
      */
     public function addPath($scheme, $prefix, $paths, $override = false, $force = false)
     {
         $list = [];
-        foreach((array) $paths as $path) {
-            if (\is_array($path)) {
+
+        /** @var array<int,string|array> $paths */
+        $paths = (array)$paths;
+        foreach ($paths as $path) {
+            if (is_array($path)) {
                 // Support stream lookup in ['theme', 'path/to'] format.
-                if (\count($path) !== 2 || !\is_string($path[0]) || !\is_string($path[1])) {
-                    throw new \BadMethodCallException('Invalid stream path given.');
+                if (count($path) !== 2 || !is_string($path[0]) || !is_string($path[1])) {
+                    throw new BadMethodCallException('Invalid stream path given.');
                 }
                 $list[] = $path;
             } elseif (false !== strpos($path, '://')) {
@@ -127,7 +138,12 @@ class UniformResourceLocator implements ResourceLocatorInterface
             if (!$override || $override == 1) {
                 $list = $override ? array_merge($paths, $list) : array_merge($list, $paths);
             } else {
-                $location = array_search($override, $paths, true) ?: \count($paths);
+                if (is_string($override) && false !== strpos($override, '://')) {
+                    // Support stream lookup in 'theme://path/to' format.
+                    $override = explode('://', $override, 2);
+                    $override[1] = trim($override[1], '/');
+                }
+                $location = (int)array_search($override, $paths, true) ?: count($paths);
                 array_splice($paths, $location, 0, $list);
                 $list = $paths;
             }
@@ -181,33 +197,47 @@ class UniformResourceLocator implements ResourceLocatorInterface
      */
     public function getPaths($scheme = null)
     {
-        return !$scheme ? $this->schemes : (isset($this->schemes[$scheme]) ? $this->schemes[$scheme] : []);
+        if (null !== $scheme) {
+            return isset($this->schemes[$scheme]) ? $this->schemes[$scheme] : [];
+        }
+
+        return $this->schemes;
     }
 
     /**
-     * @param  string $uri
-     * @return string|bool
-     * @throws \BadMethodCallException
+     * @param string $uri
+     * @return string|false
+     * @throws BadMethodCallException
      */
     public function __invoke($uri)
     {
-        if (!\is_string($uri)) {
-            throw new \BadMethodCallException('Invalid parameter $uri.');
+        if (!is_string($uri)) {
+            throw new BadMethodCallException('Invalid parameter $uri.');
         }
-        return $this->findCached($uri, false, true, false);
+
+        /** @var string|false $cached */
+        $cached = $this->findCached($uri, false, true, false);
+
+        return $cached;
     }
 
     /**
      * Returns true if uri is resolvable by using locator.
      *
-     * @param  string $uri
+     * @param string $uri
      * @return bool
      */
     public function isStream($uri)
     {
         try {
-            list ($scheme,) = $this->normalize($uri, true, true);
-        } catch (\Exception $e) {
+            $normalized = $this->normalize($uri, true, true);
+            \assert(is_array($normalized));
+
+            list ($scheme,) = $normalized;
+            if (!is_string($scheme)) {
+                return false;
+            }
+        } catch (Exception $e) {
             return false;
         }
 
@@ -215,34 +245,47 @@ class UniformResourceLocator implements ResourceLocatorInterface
     }
 
     /**
-     * Returns the canonicalized URI on success. The resulting path will have no '/./' or '/../' components.
+     * Returns the canonicalized URI on success. The resulting path will have no '//', '/./' or '/../' components.
      * Trailing delimiter `/` is kept.
+     *
+     * If URI is a local file, method always returns absolute path to the file.
      *
      * By default (if $throwException parameter is not set to true) returns false on failure.
      *
      * @param string $uri
      * @param bool $throwException
      * @param bool $splitStream
-     * @return string|array|bool
-     * @throws \BadMethodCallException
+     * @return string[]|string|false
+     * @throws BadMethodCallException
      */
     public function normalize($uri, $throwException = false, $splitStream = false)
     {
-        if (!\is_string($uri)) {
+        if (!is_string($uri)) {
             if ($throwException) {
-                throw new \BadMethodCallException('Invalid parameter $uri.');
+                throw new BadMethodCallException('Invalid parameter $uri.');
             }
 
             return false;
         }
 
-        $uri = preg_replace('|\\\|u', '/', $uri);
+        $uri = (string)preg_replace('|\\\\|u', '/', $uri);
         $segments = explode('://', $uri, 2);
         $path = array_pop($segments);
         $scheme = array_pop($segments) ?: 'file';
 
-        if ($path) {
-            $path = preg_replace('|\\\|u', '/', $path);
+        // Make all file scheme paths absolute.
+        if ($scheme === 'file') {
+            if ('' === $path) {
+                // Empty path.
+                $path = $this->base;
+            } elseif (preg_match('`^(/|([a-z]:/))`ui', $uri) !== 1) {
+                // Relative path.
+                $path = "{$this->base}/$path";
+            }
+        }
+
+        // Clean path from '..', '.' and ''.
+        if ('' !== $path) {
             $parts = explode('/', $path);
 
             $list = [];
@@ -251,7 +294,7 @@ class UniformResourceLocator implements ResourceLocatorInterface
                     $part = array_pop($list);
                     if ($part === null || $part === '' || (!$list && strpos($part, ':'))) {
                         if ($throwException) {
-                            throw new \BadMethodCallException('Invalid parameter $uri.');
+                            throw new BadMethodCallException('Invalid parameter $uri.');
                         }
 
                         return false;
@@ -270,52 +313,84 @@ class UniformResourceLocator implements ResourceLocatorInterface
             $path = implode('/', $list);
         }
 
-        return $splitStream ? [$scheme, $path] : ($scheme !== 'file' ? "{$scheme}://{$path}" : $path);
+        if ($splitStream) {
+            return [$scheme, $path];
+        }
+
+        return $scheme !== 'file' ? "{$scheme}://{$path}" : $path;
+    }
+
+    /**
+     * Get resource path. If resource does not exist, return path with highest priority.
+     *
+     * @param string $uri Input URI to be searched.
+     * @param bool $absolute Whether to return absolute path.
+     * @return string
+     * @throws BadMethodCallException
+     */
+    public function getResource($uri, $absolute = true)
+    {
+        $path = $this->findResource($uri, $absolute);
+        if ($path === false) {
+            $path = $this->findResource($uri, $absolute, true);
+            if ($path === false) {
+                $path = '';
+            }
+        }
+
+        return $path;
     }
 
     /**
      * Find highest priority instance from a resource.
      *
-     * @param  string $uri      Input URI to be searched.
-     * @param  bool   $absolute Whether to return absolute path.
-     * @param  bool   $first    Whether to return first path even if it doesn't exist.
-     * @throws \BadMethodCallException
-     * @return string|bool
+     * @param string $uri Input URI to be searched.
+     * @param bool $absolute Whether to return absolute path.
+     * @param bool $first Whether to return first path even if it doesn't exist.
+     * @return string|false
+     * @throws BadMethodCallException
      */
     public function findResource($uri, $absolute = true, $first = false)
     {
-        if (!\is_string($uri)) {
-            throw new \BadMethodCallException('Invalid parameter $uri.');
+        if (!is_string($uri)) {
+            throw new BadMethodCallException('Invalid parameter $uri.');
         }
-        return $this->findCached($uri, false, $absolute, $first);
+
+        /** @var string|false $cached */
+        $cached = $this->findCached($uri, false, $absolute, $first);
+
+        return $cached;
     }
 
     /**
      * Find all instances from a resource.
      *
-     * @param  string $uri      Input URI to be searched.
-     * @param  bool   $absolute Whether to return absolute path.
-     * @param  bool   $all      Whether to return all paths even if they don't exist.
-     * @throws \BadMethodCallException
+     * @param string $uri Input URI to be searched.
+     * @param bool $absolute Whether to return absolute path.
+     * @param bool $all Whether to return all paths even if they don't exist.
      * @return array
+     * @throws BadMethodCallException
      */
     public function findResources($uri, $absolute = true, $all = false)
     {
-        if (!\is_string($uri)) {
-            throw new \BadMethodCallException('Invalid parameter $uri.');
+        if (!is_string($uri)) {
+            throw new BadMethodCallException('Invalid parameter $uri.');
         }
 
-        return $this->findCached($uri, true, $absolute, $all);
+        /** @var array $cached */
+        $cached = $this->findCached($uri, true, $absolute, $all);
+
+        return $cached;
     }
 
     /**
      * Find all instances from a list of resources.
      *
-     * @param  array  $uris     Input URIs to be searched.
-     * @param  bool   $absolute Whether to return absolute path.
-     * @param  bool   $all      Whether to return all paths even if they don't exist.
-     * @throws \BadMethodCallException
+     * @param array $uris Input URIs to be searched.
+     * @param bool $absolute Whether to return absolute path.
+     * @param bool $all Whether to return all paths even if they don't exist.
      * @return array
+     * @throws BadMethodCallException
      */
     public function mergeResources(array $uris, $absolute = true, $all = false)
     {
@@ -326,8 +401,7 @@ class UniformResourceLocator implements ResourceLocatorInterface
             $lists[] = $this->findResources($uri, $absolute, $all);
         }
 
-        // TODO: In PHP 5.6+ use array_merge(...$list);
-        return call_user_func_array('array_merge', $lists);
+        return array_merge(...$lists);
     }
 
     /**
@@ -343,9 +417,9 @@ class UniformResourceLocator implements ResourceLocatorInterface
         if (!isset($this->cache[$cacheKey])) {
             $this->cache[$cacheKey] = true;
 
-            $iterator = new \RecursiveIteratorIterator($this->getRecursiveIterator($uri), \RecursiveIteratorIterator::SELF_FIRST);
+            $iterator = new RecursiveIteratorIterator($this->getRecursiveIterator($uri), RecursiveIteratorIterator::SELF_FIRST);
 
-            /** @var UniformResourceIterator $uri */
+            /** @var UniformResourceIterator $item */
             foreach ($iterator as $item) {
                 $key = $item->getUrl() . '@010';
                 $this->cache[$key] = $item->getPathname();
@@ -384,8 +458,8 @@ class UniformResourceLocator implements ResourceLocatorInterface
      * @param bool $array
      * @param bool $absolute
      * @param bool $all
-     * @return array|string|bool
-     * @throws \BadMethodCallException
+     * @return array|string|false
+     * @throws BadMethodCallException
      */
     protected function findCached($uri, $array, $absolute, $all)
     {
@@ -394,22 +468,49 @@ class UniformResourceLocator implements ResourceLocatorInterface
 
         if (!isset($this->cache[$key])) {
             try {
-                list ($scheme, $file) = $this->normalize($uri, true, true);
+                $normalized = $this->normalize($uri, true, true);
+                \assert(is_array($normalized));
 
-                if (!$file && $scheme === 'file') {
-                    $file = $this->base;
+                list ($scheme, $file) = $normalized;
+
+                if ($scheme === 'file') {
+                    // File stream is a special case.
+                    if (!$absolute) {
+                        // Make uri relative.
+                        if ($uri === $this->base) {
+                            $file = '/';
+                        } elseif (strpos($uri, $this->base . '/') === 0) {
+                            $file = substr($uri, strlen($this->base));
+                        } else {
+                            throw new RuntimeException("UniformResourceLocator: Absolute file path with relative lookup not allowed", 500);
+                        }
+                    }
+
+                    if (!$all && !file_exists($file)) {
+                        $this->cache[$key] = $array ? [] : false;
+                    } else {
+                        $this->cache[$key] = $array ? [$file] : $file;
+                    }
+               } else {
+                    // Locate files in resource locator streams.
+                    $this->cache[$key] = $this->find($scheme, $file, $array, $absolute, $all);
                 }
 
-                $this->cache[$key] = $this->find($scheme, $file, $array, $absolute, $all);
-
-            } catch (\BadMethodCallException $e) {
-                $this->cache[$key] =  $array ? [] : false;
+            } catch (BadMethodCallException $e) {
+                $this->cache[$key] = $array ? [] : false;
             }
         }
 
         return $this->cache[$key];
     }
 
+    /**
+     * @param string $uri
+     * @param bool $array
+     * @param bool $absolute
+     * @param bool $all
+     * @return void
+     */
     protected function clearCached($uri, $array, $absolute, $all)
     {
         // Local caching: make sure that the function gets only called at once for each file.
@@ -419,23 +520,26 @@ class UniformResourceLocator implements ResourceLocatorInterface
     }
 
     /**
-     * @param  string $scheme
-     * @param  string $file
-     * @param  bool $array
-     * @param  bool $absolute
-     * @param  bool $all
-     *
-     * @throws \InvalidArgumentException
-     * @return array|string|bool
+     * @param string $scheme
+     * @param string $file
+     * @param bool $array
+     * @param bool $absolute
+     * @param bool $all
+     * @return array|string|false
+     * @throws InvalidArgumentException
      * @internal
      */
     protected function find($scheme, $file, $array, $absolute, $all)
     {
         if (!isset($this->schemes[$scheme])) {
-            throw new \InvalidArgumentException("Invalid resource {$scheme}://");
+            throw new InvalidArgumentException("Invalid resource {$scheme}://");
         }
 
         $results = $array ? [] : false;
+        /**
+         * @var string $prefix
+         * @var array $paths
+         */
         foreach ($this->schemes[$scheme] as $prefix => $paths) {
             if ($prefix && strpos($file, $prefix) !== 0) {
                 continue;
@@ -445,12 +549,12 @@ class UniformResourceLocator implements ResourceLocatorInterface
             $filename = '/' . trim(substr($file, \strlen($prefix)), '\/');
 
             foreach ($paths as $path) {
-                if (\is_array($path)) {
+                if (is_array($path)) {
                     // Handle scheme lookup.
                     $relPath = trim($path[1] . $filename, '/');
                     $found = $this->find($path[0], $relPath, $array, $absolute, $all);
                     if ($found) {
-                        if (!$array) {
+                        if (!is_array($found)) {
                             return $found;
                         }
                         $results = array_merge($results, $found);
@@ -464,17 +568,23 @@ class UniformResourceLocator implements ResourceLocatorInterface
                         $fullPath = $this->base . '/' . $relPath;
                     } else {
                         // Handle absolute path lookup.
+                        $relPath = null;
                         $fullPath = rtrim($path . $filename, '/');
-                        if (!$absolute) {
-                            throw new \RuntimeException("UniformResourceLocator: Absolute stream path with relative lookup not allowed ({$prefix})", 500);
-                        }
                     }
 
                     if ($all || file_exists($fullPath)) {
-                        $current = $absolute ? $fullPath : $relPath;
+                        if ($absolute) {
+                            $current = $fullPath;
+                        } elseif (null === $relPath) {
+                            throw new RuntimeException("UniformResourceLocator: Absolute stream path with relative lookup not allowed ({$prefix})", 500);
+                        } else {
+                            $current = $relPath;
+                        }
+
                         if (!$array) {
                             return $current;
                         }
+
                         $results[] = $current;
                     }
                 }

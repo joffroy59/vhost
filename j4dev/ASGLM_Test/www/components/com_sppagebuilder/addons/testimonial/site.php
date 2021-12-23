@@ -2,9 +2,12 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2019 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Uri\Uri;
+
 //no direct accees
 defined ('_JEXEC') or die ('Restricted access');
 
@@ -24,10 +27,25 @@ class SppagebuilderAddonTestimonial extends SppagebuilderAddons {
 		$review = (isset($settings->review) && $settings->review) ? $settings->review : '';
 		$name = (isset($settings->name) && $settings->name) ? $settings->name : '';
 		$company = (isset($settings->company) && $settings->company) ? $settings->company : '';
-		$avatar = (isset($settings->avatar) && $settings->avatar) ? $settings->avatar : '';
 		$avatar_shape = (isset($settings->avatar_shape) && $settings->avatar_shape) ? $settings->avatar_shape : 'sppb-avatar-circle';
 		$link = (isset($settings->link) && $settings->link) ? $settings->link : '';
 		$link_target = (isset($settings->link_target) && $settings->link_target) ? ' rel="noopener noreferrer" target="' . $settings->link_target . '"' : '';
+
+		$avatar = (isset($settings->avatar) && $settings->avatar) ? $settings->avatar : '';
+		$avatar_src = isset($avatar->src) ? $avatar->src : $avatar;
+		$avatar_width = (isset($avatar->width) && $avatar->width) ? $avatar->width : '';
+		$avatar_height = (isset($avatar->height) && $avatar->height) ? $avatar->height : '';
+		
+		//Lazy load image
+		$placeholder = $avatar_src == '' ? false : $this->get_image_placeholder($avatar_src);
+		$avatar_img = '';
+		if(strpos($avatar_src, "http://") !== false || strpos($avatar_src, "https://") !== false){
+			$avatar_img = $avatar_src;
+		} else {
+			if($avatar_src){
+				$avatar_img = Uri::base() . $avatar_src;
+			}
+		}
 
 		//Rating
 		$client_rating_enable = (isset($settings->client_rating_enable)) ? $settings->client_rating_enable : '';
@@ -45,7 +63,7 @@ class SppagebuilderAddonTestimonial extends SppagebuilderAddons {
 			$output .= '<div class="sppb-testimonial-top-content sppb-addon-testimonial-footer">';
 			$output .= $link ? '<a' . $link_target . ' href="'.$link.'">' : '';
 			$output .= '<div class="sppb-addon-testimonial-content-wrap">';
-			$output .= $avatar ? '<img src="'.$avatar.'" class="'. $avatar_shape .' sppb-addon-testimonial-avatar" alt="'.$name.'">' : '';
+			$output .= $avatar_img ? '<img src="' . ($placeholder ? $placeholder : $avatar_img) . '" class="'. $avatar_shape .' sppb-addon-testimonial-avatar'.($placeholder ? ' sppb-element-lazy' : '').'" alt="'.$name.'" '.($placeholder ? 'data-large="'.$avatar_img.'"' : '').' '.($avatar_width ? 'width="'.$avatar_width.'"' : '').' '.($avatar_height ? 'height="'.$avatar_height.'"' : '').' loading="lazy">' : '';
 			$output .= '<span>';
 			$output .= '<span class="sppb-addon-testimonial-client">'.$name.'</span>';
 			$output .= '<br /><span class="sppb-addon-testimonial-client-url">'.$company.'</span>';
@@ -99,7 +117,7 @@ class SppagebuilderAddonTestimonial extends SppagebuilderAddons {
 			$output .= '<div class="sppb-addon-testimonial-footer">';
 			$output .= $link ? '<a' . $link_target . ' href="'.$link.'">' : '';
 			$output .= '<div class="sppb-addon-testimonial-content-wrap">';
-			$output .= $avatar ? '<img src="'.$avatar.'" class="'. $avatar_shape .' sppb-addon-testimonial-avatar" alt="'.$name.'">' : '';
+			$output .= $avatar_img ? '<img src="' . ($placeholder ? $placeholder : $avatar_img) . '" class="'. $avatar_shape .' sppb-addon-testimonial-avatar'.($placeholder ? ' sppb-element-lazy' : '').'" alt="'.$name.'" '.($placeholder ? 'data-large="'.$avatar_img.'"' : '').' '.($avatar_width ? 'width="'.$avatar_width.'"' : '').' '.($avatar_height ? 'height="'.$avatar_height.'"' : '').' loading="lazy">' : '';
 			$output .= '<span>';
 			$output .= '<span class="sppb-addon-testimonial-client">'.$name.'</span>';
 			$output .= '<br /><span class="sppb-addon-testimonial-client-url">'.$company.'</span>';
@@ -389,7 +407,12 @@ class SppagebuilderAddonTestimonial extends SppagebuilderAddons {
 			<#
 				let testimonialAlignment = data.alignment || "sppb-text-center"
 				let avatar_position = data.avatar_position || "left"
-				let avatar = data.avatar || ""
+				let avatar = ""
+				if (typeof data.avatar !== "undefined" && typeof data.avatar.src !== "undefined") {
+					avatar = data.avatar
+				} else {
+					avatar = {src: data.avatar}
+				}
 				let avatar_shape = data.avatar_shape || "sppb-avatar-circle"
 				let reviewer_link = data.link || ""
 				let link_target = (data.link_target)? "target=\'"+ data.link_target +"\'": ""
@@ -660,10 +683,10 @@ class SppagebuilderAddonTestimonial extends SppagebuilderAddons {
 								<a {{ link_target }} href=\'{{{ reviewer_link }}}\'>
 							<# } #>
 							<div class="sppb-addon-testimonial-content-wrap">
-							<# if (avatar && avatar.indexOf("https://") == -1 && avatar.indexOf("http://") == -1) { #>
-								<img class="{{ avatar_shape }} sppb-addon-testimonial-avatar" src=\'{{ pagebuilder_base + data.avatar }}\' width="{{ data.avatar_width }}" height="{{ data.avatar_width }}" alt="{{ data.name }}">
+							<# if (avatar.src && avatar.src?.indexOf("https://") == -1 && avatar.src?.indexOf("http://") == -1) { #>
+								<img class="{{ avatar_shape }} sppb-addon-testimonial-avatar" src=\'{{ pagebuilder_base + avatar.src }}\' width="{{ data.avatar_width }}" height="{{ data.avatar_width }}" alt="{{ data.name }}">
 							<# } else if(avatar){ #>
-								<img class="{{ avatar_shape }} sppb-addon-testimonial-avatar" src=\'{{ data.avatar }}\' width="{{ data.avatar_width }}" height="{{ data.avatar_width }}" alt="{{ data.name }}">
+								<img class="{{ avatar_shape }} sppb-addon-testimonial-avatar" src=\'{{ avatar.src }}\' width="{{ data.avatar_width }}" height="{{ data.avatar_width }}" alt="{{ data.name }}">
 							<# } #>
 							<span>
 								<span class="sppb-addon-testimonial-client">{{ data.name }}</span>
@@ -722,10 +745,10 @@ class SppagebuilderAddonTestimonial extends SppagebuilderAddons {
 							<a {{ link_target }} href=\'{{{ reviewer_link }}}\'>
 						<# } #>
 						<div class="sppb-addon-testimonial-content-wrap">
-						<# if (avatar && avatar.indexOf("https://") == -1 && avatar.indexOf("http://") == -1) { #>
-							<img class="{{ avatar_shape }} sppb-addon-testimonial-avatar" src=\'{{ pagebuilder_base + data.avatar }}\' width="{{ data.avatar_width }}" height="{{ data.avatar_width }}" alt="{{ data.name }}">
-						<# } else if(avatar){ #>
-							<img class="{{ avatar_shape }} sppb-addon-testimonial-avatar" src=\'{{ data.avatar }}\' width="{{ data.avatar_width }}" height="{{ data.avatar_width }}" alt="{{ data.name }}">
+						<# if (avatar.src && avatar.src?.indexOf("https://") == -1 && avatar.src?.indexOf("http://") == -1) { #>
+							<img class="{{ avatar_shape }} sppb-addon-testimonial-avatar" src=\'{{ pagebuilder_base + avatar.src }}\' width="{{ data.avatar_width }}" height="{{ data.avatar_width }}" alt="{{ data.name }}">
+						<# } else if(avatar.src){ #>
+							<img class="{{ avatar_shape }} sppb-addon-testimonial-avatar" src=\'{{ avatar.src }}\' width="{{ data.avatar_width }}" height="{{ data.avatar_width }}" alt="{{ data.name }}">
 						<# } #>
 						<span>
 							<span class="sppb-addon-testimonial-client">{{ data.name }}</span>

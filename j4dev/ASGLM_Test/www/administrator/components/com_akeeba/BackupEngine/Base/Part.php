@@ -3,13 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Base;
 
-
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Factory;
@@ -27,12 +27,12 @@ use Throwable;
  */
 abstract class Part
 {
-	const STATE_INIT = 0;
-	const STATE_PREPARED = 1;
-	const STATE_RUNNING = 2;
-	const STATE_POSTRUN = 3;
-	const STATE_FINISHED = 4;
-	const STATE_ERROR = 99;
+	public const STATE_INIT = 0;
+	public const STATE_PREPARED = 1;
+	public const STATE_RUNNING = 2;
+	public const STATE_POSTRUN = 3;
+	public const STATE_FINISHED = 4;
+	public const STATE_ERROR = 99;
 
 	/**
 	 * The current state of this part; see the constants at the top of this class
@@ -573,7 +573,7 @@ abstract class Part
 		 * remote JSON API and CLI backups must always use server-side sleep since they do not support client-side
 		 * sleep.
 		 */
-		if (!in_array($this->getTag(), ['backend', 'restorepoint']))
+		if (!in_array($this->getTag(), ['backend']))
 		{
 			return true;
 		}

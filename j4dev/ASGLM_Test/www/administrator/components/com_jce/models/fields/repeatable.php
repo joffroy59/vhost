@@ -52,12 +52,14 @@ class JFormFieldRepeatable extends JFormField
 
         $fields = $subForm->getFieldset();
 
+        $str[] = '<div class="form-field-repeatable">';
+
         foreach ($values as $value) {
             $class  = '';
 
             // highlight grouped fields
             if (count($fields) > 1) {
-                $class = ' well well-small p-2 bg-light';
+                $class = ' well well-small p-4 bg-light';
             }
             
             $str[] = '<div class="form-field-repeatable-item">';
@@ -87,7 +89,7 @@ class JFormFieldRepeatable extends JFormField
                     $field->name .= '[]';
                 }
 
-                $str[] = $field->renderField();
+                $str[] = $field->renderField(array('description' => $field->description));
                 
                 $n++;
             }
@@ -101,6 +103,8 @@ class JFormFieldRepeatable extends JFormField
 
             $str[] = '</div>';
         }
+
+        $str[] = '</div>';
 
         return implode("", $str);
     }

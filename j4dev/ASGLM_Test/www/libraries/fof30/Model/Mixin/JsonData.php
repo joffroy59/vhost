@@ -1,13 +1,13 @@
 <?php
 /**
  * @package   FOF
- * @copyright Copyright (c)2010-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2010-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 2, or later
  */
 
 namespace FOF30\Model\Mixin;
 
-defined('_JEXEC') or die;
+defined('_JEXEC') || die;
 
 /**
  * Trait for dealing with data stored as JSON-encoded strings
@@ -30,14 +30,14 @@ trait JsonData
 
 		if (empty($value))
 		{
-			return array();
+			return [];
 		}
 
 		$value = json_decode($value, true);
 
 		if (empty($value))
 		{
-			return array();
+			return [];
 		}
 
 		return $value;

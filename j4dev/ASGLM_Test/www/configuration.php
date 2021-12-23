@@ -20,7 +20,7 @@ class JConfig {
 	public $debug_lang = '0';
 	public $display_offline_message = '1';
 	public $editor = 'jce';
-	public $error_reporting = 'default';
+	public $error_reporting = 'development';
 	public $feed_email = 'author';
 	public $feed_limit = '100';
 	public $force_ssl = '0';
@@ -45,7 +45,7 @@ class JConfig {
 	public $memcache_server_host = 'localhost';
 	public $memcache_server_port = '11211';
 	public $offline = '0';
-	public $offline_image = '';
+	public $offline_image = 'images/common/Twin-Chapels-1_web.jpg';
 	public $offline_message = 'Ce site est en maintenance.<br /> Merci de revenir ultérieurement.';
 	public $offset = 'Europe/Paris';
 	public $offset_user = 'UTC';

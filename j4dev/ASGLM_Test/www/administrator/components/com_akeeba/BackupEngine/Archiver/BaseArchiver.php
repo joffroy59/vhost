@@ -3,11 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Archiver;
+
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Base\Exceptions\WarningException;
@@ -66,6 +68,9 @@ abstract class BaseArchiver extends BaseFileManagement
 
 	/** @var bool Should I use Split ZIP? */
 	protected $useSplitArchive = false;
+
+	/** @var int Permissions for the backup archive part files */
+	protected $permissions = null;
 
 	/**
 	 * Release file pointers when the object is being serialized
@@ -141,7 +146,7 @@ abstract class BaseArchiver extends BaseFileManagement
 	{
 		Factory::getLog()->debug(__CLASS__ . " :: Killing old archive");
 
-		$this->fp = $this->fopen($this->_dataFileName, "wb");
+		$this->fp = $this->fopen($this->_dataFileName, "w");
 
 		if ($this->fp === false)
 		{
@@ -153,7 +158,7 @@ abstract class BaseArchiver extends BaseFileManagement
 			@touch($this->_dataFileName);
 			@chmod($this->_dataFileName, 0666);
 
-			$this->fp = $this->fopen($this->_dataFileName, "wb");
+			$this->fp = $this->fopen($this->_dataFileName, "w");
 
 			if ($this->fp !== false)
 			{
@@ -177,7 +182,7 @@ abstract class BaseArchiver extends BaseFileManagement
 	{
 		if (is_null($this->fp) || $force)
 		{
-			$this->fp = $this->fopen($this->_dataFileName, "ab");
+			$this->fp = $this->fopen($this->_dataFileName, "a");
 		}
 
 		if ($this->fp === false)
@@ -306,7 +311,7 @@ abstract class BaseArchiver extends BaseFileManagement
 		if (!is_readable($sourceNameOrData) && !$isDir)
 		{
 			// Really, REALLY check if it is readable (PHP sometimes lies, dammit!)
-			$myFP = @$this->fopen($sourceNameOrData, 'rb');
+			$myFP = @$this->fopen($sourceNameOrData, 'r');
 
 			if ($myFP === false)
 			{
@@ -569,7 +574,7 @@ abstract class BaseArchiver extends BaseFileManagement
 	protected function putUncompressedFileIntoArchive(&$sourceNameOrData, $fileLength = 0, $resumeOffset = null)
 	{
 		// Copy the file contents, ignore directories
-		$sourceFilePointer = @fopen($sourceNameOrData, "rb");
+		$sourceFilePointer = @fopen($sourceNameOrData, "r");
 
 		if ($sourceFilePointer === false)
 		{
@@ -586,7 +591,7 @@ abstract class BaseArchiver extends BaseFileManagement
 			if ($seek_result === -1)
 			{
 				// What?! We can't resume!
-				@fclose($sourceFilePointer);
+				$this->conditionalFileClose($sourceFilePointer);
 
 				throw new ErrorException(sprintf('Could not resume packing of file %s. Your archive is damaged!', $sourceNameOrData));
 			}
@@ -597,9 +602,29 @@ abstract class BaseArchiver extends BaseFileManagement
 
 		$mustBreak = $this->putDataFromFileIntoArchive($sourceFilePointer, $fileLength);
 
-		@fclose($sourceFilePointer);
+		$this->conditionalFileClose($sourceFilePointer);
 
 		return $mustBreak;
+	}
+
+	/**
+	 * Return the requested permissions for the backup archive file.
+	 *
+	 * @return  int
+	 * @since   8.0.0
+	 */
+	protected function getPermissions(): int
+	{
+		if (!is_null($this->permissions))
+		{
+			return $this->permissions;
+		}
+
+		$configuration     = Factory::getConfiguration();
+		$permissions       = $configuration->get('engine.archiver.common.permissions', '0666') ?: '0666';
+		$this->permissions = octdec($permissions);
+
+		return $this->permissions;
 	}
 
 	/**
@@ -640,7 +665,7 @@ abstract class BaseArchiver extends BaseFileManagement
 					if ($configuration->get('engine.postproc.common.after_part', 0))
 					{
 						$resumeOffset = @ftell($sourceFilePointer);
-						@fclose($sourceFilePointer);
+						$this->conditionalFileClose($sourceFilePointer);
 
 						$configuration->set('volatile.engine.archiver.resume', $resumeOffset);
 						$configuration->set('volatile.engine.archiver.processingfile', true);
@@ -683,7 +708,7 @@ abstract class BaseArchiver extends BaseFileManagement
 		{
 			// We have to break, or we'll time out!
 			$resumeOffset = @ftell($sourceFilePointer);
-			@fclose($sourceFilePointer);
+			$this->conditionalFileClose($sourceFilePointer);
 
 			$configuration->set('volatile.engine.archiver.resume', $resumeOffset);
 			$configuration->set('volatile.engine.archiver.processingfile', true);

@@ -2,32 +2,35 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
+
 defined ('_JEXEC') or die ('Restricted access');
 
-jimport('joomla.application.component.modellist');
-jimport('joomla.filesystem.folder');
-jimport('joomla.filesystem.file');
-jimport('joomla.image.image');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Filesystem\Path;
+use Joomla\CMS\MVC\Model\ListModel;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Filesystem\Folder;
 
-class SppagebuilderModelMedia extends JModelList
+
+class SppagebuilderModelMedia extends ListModel
 {
 
 	public function getItems() {
 
-		$input 	= JFactory::getApplication()->input;
+		$input 	= Factory::getApplication()->input;
 		$type 	= $input->post->get('type', '*', 'STRING');
 		$date 	= $input->post->get('date', NULL, 'STRING');
 		$start 	= $input->post->get('start', 0, 'INT');
 		$search = $input->post->get('search', NULL, 'STRING');
 		$limit 	= 28;
 
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
-		$query->select( array('id', 'title', 'path', 'thumb', 'type', 'created_on') );
+		$query->select( array('id', 'title', 'path', 'thumb', 'media_attr', 'type', 'created_on') );
 		$query->from($db->quoteName('#__spmedia'));
 
 		if($search) {
@@ -38,13 +41,8 @@ class SppagebuilderModelMedia extends JModelList
 
 		if($date) {
 			$year_month = explode('-', $date);
-			if($db->getServerType() == 'postgresql'){
-				$query->where('date_part(\'year\', created_on) = ' . $year_month[0]);
-				$query->where('date_part(\'month\', created_on) = ' . $year_month[1]);
-			} else {
-				$query->where('YEAR(created_on) = ' . $year_month[0]);
-				$query->where('MONTH(created_on) = ' . $year_month[1]);
-			}
+			$query->where('YEAR(created_on) = ' . $year_month[0]);
+			$query->where('MONTH(created_on) = ' . $year_month[1]);
 		}
 
 		if($type != '*') {
@@ -52,7 +50,7 @@ class SppagebuilderModelMedia extends JModelList
 		}
 
 		//Check User permission
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 		if (!$user->authorise('core.edit', 'com_sppagebuilder')) {
 			if ($user->authorise('core.edit.own', 'com_sppagebuilder')) {
 				$query->where($db->quoteName('created_by') . " = " . $db->quote($user->id));
@@ -64,17 +62,17 @@ class SppagebuilderModelMedia extends JModelList
 		$db->setQuery($query);
 		$items = $db->loadObjectList();
 
+		foreach($items as &$item) {
+			$item->media_attr = json_decode($item->media_attr);
+		}
+		
 		return $items;
 	}
 
 	public function getDateFilters($date = '', $search = '') {
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
-		if($db->getServerType() == 'postgresql'){
-			$query->select('DISTINCT created_on, date_part( \'year\', created_on ) AS year, date_part( \'month\', created_on ) AS month');
-		} else {
-			$query->select('DISTINCT YEAR( created_on ) AS year, MONTH( created_on ) AS month');
-		}
+		$query->select('DISTINCT YEAR( created_on ) AS year, MONTH( created_on ) AS month');
 		$query->from($db->quoteName('#__spmedia'));
 
 		if($search) {
@@ -85,17 +83,12 @@ class SppagebuilderModelMedia extends JModelList
 
 		if($date) {
 			$date = explode('-', $date);
-			if($db->getServerType() == 'postgresql'){
-				$query->where('date_part( \'year\', created_on) = ' . $date[0]);
-				$query->where('date_part( \'month\', created_on) = ' . $date[1]);
-			} else {
-				$query->where('YEAR(created_on) = ' . $date[0]);
-				$query->where('MONTH(created_on) = ' . $date[1]);
-			}
+			$query->where('YEAR(created_on) = ' . $date[0]);
+			$query->where('MONTH(created_on) = ' . $date[1]);
 		}
 
 		//Check User permission
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 		if (!$user->authorise('core.edit', 'com_sppagebuilder')) {
 			if ($user->authorise('core.edit.own', 'com_sppagebuilder')) {
 				$query->where($db->quoteName('created_by') . " = " . $db->quote($user->id));
@@ -109,9 +102,9 @@ class SppagebuilderModelMedia extends JModelList
 	}
 
 	public function getTotalMedia($date = '', $search = '') {
-		$input = JFactory::getApplication()->input;
+		$input = Factory::getApplication()->input;
 		$type = $input->post->get('type', '*', 'STRING');
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select( 'COUNT(id)' );
 		$query->from($db->quoteName('#__spmedia'));
@@ -124,13 +117,8 @@ class SppagebuilderModelMedia extends JModelList
 
 		if($date) {
 			$date = explode('-', $date);
-			if($db->getServerType() == 'postgresql'){
-				$query->where('date_part( \'year\', created_on) = ' . $date[0]);
-				$query->where('date_part( \'month\', created_on) = ' . $date[1]);
-			} else {
-				$query->where('YEAR(created_on) = ' . $date[0]);
-				$query->where('MONTH(created_on) = ' . $date[1]);
-			}
+			$query->where('YEAR(created_on) = ' . $date[0]);
+			$query->where('MONTH(created_on) = ' . $date[1]);
 		}
 
 		if($type != '*') {
@@ -138,7 +126,7 @@ class SppagebuilderModelMedia extends JModelList
 		}
 
 		//Check User permission
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 		if (!$user->authorise('core.edit', 'com_sppagebuilder')) {
 			if ($user->authorise('core.edit.own', 'com_sppagebuilder')) {
 				$query->where($db->quoteName('created_by') . " = " . $db->quote($user->id));
@@ -151,7 +139,7 @@ class SppagebuilderModelMedia extends JModelList
 	}
 
 	public function getMediaCategories() {
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select( 'type, COUNT(id) AS count' );
 		$query->from($db->quoteName('#__spmedia'));
@@ -173,11 +161,12 @@ class SppagebuilderModelMedia extends JModelList
 		return array('all'=>$all) + $categories;
 	}
 
-	public function insertMedia($title, $path, $thumb='', $type='image') {
-		$db = JFactory::getDbo();
+	public function insertMedia($title, $path, $media_attr='[]', $thumb='', $type='image') {
+		$description = '';
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
-		$columns = array('title', 'path', 'thumb', 'type', 'alt', 'extension', 'created_on', 'created_by');
-		$values = array($db->quote($title), $db->quote($path), $db->quote($thumb), $db->quote($type), $db->quote($title), $db->quote('com_sppagebuilder'), $db->quote( JFactory::getDate('now') ), JFactory::getUser()->id);
+		$columns = array('title', 'path', 'thumb', 'type', 'description', 'media_attr', 'alt', 'extension', 'created_on', 'created_by');
+		$values = array($db->quote($title), $db->quote($path), $db->quote($thumb), $db->quote($type), $db->quote($description), $db->quote($media_attr), $db->quote($title), $db->quote('com_sppagebuilder'), $db->quote( Factory::getDate('now') ), Factory::getUser()->id);
 		$query
 		    ->insert($db->quoteName('#__spmedia'))
 		    ->columns($db->quoteName($columns))
@@ -191,9 +180,9 @@ class SppagebuilderModelMedia extends JModelList
 	}
 
 	public function getMediaByID($id) {
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
         $query = $db->getQuery(true);
-        $query->select($db->quoteName(array('id', 'title', 'path', 'thumb', 'type', 'created_by', 'created_on')));
+        $query->select($db->quoteName(array('id', 'title', 'path', 'thumb', 'type', 'media_attr', 'created_by', 'created_on')));
         $query->from($db->quoteName('#__spmedia'));
         $query->where($db->quoteName('id') . ' = ' . $db->quote($id));
         $db->setQuery($query);
@@ -202,7 +191,7 @@ class SppagebuilderModelMedia extends JModelList
 	}
 
 	public function removeMediaByID($id) {
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
         $query = $db->getQuery(true);
         $conditions = array($db->quoteName('id') . ' = ' . $db->quote($id));
         $query->delete($db->quoteName('#__spmedia'));
@@ -217,9 +206,9 @@ class SppagebuilderModelMedia extends JModelList
 	public function getFolders() {
 
 		$output = array();
-		$mediaParams = JComponentHelper::getParams('com_media');
+		$mediaParams = ComponentHelper::getParams('com_media');
 		$file_path = $mediaParams->get('file_path', 'images');
-		$input 	= JFactory::getApplication()->input;
+		$input 	= Factory::getApplication()->input;
 		$path 	= $input->post->get('path', '/images', 'PATH');
 
 		$directory = JPATH_ROOT . $path;
@@ -230,8 +219,8 @@ class SppagebuilderModelMedia extends JModelList
 			die(json_encode($output));
 		}
         
-		$images = JFolder::files(JPATH_ROOT . $path, '.png|.jpg|.gif|.svg', false, true);
-		$folders_list = JFolder::folders(JPATH_ROOT . $path, '.', false, false, array('.svn', 'CVS', '.DS_Store', '__MACOSX', '_spmedia_thumbs'));
+		$images = Folder::files(JPATH_ROOT . $path, '.png|.jpg|.gif|.svg|.pdf|.webp', false, true);
+		$folders_list = Folder::folders(JPATH_ROOT . $path, '.', false, false, array('.svn', 'CVS', '.DS_Store', '__MACOSX', '_spmedia_thumbs'));
 		$folders = self::listFolderTree(JPATH_ROOT . '/' . $file_path, '.');
 
 		$output['status'] = false;
@@ -248,19 +237,19 @@ class SppagebuilderModelMedia extends JModelList
 
 		if ($level == 0)
 		{
-			$GLOBALS['_JFolder_folder_tree_index'] = 0;
+			$GLOBALS['_Folder_folder_tree_index'] = 0;
 		}
 
 		if ($level < $maxLevel)
 		{
-			$folders    = JFolder::folders($path, $filter, false, false, array('.svn', 'CVS', '.DS_Store', '__MACOSX', '_spmedia_thumbs'));
-			$pathObject = new JFilesystemWrapperPath;
+			$folders    = Folder::folders($path, $filter, false, false, array('.svn', 'CVS', '.DS_Store', '__MACOSX', '_spmedia_thumbs'));
+			// $pathObject = new PathWrapper;
 
 			// First path, index foldernames
 			foreach ($folders as $name)
 			{
-				$id = ++$GLOBALS['_JFolder_folder_tree_index'];
-				$fullName = $pathObject->clean($path . '/' . $name);
+				$id = ++$GLOBALS['_Folder_folder_tree_index'];
+				$fullName = Path::clean($path . '/' . $name);
 				$dirs[] = array('id' => $id, 'parent' => $parent, 'name' => $name, 'fullname' => $fullName,
 					'relname' => str_replace(JPATH_ROOT, '', $fullName));
 				$dirs2 = self::listFolderTree($fullName, $filter, $maxLevel, $level + 1, $id);

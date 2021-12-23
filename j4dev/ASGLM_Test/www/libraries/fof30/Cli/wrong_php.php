@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   FOF
- * @copyright Copyright (c)2010-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2010-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 2, or later
  */
 
@@ -29,7 +29,7 @@ IMPORTANT!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 PHP version numbers are NOT decimals! Trailing zeros do matter. For example,
 PHP 5.3.28 is twenty four versions newer (greater than) than PHP 5.3.4.
-Please consult https://www.akeebabackup.com/how-do-version-numbers-work.html
+Please consult https://www.akeeba.com/how-do-version-numbers-work.html
 
 
 Further clarifications:

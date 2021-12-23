@@ -3,13 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Archiver;
 
-
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Base\Exceptions\WarningException;
@@ -145,7 +145,7 @@ class Zip extends BaseArchiver
 		 * works.
 		 */
 		$this->fcloseByName($this->centralDirectoryFilename);
-		$this->cdfp = $this->fopen($this->centralDirectoryFilename, "rb");
+		$this->cdfp = $this->fopen($this->centralDirectoryFilename, "r");
 
 		if ($this->cdfp === false)
 		{
@@ -190,7 +190,7 @@ class Zip extends BaseArchiver
 		if (!is_resource($this->cdfp))
 		{
 			$this->fcloseByName($this->centralDirectoryFilename);
-			$this->cdfp = $this->fopen($this->centralDirectoryFilename, "rb");
+			$this->cdfp = $this->fopen($this->centralDirectoryFilename, "r");
 
 			// We tried reopening the central directory file and failed again. Time to report a fatal error.
 			if (!$this->cdfp)
@@ -271,12 +271,12 @@ class Zip extends BaseArchiver
 			// If Split ZIP and only one fragment, change the signature
 			if ($this->totalParts == 1)
 			{
-				$this->fp = $this->fopen($this->_dataFileName, 'r+b');
+				$this->fp = $this->fopen($this->_dataFileName, 'r+');
 				$this->fwrite($this->fp, "\x50\x4b\x30\x30");
 			}
 		}
 
-		@chmod($this->_dataFileName, 0644);
+		@chmod($this->_dataFileName, $this->getPermissions());
 	}
 
 	/**
@@ -403,7 +403,7 @@ class Zip extends BaseArchiver
 		// Open the central directory file for append
 		if (is_null($this->cdfp))
 		{
-			$this->cdfp = @$this->fopen($this->centralDirectoryFilename, "ab");
+			$this->cdfp = @$this->fopen($this->centralDirectoryFilename, "a");
 		}
 
 		if ($this->cdfp === false)
@@ -538,7 +538,7 @@ class Zip extends BaseArchiver
 		}
 
 		// Get real size before compression
-		list($unc_len, $fileModTime) =
+		[$unc_len, $fileModTime] =
 			$this->getFileSizeAndModificationTime($sourceNameOrData, $isVirtual, $isSymlink, $isDir);
 
 		// Decide if we will compress
@@ -809,7 +809,7 @@ class Zip extends BaseArchiver
 		// Touch the new file
 		$result = @touch($this->_dataFileName);
 
-		@chmod($this->_dataFileName, 0666);
+		@chmod($this->_dataFileName, $this->getPermissions());
 
 		return $result;
 	}
@@ -908,6 +908,6 @@ class Zip extends BaseArchiver
 			throw new ErrorException("Could not open temporary file for ZIP archiver. Please check your temporary directory's permissions!");
 		}
 
-		@chmod($this->centralDirectoryFilename, 0666);
+		@chmod($this->centralDirectoryFilename, $this->getPermissions());
 	}
 }

@@ -1,0 +1,429 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr-FR" lang="fr-FR">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/administrator/templates/isis/css/template.css" type="text/css" />
+<link rel="stylesheet" href="../css/button.css?v=63d647f934b0d11254ed00946b94bf8e" type="text/css" />
+<script type="text/javascript" src="../js/button.min.js?v=b4a4330b7fd360ea89349fe0a1b76b8a"></script>
+</head>
+<body>
+<form id="sigplus-settings-form">
+<button id="sigplus-settings-submit" class="btn btn-primary" type="button">Insert</button>
+<h3>Paramètres de base</h3><fieldset class="panelform">
+<ul>
+<li class="formelm"><label id="params_layout-lbl" for="params_layout" class="hasPopover" title="Type de mise en page" data-content="Affichage de la galerie d'images. La disposition &lt;Em&gt;Fixe&lt;/Em&gt;  est un affichage de type tableau avec un nombre défini de lignes et de colonnes, et une largeur et une hauteur fixes, où les images occupent des cellules d'un tableau. La disposition fixe est associée à un défilement et des boutons de navigation, ne montrant qu'une partie de la galerie à la fois. La mise en page du &lt;Em&gt;Fluide&lt;/Em&gt;  permet de visualiser les images comme si elles étaient des mots d'un texte, c'est l'ensemble des vignettes qui s'affiche les unes à la suite des autres. Cette fonctionnalité est très flexible, mais ne permet pas le défilement des images. &lt;Em&gt;Condensé&lt;/Em&gt; est un compromis entre la mise en page fixe et la mise en page de flux, avec une configuration limitée. &lt;Em&gt; Masqué&lt;/Em&gt;  &lt;(disponible uniquement pour le plug-in) Les vignettes sont masquées. Les images dans une galerie masquée ne peuvent être accessibles qu'avec une fenêtre pop-up qui y est liée.">
+	Type de mise en page</label>
+<select id="params_layout" name="params[layout]">
+	<option value="fixed" selected="selected">fixe (avec d&eacute;filement)</option>
+	<option value="flow">fluide (sans d&eacute;filement)</option>
+	<option value="packed">condens&eacute; (sans d&eacute;filement)</option>
+	<option value="hidden">Masqu&eacute;</option>
+</select>
+</li>
+<li class="formelm"><label id="params_rows-lbl" for="params_rows" class="hasPopover" title="Images par ligne" data-content="Nombre de lignes utilisé pour l'affichage des vignettes. Ce réglage n'a aucun effet lorsque l'affichage &lt;em&gt;fluide&lt;/em&gt; est utilisé.">
+	Images par ligne</label>
+<input type="text" name="params[rows]" id="params_rows"  value="1"               />
+</li>
+<li class="formelm"><label id="params_cols-lbl" for="params_cols" class="hasPopover" title="Images par colonnes" data-content="Nombre de colonnes utilisé pour l'affichage des vignettes. Ce réglage n'a aucun effet lorsque l'affichage &lt;em&gt;fluide&lt;/em&gt; est utilisé">
+	Images par colonnes</label>
+<input type="text" name="params[cols]" id="params_cols"  value="3"               />
+</li>
+<li class="formelm"><label id="params_maxcount-lbl" for="params_maxcount" class="hasPopover" title="Nombre d'images maximun" data-content="Nombre maximum de vignettes à afficher. S'il est mis à zéro, toutes les vignettes de la galerie seront affichées, même sur plusieurs pages. Lorsqu'un chiffre/nombre est indiqué, ne sera affiché que cette quantité de vignettes même s'il est possible d'afficher toutes les images lors de la navigation dans la galerie ou à l'intérieur de la fenêtre pop-up.">
+	Nombre d'images maximun</label>
+<input type="text" name="params[maxcount]" id="params_maxcount"  value="0"               />
+</li>
+<li class="formelm"><label id="params_alignment-lbl" for="params_alignment" class="hasPopover" title="Alignement" data-content="Position de la galerie d'images dans la page.">
+	Alignement</label>
+<select id="params_alignment" name="params[alignment]">
+	<option value="before-clear">&agrave; gauche</option>
+	<option value="before-float">&agrave; gauche (texte &agrave; c&ocirc;t&eacute;)</option>
+	<option value="center" selected="selected">Centre</option>
+	<option value="after-clear">&agrave; droite</option>
+	<option value="after-float">&agrave; droite (texte &agrave; c&ocirc;t&eacute;)</option>
+</select>
+</li>
+<li class="formelm"><label id="params_preview_width-lbl" for="params_preview_width" class="hasPopover" title="Largeur des vignettes" data-content="Largeur par défaut des vignettes à générer [px]. Utilisez la valeur spéciale 0 avec recadrage désactivé pour avoir la hauteur de l'image calculée automatiquement (à savoir toutes les images auront la même largeur).">
+	Largeur des vignettes</label>
+<input type="text" name="params[preview_width]" id="params_preview_width"  value="200"               />
+</li>
+<li class="formelm"><label id="params_preview_height-lbl" for="params_preview_height" class="hasPopover" title="Hauteur des vignettes" data-content="Hauteur par défaut des vignettes à générer [px]. Utilisez la valeur spéciale 0 avec recadrage désactivé pour avoir la hauteur de l'image calculée automatiquement (à savoir toutes les images auront la même hauteur).">
+	Hauteur des vignettes</label>
+<input type="text" name="params[preview_height]" id="params_preview_height"  value="200"               />
+</li>
+<li class="formelm"><label id="params_preview_crop-lbl" for="params_preview_crop" class="hasPopover" title="Recadrage des vignettes" data-content="Recadrage lors de la génération de la vignette.&lt;br /&gt;Si OUI, la taille fixée de la vignette sera maintenu en largeur et en hauteur. Les excédents seront retirés en haut et en bas ou à gauche et à droite lors de la création de la vignette.&lt;br /&gt; Si NON, la vignette générée contiendra le contenu complet de l'image originale. La vignette sera  alors moins haute ou moins large que les valeurs indiquées par défaut. Par exemple, supposons que la largeur et la hauteur de l'image de prévisualisation sont définies sur 100 px. Lorsque la découpe est activée, la partie gauche et droite d'une image avec une largeur de 400 px et une hauteur de 200 px seront coupées, et le centre résultant 200 px-by-200 px sera réduit pour obtenir une prévisualisation de la taille de l'image. Lorsque l'image est coupée, l'image entière sera utilisée pour générer l'image de prévisualisation de telle sorte que l'image de prévisualisation aura des dimensions 100 px et 50 px">
+	Recadrage des vignettes</label>
+<fieldset id="params_preview_crop" class="radio"
+				>
+
+						
+						<input type="radio" id="params_preview_crop0" name="params[preview_crop]" value="1"  />			<label for="params_preview_crop0" >
+				Oui			</label>
+					
+						<input type="radio" id="params_preview_crop1" name="params[preview_crop]" value="0" checked="checked" />			<label for="params_preview_crop1" >
+				Non			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_lightbox-lbl" for="params_lightbox" class="hasPopover" title="Type d'affichage de fenêtre" data-content="Bibliothèque d'affichage de pop-up pour agrandir l'image lors du clic de la vignette ou par le survol de la souris. Les moteurs qui utilisent MooTools utilisent la version intégrée dans Joomla, alors que les moteurs qui utilisent jQuery utilisent soit une copie locale de la bibliothèque de scripts, soit importent jQuery à partir d'un Content Delivery Network (CDN).">
+	Type d'affichage de fenêtre</label>
+<select id="params_lightbox" name="params[lightbox]">
+		<option value="none">aucun</option>
+	<optgroup label="boxplus">
+		<option value="boxplus/light" selected="selected">boxplus light theme</option>
+		<option value="boxplus/dark">boxplus dark theme</option>
+	</optgroup>
+		<option value="fancybox">Fancybox (with jQuery)</option>
+		<option value="fancybox3">FancyBox3 (with jQuery)</option>
+		<option value="hoverplus">hoverplus (with MooTools)</option>
+		<option value="slimbox2">Slimbox2 (with jQuery)</option>
+		<option value="bootstrap">Bootstrap (with jQuery)</option>
+</select>
+</li>
+<li class="formelm"><label id="params_lightbox_autocenter-lbl" for="params_lightbox_autocenter" class="hasPopover" title="Centrer lors du défilement" data-content="Permet de garder centrer la fenêtre pop-up quand sa taille est inférieure à la taille de la fenêtre du navigateur lorsque l'utilisateur défile la page vers le haut ou vers le bas. Les fenêtres contextuelles qui dépassent la taille de la fenêtre du navigateur ne sont jamais auto-centrées.">
+	Centrer lors du défilement</label>
+<fieldset id="params_lightbox_autocenter" class="radio"
+				>
+
+						
+						<input type="radio" id="params_lightbox_autocenter0" name="params[lightbox_autocenter]" value="1" checked="checked" />			<label for="params_lightbox_autocenter0" >
+				Oui			</label>
+					
+						<input type="radio" id="params_lightbox_autocenter1" name="params[lightbox_autocenter]" value="0"  />			<label for="params_lightbox_autocenter1" >
+				Non			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_lightbox_autofit-lbl" for="params_lightbox_autofit" class="hasPopover" title="Ajuster à la fenêtre" data-content="Permet de réduire automatiquement les images surdimensionnées en fonction de la fenêtre du navigateur lorsqu'elles sont affichées. Le flash et la vidéo sont toujours affichés dans leur taille prédéfinie, même s'ils ne correspondent pas à l'écran. Lorsque la fonction d'autofocus est activée, un symbole d'agrandissement s'affiche (généralement dans le coin supérieur droit de l'image) pour permettre à l'utilisateur de visualiser l'image dans sa taille d'origine. Tous les moteurs de fenêtres pop-up ne sont pas compatibles avec cela.">
+	Ajuster à la fenêtre</label>
+<fieldset id="params_lightbox_autofit" class="radio"
+				>
+
+						
+						<input type="radio" id="params_lightbox_autofit0" name="params[lightbox_autofit]" value="1" checked="checked" />			<label for="params_lightbox_autofit0" >
+				Oui			</label>
+					
+						<input type="radio" id="params_lightbox_autofit1" name="params[lightbox_autofit]" value="0"  />			<label for="params_lightbox_autofit1" >
+				Non			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_lightbox_thumbs-lbl" for="params_lightbox_thumbs" class="hasPopover" title="Bar navigation des miniatures" data-content="Placement de la barre de navigation des miniatures par rapport à l'image affichée dans la fenêtre pop-up. Lorsque la barre de navigation est superposée à l'image, elle n'est affichée que lorsque le pointeur de la souris se trouve dans la zone de point d'accès de la barre de navigation. Par contre, une barre de navigation en dehors du conteneur d'images est visible en permanence. La barre de navigation ne s'affiche pas lorsque la galerie compose d'une seule image et qu'aucun espace n'est réservé dans ce cas même avec l'option de placement externe. Tous les moteurs de fenêtres pop-up ne prennent pas en charge la navigation par vignette.">
+	Bar navigation des miniatures</label>
+<select id="params_lightbox_thumbs" name="params[lightbox_thumbs]">
+	<option value="inside" selected="selected">Superposition &agrave; image</option>
+	<option value="outside">Dans zone de l&eacute;gende</option>
+	<option value="none">Masquer</option>
+</select>
+</li>
+<li class="formelm"><label id="params_lightbox_slideshow-lbl" for="params_lightbox_slideshow" class="hasPopover" title="Temps entre diapositives [ms]" data-content="Temps d'affichage de chaque image [ms] lorsque le mode diaporama est activé dans la Lightbox, ou 0 pour désactiver le mode diaporama. Tous les types de pop-up ne supportent pas le mode diaporama. Lorsque le mode diaporama est désactivé, aucun bouton &lt;em&gt; Lecture &lt;/ em&gt; n'est affiché dans la fenêtre contextuelle.">
+	Temps entre diapositives [ms]</label>
+<input type="text" name="params[lightbox_slideshow]" id="params_lightbox_slideshow"  value="0"               />
+</li>
+<li class="formelm"><label id="params_lightbox_autostart-lbl" for="params_lightbox_autostart" class="hasPopover" title="Départ automatique" data-content="Activer automatiquement le mode diaporama lorsque la fenêtre pop-up s'ouvre. Tous les moteurs de fenêtre pop-up ne prennent pas en charge les diaporamas de lancement automatique. Lorsque le démarrage automatique est désactivé, l'utilisateur doit cliquer sur le bouton de commande &lt;em&gt;Lire&lt;/em&gt; pour lancer un diaporama. Le démarrage automatique n'a aucun effet lorsque le mode diaporama est désactivé.">
+	Départ automatique</label>
+<fieldset id="params_lightbox_autostart" class="radio"
+				>
+
+						
+						<input type="radio" id="params_lightbox_autostart0" name="params[lightbox_autostart]" value="1"  />			<label for="params_lightbox_autostart0" >
+				Oui			</label>
+					
+						<input type="radio" id="params_lightbox_autostart1" name="params[lightbox_autostart]" value="0" checked="checked" />			<label for="params_lightbox_autostart1" >
+				Non			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_rotator_orientation-lbl" for="params_rotator_orientation" class="hasPopover" title="Orientation du défilement" data-content="Orientation de la fenêtre d'affichage du défilement d'images. Le défilement à horizontal se déplace de la droite vers la gauche, le défilement verticalement se déplacent de bas en haut. Le fait de définir le nombre de lignes et de colonnes pour la galerie n'affecte pas l'orientation du défilement, qui détermine la direction du déplacement d'images, c'est-à-dire qu'il est possible de faire définir horizontalement ou verticalement une galerie de mise en page fixe de 1 par 3. Les images sont automatiquement commandées dans la grille pour tenir compte de l'orientation, indépendamment du nombre de lignes et de colonnes">
+	Orientation du défilement</label>
+<select id="params_rotator_orientation" name="params[rotator_orientation]">
+	<option value="horizontal" selected="selected">horizontal</option>
+	<option value="vertical">vertical</option>
+</select>
+</li>
+<li class="formelm"><label id="params_rotator_buttons-lbl" for="params_rotator_buttons" class="hasPopover" title="Points de navigation" data-content="Montre les flèches de nagigation &lt;code&gt;&amp;lt;&lt;/code&gt; and &lt;code&gt;&amp;gt;&lt;/code&gt; au passage de la souris lors du défilement des images. Ces boutons ne prennent pas d'espace supplémentaire et ne sont affichés que lorsque la souris se déplace sur la galerie d'images (soit à gauche et à droite pour les curseurs orientés horizontalement ou en haut et en bas pour les curseurs verticaux).">
+	Points de navigation</label>
+<fieldset id="params_rotator_buttons" class="radio"
+				>
+
+						
+						<input type="radio" id="params_rotator_buttons0" name="params[rotator_buttons]" value="1" checked="checked" />			<label for="params_rotator_buttons0" >
+				Afficher			</label>
+					
+						<input type="radio" id="params_rotator_buttons1" name="params[rotator_buttons]" value="0"  />			<label for="params_rotator_buttons1" >
+				Masquer			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_rotator_navigation-lbl" for="params_rotator_navigation" class="hasPopover" title="Barre de navigation" data-content="Placement de la barre de navigation en permanence visible pour le défilement. La barre de navigation affiche des liens de contrôles &lt;em&gt;Précédent&lt;/em&gt; (&lt;code&gt;&amp;lt;&lt;/code&gt;) ou &lt;em&gt;Suivant&lt;/em&gt; (&lt;code&gt;&amp;gt;&lt;/code&gt;).">
+	Barre de navigation</label>
+<select id="params_rotator_navigation" name="params[rotator_navigation]">
+	<option value="bottom" selected="selected">bas</option>
+	<option value="top">haut</option>
+	<option value="none">aucun</option>
+	<option value="both">les deux</option>
+</select>
+</li>
+<li class="formelm"><label id="params_rotator_links-lbl" for="params_rotator_links" class="hasPopover" title="Boutons de pagination" data-content="Indique si les boutons qui s'affichent immédiatement sur une image ou une page de défilement spécifique. Cela permet une navigation rapide lorsque la galerie comprend de nombreuses images. Le sens des boutons montre comment le défilement avance dans une étape de navigation.">
+	Boutons de pagination</label>
+<fieldset id="params_rotator_links" class="radio"
+				>
+
+						
+						<input type="radio" id="params_rotator_links0" name="params[rotator_links]" value="1" checked="checked" />			<label for="params_rotator_links0" >
+				Afficher			</label>
+					
+						<input type="radio" id="params_rotator_links1" name="params[rotator_links]" value="0"  />			<label for="params_rotator_links1" >
+				Masquer			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_rotator_trigger-lbl" for="params_rotator_trigger" class="hasPopover" title="Type de navigation" data-content="Action de l'utilisateur qui déclenche le défilement , soit par click ou survol de la souris.">
+	Type de navigation</label>
+<select id="params_rotator_trigger" name="params[rotator_trigger]">
+	<option value="click" selected="selected">click</option>
+	<option value="mouseover">survol de souris</option>
+</select>
+</li>
+<li class="formelm"><label id="params_rotator_step-lbl" for="params_rotator_step" class="hasPopover" title="Type de défilement" data-content="Type de defilement lorsque l'on clicque sur les boutons &lt;em&gt;Précédent&lt;/em&gt; et &lt;em&gt;Suivant&lt;/em&gt;.Cela permet de naviguer d'un groupe d'images à un autre, soit par ligne ou colonne d'images, en fonction du contexte.">
+	Type de défilement</label>
+<select id="params_rotator_step" name="params[rotator_step]">
+	<option value="single" selected="selected">single</option>
+	<option value="page">page</option>
+</select>
+</li>
+<li class="formelm"><label id="params_rotator_duration-lbl" for="params_rotator_duration" class="hasPopover" title="Durée de la diapositive [ms]" data-content="Le temps nécessaire au déplacement du défilement d'une page à l'autre [ms].">
+	Durée de la diapositive [ms]</label>
+<input type="text" name="params[rotator_duration]" id="params_rotator_duration"  value="800"               />
+</li>
+<li class="formelm"><label id="params_rotator_delay-lbl" for="params_rotator_delay" class="hasPopover" title="Temps de défilement" data-content="Le temps pris entre les diapositives automatiques successifs lorsque la souris s'éloigne de la zone de délignement [ms]. Utilisez une valeur de zéro pour désactiver l'animation de ralenti automatique.">
+	Temps de défilement</label>
+<input type="text" name="params[rotator_delay]" id="params_rotator_delay"  value="0"               />
+</li>
+<li class="formelm"><label id="params_loop-lbl" for="params_loop" class="hasPopover" title="Défilement continu" data-content="L'ensemble des images défile d'une manière continu (de bas en haut et vice verça) de telle sorte que le premier élément suit le dernier et le dernier précède le premier lorsque vous cliquez ou survoler avec la souris sur les boutons de navigation.">
+	Défilement continu</label>
+<fieldset id="params_loop" class="radio"
+				>
+
+						
+						<input type="radio" id="params_loop0" name="params[loop]" value="1" checked="checked" />			<label for="params_loop0" >
+				Activé			</label>
+					
+						<input type="radio" id="params_loop1" name="params[loop]" value="0"  />			<label for="params_loop1" >
+				Désactivé			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_caption_visibility-lbl" for="params_caption_visibility" class="hasPopover" title="Visibilité de la légende" data-content="Visibilité des légendes sur les images. Détermine si les légendes doivent toujours être affichées, ou uniquement lorsque le pointeur de la souris est déplacé sur l'image. La légende n'est jamais visible si une image n'a pas de texte de légende">
+	Visibilité de la légende</label>
+<select id="params_caption_visibility" name="params[caption_visibility]">
+	<option value="none">aucun</option>
+	<option value="mouseover" selected="selected">survol de la souris</option>
+	<option value="always">toujours</option>
+</select>
+</li>
+<li class="formelm"><label id="params_caption_position-lbl" for="params_caption_position" class="hasPopover" title="Position de la légende" data-content="Endroit pour afficher la légende par rapport à l'image. La superposition des légendes s'affiche dans une zone translucide qui apparaît dans la partie supérieure ou inférieure de l'image.">
+	Position de la légende</label>
+<select id="params_caption_position" name="params[caption_position]">
+	<option value="overlay-bottom">overlay en bas</option>
+	<option value="overlay-top">overlay en haut</option>
+	<option value="below">au dessous</option>
+	<option value="above">au dessus</option>
+</select>
+</li>
+</ul>
+</fieldset>
+<h3>Configuration avancée</h3><fieldset class="panelform">
+<ul>
+<li class="formelm"><label id="params_download-lbl" for="params_download" class="hasPopover" title="Niveau d'accès au téléchargement" data-content="Niveau d'accès requis pour afficher l'icône de téléchargement dans la fenêtre pop-up et les légendes. Lorsque l'utilisateur avec le niveau d'accès approprié (par exemple Enregistré) clique sur l'icône, le navigateur invite l'utilisateur à enregistrer l'image originale sur son ordinateur. Si une image haute résolution est disponible dans un dossier séparé, l'utilisateur sera invité à télécharger cette image, sinon la même image sera téléchargée comme affiché dans la fenêtre pop-up.">
+	Niveau d'accès au téléchargement</label>
+<select id="params_download" name="params[download]">
+	<option value="" selected="selected">D&eacute;sactiv&eacute;</option>
+	<option value="9">Acc&egrave;s Administration Comp&eacute;tions</option>
+	<option value="7">Acc&egrave;s Bureau</option>
+	<option value="5">Acc&egrave;s invit&eacute;</option>
+	<option value="1">Acc&egrave;s public</option>
+	<option value="8">Acc&egrave;s R&eacute;dacteur</option>
+	<option value="6">Acc&egrave;s super utilisateur</option>
+	<option value="2">Acc&egrave;s enregistr&eacute;</option>
+	<option value="3">Acc&egrave;s sp&eacute;cial</option>
+</select>
+</li>
+<li class="formelm"><label id="params_metadata-lbl" for="params_metadata" class="hasPopover" title="Niveau d'accès aux métadonnées" data-content="Niveau d'accès requis pour afficher l'icône de métadonnées dans la fenêtre pop-up et les sous-titres. Lorsque l'utilisateur avec le niveau d'accès approprié (par exemple Enregistré) clique sur l'icône, les métadonnées et autres informations d'appareil photo numérique et d'autres métadonnées d'image comme la légende, le résumé, le créateur et le copyright s'affichent dans une fenêtre déroulante séparée. Certaines implémentations de fenêtre pop-up ne permettent pas l'affichage de métadonnées.">
+	Niveau d'accès aux métadonnées</label>
+<select id="params_metadata" name="params[metadata]">
+	<option value="" selected="selected">D&eacute;sactiv&eacute;</option>
+	<option value="9">Acc&egrave;s Administration Comp&eacute;tions</option>
+	<option value="7">Acc&egrave;s Bureau</option>
+	<option value="5">Acc&egrave;s invit&eacute;</option>
+	<option value="1">Acc&egrave;s public</option>
+	<option value="8">Acc&egrave;s R&eacute;dacteur</option>
+	<option value="6">Acc&egrave;s super utilisateur</option>
+	<option value="2">Acc&egrave;s enregistr&eacute;</option>
+	<option value="3">Acc&egrave;s sp&eacute;cial</option>
+</select>
+</li>
+<li class="formelm"><label id="params_protection-lbl" for="params_protection" class="hasPopover" title="Protection de l'image" data-content="Mise en oeuvre de protection des images côté client. La protection de l'image côté client capture et supprime le clic droit de la souris (&lt;em&gt;contextmenu&lt;/em&gt;) les actions de glisser-déposer (&lt;em&gt;dragstart&lt;/em&gt;), empêchant ainsi les visiteurs d'enregistrer facilement les images dans leur propre ordinateur. Bien qu'ils soient utiles contre un grand nombre d'utilisateurs, les mécanismes de prévention côté client sont totalement inefficaces contre les utilisateurs puissants qui peuvent facilement extraire des images en enregistrant un instantané de page ou en inspectant le dossier de fichiers Internet temporaires, ce qui ne peut être empêché par aucune mesure de script. Pour une alternative plus sûre, considérez le watermarkingg (sur le serveur) à la place, qui irréversiblement incorporer un filigrane dans l'image. Tous les moteurs de fenêtres pop-up ne prennent pas en charge la protection côté client.">
+	Protection de l'image</label>
+<fieldset id="params_protection" class="radio"
+				>
+
+						
+						<input type="radio" id="params_protection0" name="params[protection]" value="1"  />			<label for="params_protection0" >
+				Oui			</label>
+					
+						<input type="radio" id="params_protection1" name="params[protection]" value="0" checked="checked" />			<label for="params_protection1" >
+				Non			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_preview_margin-lbl" for="params_preview_margin" class="hasPopover" title="Marges" data-content="Marge autour des images [px].Utiliser un nombre avec ou sans unité, numéros sans unité par défaut pixels. La marge efface une zone complètement transparente autour du bord. Si elle est omise la marge spécifiée dans le fichier de feuille de style (&lt;code&gt; sigplus.css &lt;/ code&gt;) s'applique.">
+	Marges</label>
+<input type="text" name="params[preview_margin]" id="params_preview_margin" value="" class="form-control" size="6" placeholder="Défaut"/></li>
+<li class="formelm"><label id="params_preview_border_style-lbl" for="params_preview_border_style" class="hasPopover" title="Style de bordure" data-content="Style de bordure à afficher autour des images. La bordure est autour de la zone transparence du bord (padding) et de l'image de prévisualisation. Si le paramètre &lt;em&gt;default&lt;/em&gt;, est défini, le style de bordure spécifié dans le fichier de feuille de style (&lt;code&gt;sigplus.css&lt;/code&gt;) s'applique.">
+	Style de bordure</label>
+<select id="params_preview_border_style" name="params[preview_border_style]">
+	<option value="" selected="selected">par d&eacute;faut</option>
+	<option value="none">aucun</option>
+	<option value="dotted">pointill&eacute;</option>
+	<option value="dashed">dashed</option>
+	<option value="solid">solid</option>
+	<option value="double">double</option>
+	<option value="groove">3D grooved</option>
+	<option value="ridge">3D ridged</option>
+	<option value="inset">3D inset</option>
+	<option value="outset">3D outset</option>
+</select>
+</li>
+<li class="formelm"><label id="params_preview_border_width-lbl" for="params_preview_border_width" class="hasPopover" title="largeur du bord" data-content="largeur du bord [px]; Utiliser un nombre avec ou sans unité,  sans numéros par défaut (&lt;code&gt;px&lt;/code&gt;). Si elle est omise, la largeur de bordure spécifiée dans le fichier de feuille de style (&lt;code&gt;sigplus.css&lt;/code&gt;) s'applique.">
+	largeur du bord</label>
+<input type="text" name="params[preview_border_width]" id="params_preview_border_width" value="" class="form-control" size="6" placeholder="Défaut"/></li>
+<li class="formelm"><label id="params_preview_border_color-lbl" for="params_preview_border_color" class="hasPopover" title="Couleur de bordure" data-content="Couleur de la bordure à afficher autour des images. Si omis, la couleur de bordure spécifiée dans le fichier de feuille de style (&lt;code&gt;sigplus.css&lt;/code&gt;) s'applique. Spécifiez une valeur hexadécimale entre #000000 and #FFFFFF inclusive dans le RGB system (rouge: #FF0000, vert: #00FF00, bleu: #0000FF), Ou utilisez le sélecteur de couleur. Si le style de bordure est &lt;em&gt;aucun&lt;/em&gt;, Ce paramètre n'a aucun effet.">
+	Couleur de bordure</label>
+<input type="text" class="inputbox color" name="params[preview_border_color]" id="paramspreview_border_color" value="" /></li>
+<li class="formelm"><label id="params_preview_padding-lbl" for="params_preview_padding" class="hasPopover" title="Padding" data-content="Zone autour des images [px]; Utiliser un nombre avec ou sans unité, ou 0 par défaut  (&lt;code&gt;px&lt;/code&gt;). Cete zone efface une zone directement autour de l'image dans les limites de la bordure. S'il est omis, la zone spécifié dans le fichier de feuille de style (&lt;code&gt;sigplus.css&lt;/code&gt;) s'applique.">
+	Padding</label>
+<input type="text" name="params[preview_padding]" id="params_preview_padding" value="" class="form-control" size="6" placeholder="Défaut"/></li>
+<li class="formelm"><label id="params_sort_criterion-lbl" for="params_sort_criterion" class="hasPopover" title="Critère de tri des images" data-content="Critère à utiliser pour organiser les images dans une galerie: les images sont triées selon le critère spécifié dans l'ordre spécifié. Les critères basés sur un fichier de légendes ont une option de réduction (entre parenthèses): lorsqu'aucun fichier de légendes n'est trouvé (ou qu'il n'y a pas d'images dans le fichier de légendes), le critère de réduction est utilisé pour trier les images restantes. Critères qui ne sont pas basés sur un tri de fichier d'étiquettes indépendamment de l'ordre des entrées dans un fichier de légendes possible, même s'il existe.">
+	Critère de tri des images</label>
+<select id="params_sort_criterion" name="params[sort_criterion]">
+	<option value="labels-filename" selected="selected">fichier des l&eacute;gendes (nom de fichier)</option>
+	<option value="labels-mtime">ficher des l&eacute;gendes (heure de la derni&egrave;re modification)</option>
+	<option value="labels-filesize">fichier des l&eacute;gendes (taille du fichier)</option>
+	<option value="labels-random">fichier des l&eacute;gendes (ordre al&eacute;atoire)</option>
+	<option value="labels">fichier des l&eacute;gendes</option>
+	<option value="filename">nom du fichier</option>
+	<option value="mtime">heure de la derni&egrave;re modification</option>
+	<option value="filesize">taille du fichier</option>
+	<option value="random">Al&eacute;atoire</option>
+</select>
+</li>
+<li class="formelm"><label id="params_sort_order-lbl" for="params_sort_order" class="hasPopover" title="Ordre de tri des images" data-content="Ordre à utiliser dans le critère de tri spécifié: les images sont triées selon le critère spécifié dans l'ordre précisé.">
+	Ordre de tri des images</label>
+<select id="params_sort_order" name="params[sort_order]">
+	<option value="0" selected="selected">ascendant</option>
+	<option value="1">descendant</option>
+</select>
+</li>
+<li class="formelm"><label id="params_depth-lbl" for="params_depth" class="hasPopover" title="Recursion depth" data-content="Limite de recursion pour l'analyse hiérarchique des répertoires dans le système de fichiers. La valeur 0 limite les images à inclure dans une galerie à celles du dossier source. La valeur -1 effectue un parcours récursif hiérarchique des répertoires et inclut toutes les images qui se trouvent dans le dossier source ou dans l'un de ses dossiers descendants. Une valeur positive (recommandée) définit une limite de profondeur de recursion.">
+	Recursion depth</label>
+<input type="number" name="params[depth]" id="params_depth" value="0"         min="-1"    /></li>
+<li class="formelm"><label id="params_watermark_position-lbl" for="params_watermark_position" class="hasPopover" title="Position du copyright" data-content="La position dans l'image où le filigrane est superposé. Pour les valeurs autres que &lt;em&gt;aucun&lt;/em&gt;, l'image à utiliser comme filigrane doit être un fichier image avec transparence canal alpha (png) et placé dans le dossier source de l'image (où les images sont affichées dans la galerie) le dossier de filigrane ou le dossier de base. Lorsque le filigrane est superposé, l'image originale n'est pas modifiée, mais une nouvelle image filigranée est créée à la place">
+	Position du copyright</label>
+<select id="params_watermark_position" name="params[watermark_position]">
+	<option value="" selected="selected">Aucun</option>
+	<option value="n">Nord</option>
+	<option value="ne">Nord-est</option>
+	<option value="e">Est</option>
+	<option value="se">Sud-est</option>
+	<option value="s">Sud</option>
+	<option value="sw">Sud-ouest</option>
+	<option value="w">Ouest</option>
+	<option value="nw">Nord-ouest</option>
+	<option value="c">Centre</option>
+</select>
+</li>
+<li class="formelm"><label id="params_watermark_x-lbl" for="params_watermark_x" class="hasPopover" title="Distance de horizontal" data-content="La distance à garder du bord gauche ou droit [px], selon le cas. La distance par rapport au bord vertical n'est pas significative pour les emplacements centre, nord et sud pour lesquels le filigrane est automatiquement centré horizontalement.">
+	Distance de horizontal</label>
+<input type="text" name="params[watermark_x]" id="params_watermark_x"  value=""               />
+</li>
+<li class="formelm"><label id="params_watermark_y-lbl" for="params_watermark_y" class="hasPopover" title="Distance du vertical" data-content="La distance à garder du bord supérieur ou inférieur [px], selon le cas. La distance du bord horizontal n'est pas significative pour les emplacements centre, est et ouest pour lesquels le filigrane est automatiquement centré verticalement.">
+	Distance du vertical</label>
+<input type="text" name="params[watermark_y]" id="params_watermark_y"  value=""               />
+</li>
+<li class="formelm"><label id="params_watermark_source-lbl" for="params_watermark_source" class="hasPopover" title="Nom du fichier du copyrght" data-content="Nom à utiliser pour le fichier image (avec extension) servant de filigrane. L'image doit être un fichier avec une transparence (png) de canal alpha et placé dans le dossier de la galerie d'images (où se trouvent les images affichées dans la galerie), le sous-dossier pour les images en filigrane ou le dossier de base d'images.">
+	Nom du fichier du copyrght</label>
+<input type="text" name="params[watermark_source]" id="params_watermark_source"  value="watermark.png"               />
+</li>
+<li class="formelm"><label id="params_thumb_width-lbl" for="params_thumb_width" class="hasPopover" title="Largeur des miniatures" data-content="Hauteur par défaut des images miniatures à générer [px].">
+	Largeur des miniatures</label>
+<input type="text" name="params[thumb_width]" id="params_thumb_width"  value="60"               />
+</li>
+<li class="formelm"><label id="params_thumb_height-lbl" for="params_thumb_height" class="hasPopover" title="Hauteur des miniatures" data-content="Hauteur par défaut des images miniatures à générer [px].">
+	Hauteur des miniatures</label>
+<input type="text" name="params[thumb_height]" id="params_thumb_height"  value="60"               />
+</li>
+<li class="formelm"><label id="params_thumb_crop-lbl" for="params_thumb_crop" class="hasPopover" title="Recadrage" data-content="Recadrage des dimensions lors du redimensionnement de l'image miniature. Si OUI, le rapport de la largeur et de la hauteur de l'image miniature diffère de celui de l'image d'origine, les parties en excès de l'image d'origine sont recadrées de haut en bas ou de gauche et de droite lors du redimensionnement des dimensions de l'image miniature. Si NON, l'image miniature affiche toujours l'image entière et la dimension appropriée est réduite">
+	Recadrage</label>
+<fieldset id="params_thumb_crop" class="radio"
+				>
+
+						
+						<input type="radio" id="params_thumb_crop0" name="params[thumb_crop]" value="1"  />			<label for="params_thumb_crop0" >
+				Oui			</label>
+					
+						<input type="radio" id="params_thumb_crop1" name="params[thumb_crop]" value="0" checked="checked" />			<label for="params_thumb_crop1" >
+				Non			</label>
+			</fieldset>
+</li>
+<li class="formelm"><label id="params_lightbox_transition-lbl" for="params_lightbox_transition" class="hasPopover" title="Effet de transition" data-content="Easing equation utilise l'effet de transition de la lightbox, c'est-à-dire la vitesse à laquelle l'animation de dimensionnement progresse à différents stades lorsque la lightbox s'ouvre ou modifie la séquence d'animati.">
+	Effet de transition</label>
+<select id="params_lightbox_transition" name="params[lightbox_transition]">
+	<option value="linear">linear</option>
+	<option value="quad">quadratic</option>
+	<option value="cubic">cubicular</option>
+	<option value="quart">quartetic</option>
+	<option value="quint">quintic</option>
+	<option value="expo">exponential</option>
+	<option value="circ">circular</option>
+	<option value="sine" selected="selected">sinusoidal</option>
+	<option value="back">back and forth</option>
+	<option value="bounce">bouncy</option>
+	<option value="elastic">elastic curve</option>
+</select>
+</li>
+<li class="formelm"><label id="params_rotator_alignment-lbl" for="params_rotator_alignment" class="hasPopover" title="Alignement des points de défilement" data-content="Le positionnement des éléments dans leur conteneur.">
+	Alignement des points de défilement</label>
+<select id="params_rotator_alignment" name="params[rotator_alignment]">
+	<option value="c">Centre</option>
+	<option value="n">Nord</option>
+	<option value="ne">Nord-est</option>
+	<option value="e">Est</option>
+	<option value="se">Sud-est</option>
+	<option value="s">Sud</option>
+	<option value="sw">Sud-ouest</option>
+	<option value="w">Ouest</option>
+	<option value="nw">Nord-ouest</option>
+</select>
+</li>
+<li class="formelm"><label id="params_rotator_transition-lbl" for="params_rotator_transition" class="hasPopover" title="Effet de transition du défilement" data-content="Easing equation utilise l'effet de transition des défilements, à savoir la vitesse à laquelle l'animation rotation progresse à différentes étapes d'une séquence d'animation de diapositives.">
+	Effet de transition du défilement</label>
+<select id="params_rotator_transition" name="params[rotator_transition]">
+	<option value="linear">linear</option>
+	<option value="quad">quadratic</option>
+	<option value="cubic">cubicular</option>
+	<option value="quart">quartetic</option>
+	<option value="quint">quintic</option>
+	<option value="expo">exponential</option>
+	<option value="circ">circular</option>
+	<option value="sine" selected="selected">sinusoidal</option>
+	<option value="back">back and forth</option>
+	<option value="bounce">bouncy</option>
+	<option value="elastic">elastic curve</option>
+</select>
+</li>
+<li class="formelm"><label id="params_quality-lbl" for="params_quality" class="hasPopover" title="Qualité de l'image" data-content="Paramètre de qualité d'image pour générer des images d'aperçu et des miniatures avec la compression JPEG avec perte. Variable de 0 (pire qualité, fichier plus petit) à 100 (meilleure qualité, plus grand fichier) inclus. D'autres types d'images avec compression sans perte (par exemple, PNG ou GIF) ne sont pas affectés.">
+	Qualité de l'image</label>
+<input type="text" name="params[quality]" id="params_quality"  value="85"               />
+</li>
+<li class="formelm"><label id="params_caption_source-lbl" for="params_caption_source" class="hasPopover" title="Nom de fichier des légendes" data-content="Nom à utiliser pour le fichier texte (avec extension) contenant des légendes d'images et des descriptions.">
+	Nom de fichier des légendes</label>
+<input type="text" name="params[caption_source]" id="params_caption_source"  value="labels.txt"               />
+</li>
+</ul>
+</fieldset>
+</form>
+<p><a target='_blank' href='https://hunyadi.info.hu/sigplus/sigplus-backend-settings'>More information on configuration settings</a></p>
+</body>
+</html>

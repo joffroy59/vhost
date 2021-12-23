@@ -3,11 +3,11 @@
 	<name>MOD_EASYFOLDERLISTING</name>
 	<author>Michael Gilkes (Valor Apps)</author>
 	<creationDate>February 2012</creationDate>
-	<copyright>Copyright (C) 2010-2019 Michael Albert Gilkes. All rights reserved.</copyright>
+	<copyright>Copyright (C) 2010-2021 Michael Albert Gilkes. All rights reserved.</copyright>
 	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2</license>
 	<authorEmail>michael@valorapps.com</authorEmail>
 	<authorUrl>https://www.valorapps.com</authorUrl>
-	<version>3.0.4</version>
+	<version>3.1</version>
 	<description>MOD_EFL_DESCRIPTION</description>
 	<namespace>ValorApps\Module\EasyFolderListing</namespace>
 	<help url="MOD_EFL_DOCUMENTATION" />

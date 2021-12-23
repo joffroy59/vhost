@@ -9,6 +9,20 @@ class JceViewProfiles extends JViewLegacy
     protected $pagination;
     protected $state;
 
+    protected function isEmpty()
+    {
+        // Create a new query object.
+        $db = JFactory::getDbo();
+        $query = $db->getQuery(true);
+
+        // Select the required fields from the table.
+        $query->select('COUNT(id)')->from($db->quoteName('#__wf_profiles'));
+
+        $db->setQuery($query);
+
+        return $db->loadResult() == 0;
+    }
+
     /**
      * Display the view.
      */
@@ -18,6 +32,7 @@ class JceViewProfiles extends JViewLegacy
         $this->pagination = $this->get('Pagination');
         $this->state = $this->get('State');
         $this->filterForm = $this->get('FilterForm');
+        $this->activeFilters = $this->get('ActiveFilters');
 
         $this->params = JComponentHelper::getParams('com_jce');
 
@@ -28,16 +43,21 @@ class JceViewProfiles extends JViewLegacy
             return false;
         }
 
-        if (empty($this->items)) {
+        if ($this->isEmpty()) {
             $link = JHTML::link('index.php?option=com_jce&task=profiles.repair&' . JSession::getFormToken() . '=1', JText::_('WF_DB_CREATE_RESTORE'), array('class' => 'wf-profiles-repair'));
             JFactory::getApplication()->enqueueMessage(JText::_('WF_DB_PROFILES_ERROR') . ' - ' . $link, 'error');
         }
 
         JHtml::_('jquery.framework');
 
+        // only in Joomla 3.x
+        if (version_compare(JVERSION, '4', 'lt')) {
+            JHtml::_('formbehavior.chosen', 'select');
+        }
+
         $document = JFactory::getDocument();
-        $document->addScript('components/com_jce/media/js/profiles.min.js');
-        $document->addStyleSheet('components/com_jce/media/css/profiles.min.css');
+        $document->addScript(JURI::root(true) . '/media/com_jce/js/profiles.min.js');
+        $document->addStyleSheet(JURI::root(true) . '/media/com_jce/css/profiles.min.css');
 
         $this->addToolbar();
         $this->sidebar = JHtmlSidebar::render();

@@ -2,15 +2,23 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Table\Table;
+use Joomla\Utilities\ArrayHelper;
+use Joomla\CMS\MVC\Model\ListModel;
+
 //no direct accees
-defined ('_JEXEC') or die ('restricted aceess');
+defined ('_JEXEC') or die ('Restricted access');
 
-jimport('joomla.application.component.modellist');
 
-class SppagebuilderModelPages extends JModelList
+
+JLoader::register('SppagebuilderHelperRoute', JPATH_ROOT . '/components/com_sppagebuilder/helpers/route.php');
+
+class SppagebuilderModelPages extends ListModel
 {
 
 	public function __construct($config = array())
@@ -38,13 +46,13 @@ class SppagebuilderModelPages extends JModelList
 
 	protected function populateState($ordering = null, $direction = null)
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		$context = $this->context;
 
 		$search = $this->getUserStateFromRequest($context . '.search', 'filter_search');
 		$this->setState('filter.search', $search);
 
-		$access = $this->getUserStateFromRequest($context . '.filter.access', 'filter_access', 0, 'int');
+		$access = $this->getUserStateFromRequest($context . '.filter.access', 'filter_access');
 		$this->setState('filter.access', $access);
 
 		$published = $this->getUserStateFromRequest($context . '.filter.published', 'filter_published', '');
@@ -57,7 +65,7 @@ class SppagebuilderModelPages extends JModelList
 		$this->setState('filter.language', $language);
 
 		// List state information.
-		parent::populateState('a.ordering', 'asc');
+		parent::populateState('a.id', 'ASC');
 	}
 
 	protected function getStoreId($id = '')
@@ -76,7 +84,7 @@ class SppagebuilderModelPages extends JModelList
 
 		$db = $this->getDbo();
 		$query = $db->getQuery(true);
-		$user = JFactory::getUser();
+		$user = Factory::getUser();
 
 		$query->select(
 			$this->getState(
@@ -129,7 +137,7 @@ class SppagebuilderModelPages extends JModelList
 
 		if (is_numeric($categoryId))
 		{
-			$cat_tbl = JTable::getInstance('Category', 'JTable');
+			$cat_tbl = Table::getInstance('Category', 'JTable');
 			$cat_tbl->load($categoryId);
 			$rgt = $cat_tbl->rgt;
 			$lft = $cat_tbl->lft;
@@ -139,7 +147,7 @@ class SppagebuilderModelPages extends JModelList
 		}
 		elseif (is_array($categoryId))
 		{
-			JArrayHelper::toInteger($categoryId);
+			ArrayHelper::toInteger($categoryId);
 			$categoryId = implode(',', $categoryId);
 			$query->where('a.catid IN (' . $categoryId . ')');
 		}
@@ -194,38 +202,19 @@ class SppagebuilderModelPages extends JModelList
 		return $query;
 	}
 
+	/**
+	 * get all page items
+	 * 
+	 */
 	public function getItems() {
-		$app = JApplication::getInstance('site');
-		$router = $app->getRouter();
-
 		$items = parent::getItems();
+
 		if(is_array($items) && count($items)) {
 			foreach ($items as $key => &$item) {
-				// get menu id
-				$Itemid 		= SppagebuilderHelper::getMenuId($item->id);
-				$item->link 	= 'index.php?option=com_sppagebuilder&task=page.edit&id=' . $item->id;
-				$preview_link 	= 'index.php?option=com_sppagebuilder&view=page&id=' . $item->id;
-				$front_link 	= 'index.php?option=com_sppagebuilder&view=form&tmpl=component&layout=edit&id=' . $item->id;
-
-				if ($item->language && $item->language !== '*' && JLanguageMultilang::isEnabled()) {
-
-					$languages = JLanguageHelper::getLanguages('lang_code');
-					$languageCode = $languages[ $item->language ]->sef;
-					$preview_link .= '&lang=' . $languageCode;
-					$front_link .= '&lang=' . $languageCode;
-				}
-				
-				// Adding menu item id in the URL
-				$preview_link .= $Itemid;
-				$front_link .= $Itemid;
-				
-				// set preview and frontend edit url
-				$item->preview = SppagebuilderHelper::getSef404Url($router, $preview_link);
-            	$item->frontend_edit = SppagebuilderHelper::getSef404Url($router, $front_link);
+				$item->preview = SppagebuilderHelperRoute::getPageRoute($item->id, $item->language);
+				$item->frontend_edit = SppagebuilderHelperRoute::getFormRoute($item->id, $item->language);
 			}
 		}
-
 		return $items;
 	}
-
 }

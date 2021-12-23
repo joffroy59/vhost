@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -16,8 +16,8 @@ class JceViewPopup extends JViewLegacy
         $app = JFactory::getApplication();
         $document = JFactory::getDocument();
 
-        $document->addScript(JURI::root(true) . '/components/com_jce/media/js/popup.js');
-        $document->addStylesheet(JURI::root(true) . '/components/com_jce/media/css/popup.css');
+        $document->addScript(JURI::root(true) . '/media/com_jce/js/popup.min.js');
+        $document->addStylesheet(JURI::root(true) . '/media/com_jce/css/popup.min.css');
 
         // Get variables
         $img    = $app->input->get('img', '', 'STRING');

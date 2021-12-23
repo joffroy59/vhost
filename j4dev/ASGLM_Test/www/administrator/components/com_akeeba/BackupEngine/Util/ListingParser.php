@@ -3,13 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util;
 
-
+defined('AKEEBAENGINE') || die();
 
 /**
  * Parses directory listings of the standard UNIX or MS-DOS style, i.e. what is most commonly returned by FTP and SFTP
@@ -96,7 +96,7 @@ class ListingParser
 		{
 			$vInfo = preg_split("/[\s]+/", $v, 9);
 
-			if (count($vInfo) != 9)
+			if ((is_array($vInfo) || $vInfo instanceof \Countable ? count($vInfo) : 0) != 9)
 			{
 				continue;
 			}
@@ -169,15 +169,15 @@ class ListingParser
 				$bitPart   = 0;
 				$permsPart = '';
 
-				list($thisPerms, $thisBit) = $this->textPermsDecode($userPerms);
+				[$thisPerms, $thisBit] = $this->textPermsDecode($userPerms);
 				$bitPart   += 4 * $thisBit; // SetUID
 				$permsPart .= $thisPerms;
 
-				list($thisPerms, $thisBit) = $this->textPermsDecode($groupPerms);
+				[$thisPerms, $thisBit] = $this->textPermsDecode($groupPerms);
 				$bitPart   += 2 * $thisBit; // SetGID
 				$permsPart .= $thisPerms;
 
-				list($thisPerms, $thisBit) = $this->textPermsDecode($otherPerms);
+				[$thisPerms, $thisBit] = $this->textPermsDecode($otherPerms);
 				$bitPart   += $thisBit; // Sticky (restricted deletion)
 				$permsPart .= $thisPerms;
 
@@ -205,7 +205,7 @@ class ListingParser
 			// Link target parsing
 			if (strpos($name, '->') !== false)
 			{
-				list($name, $target) = explode('->', $name);
+				[$name, $target] = explode('->', $name);
 
 				$entry['target'] = trim($target);
 			}
@@ -249,7 +249,7 @@ class ListingParser
 		{
 			$vInfo = preg_split("/[\s]+/", $v, 5);
 
-			if (count($vInfo) < 4)
+			if ((is_array($vInfo) || $vInfo instanceof \Countable ? count($vInfo) : 0) < 4)
 			{
 				continue;
 			}

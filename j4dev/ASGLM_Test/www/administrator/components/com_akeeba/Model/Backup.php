@@ -1,14 +1,14 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Engine\Base\Part;
 use Akeeba\Engine\Factory;
@@ -18,12 +18,13 @@ use Closure;
 use DateTimeZone;
 use DirectoryIterator;
 use Exception;
-use FOF30\Date\Date;
-use FOF30\Model\Model;
-use FOF30\Timer\Timer;
+use FOF40\Date\Date;
+use FOF40\Factory\Exception\ModelNotFound;
+use FOF40\Model\Model;
+use FOF40\Timer\Timer;
 use JDatabaseDriver;
 use JLoader;
-use JText;
+use Joomla\CMS\Language\Text;
 use Psr\Log\LogLevel;
 use RuntimeException;
 
@@ -87,41 +88,14 @@ class Backup extends Model
 	{
 		// Get information from the session
 		$tag         = $this->getState('tag', null, 'string');
-		$backupId    = $this->getState('backupid', null, 'string');
 		$description = $this->getState('description', '', 'string');
 		$comment     = $this->getState('comment', '', 'html');
 		$jpskey      = $this->getState('jpskey', null, 'raw');
 		$angiekey    = $this->getState('angiekey', null, 'raw');
-
-		// Try to get a backup ID if none is provided
-		if (is_null($backupId))
-		{
-			$backupId = $this->getBackupId();
-		}
+		$backupId = $this->getBackupId();
 
 		// Use the default description if none specified
-		if (empty($description))
-		{
-			JLoader::import('joomla.utilities.date');
-			$dateNow  = new Date();
-			$timezone = $this->container->platform->getConfig()->get('offset', 'UTC');
-
-			if (!$this->getContainer()->platform->isCli())
-			{
-				$user = $this->container->platform->getUser();
-
-				if (!$user->guest)
-				{
-					$timezone = $user->getParam('timezone', $timezone);
-				}
-			}
-
-			$tz = new DateTimeZone($timezone);
-			$dateNow->setTimezone($tz);
-			$description =
-				JText::_('COM_AKEEBA_BACKUP_DEFAULT_DESCRIPTION') . ' ' .
-				$dateNow->format(JText::_('DATE_FORMAT_LC2'), true);
-		}
+		$description = $description ?: $this->getDefaultDescription();
 
 		// Try resetting the engine
 		try
@@ -148,6 +122,23 @@ class Backup extends Model
 		Factory::nuke();
 		Factory::getLog()->log(LogLevel::DEBUG, " -- Resetting Akeeba Engine factory ($tag.$backupId)");
 		Platform::getInstance()->load_configuration();
+
+		// Autofix the output directory
+		/** @var ConfigurationWizard $confWizModel */
+		$confWizModel = $this->container->factory->model('ConfigurationWizard')->tmpInstance();
+		$confWizModel->autofixDirectories();
+
+		// Rebase Off-site Folder Inclusion filters to use site path variables
+		/** @var \Akeeba\Backup\Admin\Model\IncludeFolders $incFoldersModel */
+		try
+		{
+			$incFoldersModel = $this->container->factory->model('IncludeFolders')->tmpInstance();
+			$incFoldersModel->rebaseFiltersToSiteDirs();
+		}
+		catch (ModelNotFound $e)
+		{
+			// Not a problem. This is expected to happen in the Core version.
+		}
 
 		// Should I apply any configuration overrides?
 		if (is_array($overrides) && !empty($overrides))
@@ -181,7 +172,7 @@ class Backup extends Model
 					'Domain'   => 'init',
 					'Step'     => '',
 					'Substep'  => '',
-					'Error'    => 'Failed configuration check Q' . $checkItem['code'] . ': ' . $checkItem['description'] . '. Please refer to https://www.akeebabackup.com/documentation/warnings/q' . $checkItem['code'] . '.html for more information and troubleshooting instructions.',
+					'Error'    => 'Failed configuration check Q' . $checkItem['code'] . ': ' . $checkItem['description'] . '. Please refer to https://www.akeeba.com/documentation/warnings/q' . $checkItem['code'] . '.html for more information and troubleshooting instructions.',
 					'Warnings' => [],
 					'Progress' => 0,
 				];
@@ -289,40 +280,12 @@ class Backup extends Model
 	 */
 	public function stepBackup($requireBackupId = true)
 	{
-		// Get the tag. If not specified use the AKEEBA_BACKUP_ORIGIN constant.
-		$tag = $this->getState('tag', null, 'string');
-
-		if (is_null($tag) && defined('AKEEBA_BACKUP_ORIGIN'))
-		{
-			$tag = AKEEBA_BACKUP_ORIGIN;
-		}
-
-		// Get the Backup ID. If not specified use the AKEEBA_BACKUP_ID constant.
+		// Get information from the model state
+		$tag      = $this->getState('tag', defined('AKEEBA_BACKUP_ORIGIN') ? AKEEBA_BACKUP_ORIGIN : null, 'string');
 		$backupId = $this->getState('backupid', null, 'string');
 
-		if (is_null($backupId) && defined('AKEEBA_BACKUP_ID'))
-		{
-			$backupId = AKEEBA_BACKUP_ID;
-		}
-
 		// Get the profile from the session, the AKEEBA_PROFILE constant or the model state – in this order
-		if ($this->container->platform->isCli())
-		{
-			$profile = defined('AKEEBA_PROFILE') ? AKEEBA_PROFILE : 1;
-		}
-		else
-		{
-			$profile = $this->container->platform->getSessionVar('profile', null);
-			$profile = defined('AKEEBA_PROFILE') ? AKEEBA_PROFILE : $profile;
-			$profile = $this->getState('profile', $profile, 'int');
-		}
-
-		$profile = max(0, (int) $profile);
-
-		if (empty($profile))
-		{
-			$profile = $this->getLastBackupProfile($tag, $backupId);
-		}
+		$profile = max(0, (int) $this->getState('profile', 0)) ?: $this->getLastBackupProfile($tag, $backupId);
 
 		// Set the active profile
 		if (!$this->container->platform->isCli())
@@ -356,7 +319,6 @@ class Backup extends Model
 
 			// Set the backup ID and run a backup step
 			$kettenrad = Factory::getKettenrad();
-			$kettenrad->setBackupId($backupId);
 			$kettenrad->tick();
 			$ret_array = $kettenrad->getStatusArray();
 		}
@@ -535,7 +497,7 @@ class Backup extends Model
 	 *
 	 * @return  int  The profile ID of the latest backup taken with the specified tag / backup ID
 	 */
-	protected function getLastBackupProfile($tag, $backupId = null)
+	public function getLastBackupProfile($tag, $backupId = null)
 	{
 		$filters = [
 			['field' => 'tag', 'value' => $tag],
@@ -592,7 +554,7 @@ class Backup extends Model
 		}
 
 		// Try to open the converted log file (.log.php)
-		$fp = @fopen($newFile, 'wb');
+		$fp = @fopen($newFile, 'w');
 
 		if ($fp === false)
 		{
@@ -600,7 +562,7 @@ class Backup extends Model
 		}
 
 		// Try to open the source log file (.log)
-		$sourceFP = @fopen($filePath, 'rb');
+		$sourceFP = @fopen($filePath, 'r');
 
 		if ($sourceFP === false)
 		{
@@ -639,70 +601,79 @@ class Backup extends Model
 	}
 
 	/**
-	 * @return string
+	 * Get a new backup ID string.
+	 *
+	 * In the past we were trying to get the next backup record ID using two methods:
+	 * - Querying the information_schema.tables metadata table. In many cases we saw this returning the wrong value,
+	 *   even though the MySQL documentation said this should return the next autonumber (WTF?)
+	 * - Doing a MAX(id) on the table and adding 1. This didn't work correctly if the latest records were deleted by the
+	 *   user.
+	 *
+	 * However, the backup ID does not need to be the same as the backup record ID. It only needs to be *unique*. So
+	 * this time around we are using a simple, unique ID based on the current GMT date and time.
+	 *
+	 * @return  string
 	 */
-	private function getBackupId()
+	private function getBackupId(): string
 	{
-		$db = $this->container->db;
+		$microtime    = explode(' ', microtime(false));
+		$microseconds = (int) ($microtime[0] * 1000000);
 
-		/**
-		 * I need to get the current database name. I'll use Ocramius' trick.
-		 * See https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
-		 */
-		$protectedMethodAccessor = function (JDatabaseDriver $db) {
-			return $db->getDatabase();
-		};
-		$boundClosure            = Closure::bind($protectedMethodAccessor, null, $db);
-		$dbName                  = $boundClosure($db);
-		$tableName               = $db->replacePrefix('#__ak_stats');
+		return 'id-' . gmdate('Ymd-His') . '-' . $microseconds;
+	}
 
-		/**
-		 * Now, I will first try to get the AUTO_INCREMENT value via INFORMATION_SCHEMA.
-		 * See https://stackoverflow.com/questions/15821532/get-current-auto-increment-value-for-any-table
-		 */
-		$query = $db->getQuery(true)
-			->select($db->qn('AUTO_INCREMENT'))
-			->from($db->qn('INFORMATION_SCHEMA.TABLES'))
-			->where($db->qn('TABLE_SCHEMA') . ' = ' . $db->q($dbName))
-			->where($db->qn('TABLE_NAME') . ' = ' . $db->q($tableName));
-
-		try
+	/**
+	 * Get the default backup description.
+	 *
+	 * The default description is "Backup taken on DATE TIME" where DATE TIME is the current timestamp in the most
+	 * specific timezone. The timezone order, from least to most specific, is:
+	 * * UTC (fallback)
+	 * * Server Timezone from Joomla's Global Configuration
+	 * * Timezone from the current user's profile (only applicable to backend backups)
+	 * * Forced backup timezone
+	 *
+	 * @param   string  $format  Date and time format. Default: DATE_FORMAT_LC2 plus the abbreviated timezone
+	 *
+	 * @return  string
+	 */
+	public function getDefaultDescription(string $format = ''): string
+	{
+		// If no date format is specified we use DATE_FORMAT_LC2 plus the abbreviated timezone
+		if (empty($format))
 		{
-			$backupId = $db->setQuery($query)->loadResult();
+			$format = Text::_('DATE_FORMAT_LC2') . ' T';
+		}
 
-			if (!empty($backupId))
+		// Get the most specific Joomla timezone (UTC, overridden by server timezone, overridden by user timezone)
+		$joomlaTimezone = $this->container->platform->getConfig()->get('offset', 'UTC');
+
+		if (!$this->getContainer()->platform->isCli())
+		{
+			$user = $this->container->platform->getUser();
+
+			if (!$user->guest)
 			{
-				return $backupId;
+				$joomlaTimezone = $user->getParam('timezone', $joomlaTimezone);
 			}
 		}
-		catch (Exception $e)
+
+		$timezone = $joomlaTimezone;
+
+		// The forced timezone overrides everything else
+		$forcedTZ = Platform::getInstance()->get_platform_configuration_option('forced_backup_timezone', 'AKEEBA/DEFAULT');
+
+		if (!empty($forcedTZ) && ($forcedTZ != 'AKEEBA/DEFAULT'))
 		{
-			// This didn't work. No problem, I'll use my legacy method instead.
+			$timezone = $forcedTZ;
 		}
 
-		/**
-		 * Get the maximum ID already in use and add 1. This is not the same as the table's auto_increment value if the
-		 * user has deleted the latest backup records. If the latest existing backup record has an ID of 20 but the user
-		 * had already deleted records 21 and 22 then the auto_increment is 23. However, this legacy method will return
-		 * a backup ID of 21 instead of the correct value of 23. There's not much I can do since I could not read the
-		 * actual auto_increment value above. Oh well, it's not the end of the world :)
-		 */
-		$query = $db->getQuery(true)
-			->select('MAX(' . $db->qn('id') . ')')
-			->from($db->qn('#__ak_stats'));
+		// Convert the current date and time to the selected timezone
+		$dateNow = new Date();
+		$tz      = new DateTimeZone($timezone);
 
-		try
-		{
-			$maxId = $db->setQuery($query)->loadResult();
-		}
-		catch (Exception $e)
-		{
-			$maxId = 0;
-		}
+		$dateNow->setTimezone($tz);
 
-		$backupId = 'id' . ($maxId + 1);
-
-		return $backupId;
+		return Text::_('COM_AKEEBA_BACKUP_DEFAULT_DESCRIPTION') . ' ' . $dateNow->format($format, true);
 	}
 
 }

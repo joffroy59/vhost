@@ -3,19 +3,19 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2019 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
  */
+
+use Joomla\CMS\Layout\FileLayout;
+
 //no direct accees
 defined('_JEXEC') or die('Restricted access');
 
 class SppagebuilderAddonButton extends SppagebuilderAddons {
 
     public function render() {
-		//Get FontAwesome Version
-		$config = JComponentHelper::getParams('com_sppagebuilder');
-		$font_awesome_version = $config->get('fontawesome_version', '4');
-		
+
 		$settings = $this->addon->settings;
         $alignment = (isset($settings->alignment) && $settings->alignment) ? $settings->alignment : 'sppb-text-left';
         $class = (isset($settings->class) && $settings->class) ? ' ' . $settings->class : '';
@@ -34,10 +34,6 @@ class SppagebuilderAddonButton extends SppagebuilderAddons {
 		$icon_arr = array_filter(explode(' ', $icon));
 		if (count($icon_arr) === 1) {
 			$icon = 'fa ' . $icon;
-		} else if (count($icon_arr) === 2) {
-			if ($font_awesome_version == '4') {
-				$icon = 'fa ' . $icon_arr[1];
-			}
 		}
 
         if ($icon_position == 'left') {
@@ -59,7 +55,7 @@ class SppagebuilderAddonButton extends SppagebuilderAddons {
 		$layout_path = JPATH_ROOT . '/components/com_sppagebuilder/layouts';
 		$css = '';
 
-        $css_path = new JLayoutFile('addon.css.button', $layout_path);
+        $css_path = new FileLayout('addon.css.button', $layout_path);
 
         $options = new stdClass;
         $options->button_type = (isset($settings->type) && $settings->type) ? $settings->type : '';
@@ -331,29 +327,10 @@ class SppagebuilderAddonButton extends SppagebuilderAddons {
 		</style>
 		<div class="{{ data.alignment }}">
 			<#
-			function _isValidIcon(icon, delta=false) {
-				let defaultIcons = "fa-ban";
-				let icon_arr = icon ? icon.split(" ") : "";
-				let iconName = icon_arr.length > 1 ? icon_arr[1] : icon_arr[0];
-				let iconKey = iconName ? iconName.replace(/-/g,"_") : "";
-				if (faIconList.version === 5 && typeof faIconList.missingIcons.f4[iconKey] !== "undefined") {
-				return delta ? iconName+ " icon is not available in FontAwesome 5" : "fa "+defaultIcons;
-				}
-				if (faIconList.version === 4 && typeof faIconList.missingIcons.f5[iconKey] !== "undefined") {
-				return delta ? iconName + " icon is not available in FontAwesome 4" : "fa "+defaultIcons;
-				}
-				if (delta) {
-					return false
-				} else {
-					return icon_arr.length === 1 ? "fa "+icon : faIconList.version === 4 ? "fa " + icon_arr[1] : icon;
-				}
-			}
-
-			let icon_class = _isValidIcon(data.icon);
-			let icon_name = _isValidIcon(data.icon, true);
+			let icon_arr = (typeof data.icon !== "undefined" && data.icon) ? data.icon.split(" ") : "";
+			let icon_name = icon_arr.length === 1 ? "fa "+data.icon : data.icon;
 			#>
-			<a href=\'{{ data.url }}\' id="btn-{{ data.id }}" target="{{ data.target }}" class="sppb-btn {{ classList }}"><# if(data.icon_position == "left" && !_.isEmpty(data.icon)) { #><i class="{{ icon_class }}"></i> <# } #>{{ data.text }}<# if(data.icon_position == "right" && !_.isEmpty(data.icon)) { #> <i class="{{ icon_class }}"></i><# } #></a>
-			<# if(icon_name) { #> <div class="sppb-icon-not-found">{{icon_name}}</div> <# } #>
+			<a href=\'{{ data.url }}\' id="btn-{{ data.id }}" target="{{ data.target }}" class="sppb-btn {{ classList }}"><# if(data.icon_position == "left" && !_.isEmpty(data.icon)) { #><i class="{{ icon_name }}"></i> <# } #>{{ data.text }}<# if(data.icon_position == "right" && !_.isEmpty(data.icon)) { #> <i class="{{ icon_name }}"></i><# } #></a>
 		</div>';
 
         return $output;

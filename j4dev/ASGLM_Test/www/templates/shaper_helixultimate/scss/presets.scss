@@ -1,24 +1,24 @@
 /**
  * @package Helix Ultimate Framework
  * @author JoomShaper https://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2018 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or Later
 */
 
 body,
 .sp-preloader {
 	background-color: $bg_color;
-	 color: $text_color;
+	color: $text_color;
 }
 
 .sp-preloader {
-	>div {
-	  background: $link_color;
-	  &:after {
-		background: $bg_color;
-	  }
+	> div {
+		background: $link_color;
+		&:after {
+			background: $bg_color;
+		}
 	}
-  }
+}
 
 #sp-top-bar {
 	background: $topbar_bg_color;
@@ -32,9 +32,14 @@ body,
 #sp-header {
 	background: $header_bg_color;
 }
-
+#sp-menu ul.social-icons {
+	a:hover,
+	a:focus {
+		color: $link_color;
+	}
+}
 // Anchor
-a{
+a {
 	color: $link_color;
 	&:hover,
 	&:focus,
@@ -42,52 +47,53 @@ a{
 		color: $link_hover_color;
 	}
 }
-
 .tags {
-  >li {
-    display: inline-block;
-    a {
-    	@if $link_color { background: fadeOut($link_color, 0.9); }
+	> li {
+		display: inline-block;
+		a {
+			@if $link_color {
+				background: fadeOut($link_color, 0.9);
+			}
 
-      	color: $link_color;
+			color: $link_color;
 			&:hover {
 				background: $link_hover_color;
 			}
-    }
-  }
+		}
+	}
 }
 
 .article-social-share {
-  .social-share-icon {
-    ul {
-      li {
-        a {
+	.social-share-icon {
+		ul {
+			li {
+				a {
 					color: $text_color;
-          &:hover,
-          &:focus {
-            background: $link_color;
-          }
-        }
-      }
-    }
-  }
+					&:hover,
+					&:focus {
+						background: $link_color;
+					}
+				}
+			}
+		}
+	}
 }
 
 .pager {
-  >li {
-    a {
-			border: 1px solid #EDEDED;
-      color: $text_color;
-    }
-  }
+	> li {
+		a {
+			border: 1px solid #ededed;
+			color: $text_color;
+		}
+	}
 }
-// Reading Progress Bar Color 
+// Reading Progress Bar Color
 .sp-reading-progress-bar {
 	background-color: $link_color;
 }
 // Megamenu
 .sp-megamenu-parent {
-	>li {
+	> li {
 		> a {
 			color: $menu_text_color;
 		}
@@ -103,19 +109,18 @@ a{
 	}
 
 	.sp-dropdown {
-
-		.sp-dropdown-inner{
+		.sp-dropdown-inner {
 			background: $menu_dropdown_bg_color;
 		}
 
 		li.sp-menu-item {
-			>a {
+			> a {
 				color: $menu_dropdown_text_color;
 				&:hover {
 					color: $menu_dropdown_text_hover_color;
 				}
 			}
-			&.active>a {
+			&.active > a {
 				color: $menu_dropdown_text_active_color;
 			}
 		}
@@ -123,7 +128,7 @@ a{
 
 	.sp-mega-group {
 		> li {
-			>a {
+			> a {
 				color: $menu_dropdown_text_color;
 			}
 		}
@@ -132,7 +137,25 @@ a{
 
 // Off Canvas
 #offcanvas-toggler {
-	>.fa {
+	> .fa {
+		color: $menu_text_color;
+		&:hover,
+		&:focus,
+		&:active {
+			color: $menu_text_hover_color;
+		}
+	}
+
+	> .fas {
+		color: $menu_text_color;
+		&:hover,
+		&:focus,
+		&:active {
+			color: $menu_text_hover_color;
+		}
+	}
+
+	> .far {
 		color: $menu_text_color;
 		&:hover,
 		&:focus,
@@ -143,43 +166,54 @@ a{
 }
 
 .offcanvas-menu {
-    background-color: $menu_dropdown_bg_color;
-    color: $menu_dropdown_text_color;
-    .offcanvas-inner {
-        .sp-module {
-            ul {
-                > li {
-                    a,
-                    span {
-                        color: $menu_dropdown_text_color;
+	background-color: $menu_dropdown_bg_color;
+	color: $menu_dropdown_text_color;
+	.offcanvas-inner {
+		a {
+			color: $text_color;
+			&:hover,
+			&:focus,
+			&:active {
+				color: $link_color;
+			}
+		}
+		ul.menu {
+			> li {
+				a,
+				span {
+					color: $menu_dropdown_text_color;
 
-                        &:hover,
-                        &:focus{
-                            color: $menu_dropdown_text_hover_color;
-                        }
-                    }
+					&:hover,
+					&:focus {
+						color: $menu_dropdown_text_hover_color;
+					}
+				}
 
-                    &.menu-parent {
-                        >a,
-                        >.menu-separator {
-                            >.menu-toggler {
-                            	@if $menu_dropdown_text_color { color: fade-out($menu_dropdown_text_color, 0.5); }
-                            }
-                        }
-
-                    }
-
-                    ul {
-                        li {
-                            a {
-                            	@if $menu_dropdown_text_color { color: fade-out($menu_dropdown_text_color, 0.2); }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+				&.menu-parent {
+					> a,
+					> .menu-separator {
+						> .menu-toggler {
+							@if $menu_dropdown_text_color {
+								color: fade-out($menu_dropdown_text_color, 0.5);
+							}
+						}
+					}
+					.menu-toggler {
+						@if $menu_dropdown_text_color {
+							color: fade-out($menu_dropdown_text_color, 0.5);
+						}
+					}
+				}
+				li {
+					a {
+						@if $menu_dropdown_text_color {
+							color: fade-out($menu_dropdown_text_color, 0.2);
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 //Button
@@ -195,7 +229,7 @@ a{
 
 // Topbar Social
 ul.social-icons {
-	>li {
+	> li {
 		a {
 			&:hover {
 				color: $link_color;
@@ -218,8 +252,8 @@ ul.social-icons {
 // Module
 .sp-module {
 	ul {
-		>li {
-			>a {
+		> li {
+			> a {
 				color: $text_color;
 				&:hover {
 					color: $link_color;
@@ -229,8 +263,8 @@ ul.social-icons {
 	}
 
 	.latestnews {
-		>div {
-			>a {
+		> div {
+			> a {
 				color: $text_color;
 				&:hover {
 					color: $link_color;
@@ -278,7 +312,7 @@ ul.social-icons {
 		.latestnews {
 			> li {
 				> a {
-					>span {
+					> span {
 						color: $footer_text_color;
 					}
 				}
@@ -293,8 +327,8 @@ ul.social-icons {
 }
 
 // Pagination
-.pagination>li>a,
-.pagination>li>span {
+.pagination > li > a,
+.pagination > li > span {
 	color: $text_color;
 	&:hover,
 	&:focus {
@@ -302,8 +336,8 @@ ul.social-icons {
 	}
 }
 
-.pagination>.active>a,
-.pagination>.active>span {
+.pagination > .active > a,
+.pagination > .active > span {
 	border-color: $link_color;
 	background-color: $link_color;
 	&:hover,

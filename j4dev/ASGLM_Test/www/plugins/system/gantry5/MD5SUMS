@@ -1,4 +1,6 @@
-language/en-GB/en-GB.plg_system_gantry5.sys.ini	e9d6954735be53c3abb1b02b75695a36
-gantry5.xml	e220d8175b7465f595f7bcb4b547abef
+fields/warning.php	b9256587fdaf81b68f353d2224a0a47c
+forms/menu_item.xml	08ae1027adb66882106a53a805f48687
 MD5SUMS	d41d8cd98f00b204e9800998ecf8427e
-gantry5.php	7f8d4fefa3afef122e58bf9498a008dc
+language/en-GB/en-GB.plg_system_gantry5.sys.ini	4085ea91c3246231ce7d885f60ff18d2
+gantry5.php	87afe91bb394f6adc69f89205792322d
+gantry5.xml	5ad03c1558121429fd31bcf7fd98a50f

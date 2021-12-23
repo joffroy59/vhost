@@ -2,7 +2,7 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2019 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
@@ -11,10 +11,7 @@ defined ('_JEXEC') or die ('Restricted access');
 class SppagebuilderAddonAccordion extends SppagebuilderAddons {
 
 	public function render() {
-		//Get FontAwesome Version
-		$config = JComponentHelper::getParams('com_sppagebuilder');
-		$font_awesome_version = $config->get('fontawesome_version', '4');
-		
+
 		$settings = $this->addon->settings;
 		$class = (isset($settings->class) && $settings->class) ? $settings->class : '';
 		$style = (isset($settings->style) && $settings->style) ? $settings->style : 'panel-default';
@@ -44,10 +41,6 @@ class SppagebuilderAddonAccordion extends SppagebuilderAddons {
 					$icon_arr = array_filter(explode(' ', $item->icon));
 					if (count($icon_arr) === 1) {
 						$item->icon = 'fa ' . $item->icon;
-					} else if (count($icon_arr) === 2) {
-						if ($font_awesome_version == '4') {
-							$item->icon = 'fa ' . $icon_arr[1];
-						}
 					}
 
 					$output  .= '<i class="' . $item->icon . '" aria-hidden="true"></i> ';
@@ -59,12 +52,8 @@ class SppagebuilderAddonAccordion extends SppagebuilderAddons {
 					$icon_arr = array_filter(explode(' ', $item->icon));
 					if (count($icon_arr) === 1) {
 						$item->icon = 'fa ' . $item->icon;
-					} else if (count($icon_arr) === 2) {
-						if ($font_awesome_version == '4') {
-							$item->icon = 'fa ' . $icon_arr[1];
-						}
 					}
-
+					
 					$output  .= '<i class="' . $item->icon . '" aria-hidden="true"></i> ';
 				}
 				$output  .= $item_title;
@@ -537,23 +526,6 @@ class SppagebuilderAddonAccordion extends SppagebuilderAddons {
 		</style>
 		<div class="sppb-addon sppb-addon-accordion {{ data.class }}">
 			<#
-			function _isValidIcon(icon, delta=false) {
-				let defaultIcons = "fa-ban";
-				let icon_arr = icon ? icon.split(" ") : "";
-				let iconName = icon_arr.length > 1 ? icon_arr[1] : icon_arr[0];
-				let iconKey = iconName ? iconName.replace(/-/g,"_") : "";
-				if (faIconList.version === 5 && typeof faIconList.missingIcons.f4[iconKey] !== "undefined") {
-				  return delta ? iconName+ " icon is not available in FontAwesome 5" : "fa "+defaultIcons;
-				}
-				if (faIconList.version === 4 && typeof faIconList.missingIcons.f5[iconKey] !== "undefined") {
-				  return delta ? iconName + " icon is not available in FontAwesome 4" : "fa "+defaultIcons;
-				}
-				if (delta) {
-					return false
-				} else {
-					return icon_arr.length === 1 ? "fa "+icon : faIconList.version === 4 ? "fa " + icon_arr[1] : icon;
-				}
-			}
 			if( !_.isEmpty( data.title ) ){ #><{{ data.heading_selector }} class="sppb-addon-title">{{ data.title }}</{{ data.heading_selector }}><# } #>
 			<div class="sppb-addon-content">
 				<div class="sppb-panel-group">
@@ -564,20 +536,18 @@ class SppagebuilderAddonAccordion extends SppagebuilderAddons {
 								<# if(accordion_item.icon != "" && data.style == "panel-custom"){ #>
 									<span class="sppb-accordion-icon-wrap">
 									<#
-									let icon_class = _isValidIcon(accordion_item.icon);
-                					let icon_name = _isValidIcon(accordion_item.icon, true);
+									let icon_arr = (typeof accordion_item.icon !== "undefined" && accordion_item.icon) ? accordion_item.icon.split(" ") : "";
+									let icon_name = icon_arr.length === 1 ? "fa "+accordion_item.icon : accordion_item.icon;
 									#>
-										<i class="{{ icon_class }}"></i>
+										<i class="{{ icon_name }}"></i>
 									</span>
-									<# if(icon_name) { #> <div class="sppb-icon-not-found">{{icon_name}}</div> <# } #>
 								<# } #>
 								<span class="sppb-panel-title">
 									<# if(accordion_item.icon != "" && data.style !== "panel-custom"){
-										let icon_class_title = _isValidIcon(accordion_item.icon);
-                						let icon_name_title = _isValidIcon(accordion_item.icon, true);
+										let title_icon_arr = (typeof accordion_item.icon !== "undefined" && accordion_item.icon) ? accordion_item.icon.split(" ") : "";
+										let title_icon_name = title_icon_arr.length === 1 ? "fa "+accordion_item.icon : accordion_item.icon;
 									#>
-										<i class="{{ icon_class_title }}"></i>
-										<# if(icon_name_title) { #> <div class="sppb-icon-not-found">{{icon_name_title}}</div> <# } #>
+										<i class="{{ title_icon_name }}"></i>
 									<# } #>
 									{{ accordion_item.title }}
 								</span>

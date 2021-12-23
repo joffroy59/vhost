@@ -2,9 +2,16 @@
 /**
 * @package SP Page Builder
 * @author JoomShaper http://www.joomshaper.com
-* @copyright Copyright (c) 2010 - 2016 JoomShaper
+* @copyright Copyright (c) 2010 - 2021 JoomShaper
 * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Plugin\PluginHelper;
+
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
@@ -19,14 +26,14 @@ class SpPgaeBuilderBase {
 	}
 
 	public static function loadInputTypes() {
-		$types = JFolder::files( JPATH_ROOT .'/administrator/components/com_sppagebuilder/builder/types', '\.php$', false, true);
+		$types = Folder::files( JPATH_ROOT .'/administrator/components/com_sppagebuilder/builder/types', '\.php$', false, true);
 		foreach ($types as $type) {
 			include_once $type;
 		}
 	}
 
 	private static function getTemplateName() {
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select($db->quoteName(array('template')));
 		$query->from($db->quoteName('#__template_styles'));
@@ -46,10 +53,10 @@ class SpPgaeBuilderBase {
 		$tmpl_folders = array();
 
 		if ( file_exists($template_path . '/sppagebuilder/addons') ) {
-			$tmpl_folders = JFolder::folders($template_path . '/sppagebuilder/addons');
+			$tmpl_folders = Folder::folders($template_path . '/sppagebuilder/addons');
 		}
 
-		$folders = JFolder::folders(JPATH_ROOT .'/components/com_sppagebuilder/addons');
+		$folders = Folder::folders(JPATH_ROOT .'/components/com_sppagebuilder/addons');
 
 		if($tmpl_folders) {
 			$merge_folders = array_merge( $folders, $tmpl_folders );
@@ -99,19 +106,19 @@ class SpPgaeBuilderBase {
 	// Load addons from plugins
 	private static function loadPluginsAddons() {
 		$path = JPATH_PLUGINS . '/sppagebuilder';
-		if(!JFolder::exists($path)) return;
+		if(!Folder::exists($path)) return;
 
-		$plugins = JFolder::folders($path);
+		$plugins = Folder::folders($path);
 		if(!count((array) $plugins)) return;
 
 		foreach ($plugins as $plugin) {
-			if(JPluginHelper::isEnabled('sppagebuilder', $plugin)) {
+			if(PluginHelper::isEnabled('sppagebuilder', $plugin)) {
 				$addons_path = $path . '/' . $plugin . '/addons';
-				if(JFolder::exists($addons_path)) {
-					$addons = JFolder::folders($addons_path);
+				if(Folder::exists($addons_path)) {
+					$addons = Folder::folders($addons_path);
 					foreach ($addons as $addon) {
 						$admin_file = $addons_path . '/' . $addon . '/admin.php';
-						if(JFile::exists($admin_file)) {
+						if(File::exists($admin_file)) {
 							require_once $admin_file;
 						}
 					}
@@ -123,20 +130,20 @@ class SpPgaeBuilderBase {
 	// Get list of plugin addons
 	private static function getPluginsAddons() {
 		$path = JPATH_PLUGINS . '/sppagebuilder';
-		if(!JFolder::exists($path)) return;
+		if(!Folder::exists($path)) return;
 
-		$plugins = JFolder::folders($path);
+		$plugins = Folder::folders($path);
 		if(!count((array) $plugins)) return;
 
 		$elements = array();
 		foreach ($plugins as $plugin) {
-			if(JPluginHelper::isEnabled('sppagebuilder', $plugin)) {
+			if(PluginHelper::isEnabled('sppagebuilder', $plugin)) {
 				$addons_path = $path . '/' . $plugin . '/addons';
-				if(JFolder::exists($addons_path)) {
-					$addons = JFolder::folders($addons_path);
+				if(Folder::exists($addons_path)) {
+					$addons = Folder::folders($addons_path);
 					foreach ($addons as $addon) {
 						$admin_file = $addons_path . '/' . $addon . '/admin.php';
-						if(JFile::exists($admin_file)) {
+						if(File::exists($admin_file)) {
 							$elements[$addon] = $admin_file;
 						}
 					}
@@ -189,7 +196,7 @@ class SpPgaeBuilderBase {
 				if ( method_exists( $class_name, 'scripts' ) ) {
 					$scripts = $obj->scripts();
 					if(count((array) $scripts)) {
-						$doc = JFactory::getDocument();
+						$doc = Factory::getDocument();
 						foreach ($scripts as $key => $script) {
 							$doc->addScript($script);
 						}
@@ -200,7 +207,7 @@ class SpPgaeBuilderBase {
 				if ( method_exists( $class_name, 'stylesheets' ) ) {
 					$stylesheets = $obj->stylesheets();
 					if(count((array) $stylesheets)) {
-						$doc = JFactory::getDocument();
+						$doc = Factory::getDocument();
 						foreach ($stylesheets as $key => $stylesheet) {
 							$doc->addStyleSheet($stylesheet);
 						}
@@ -212,7 +219,7 @@ class SpPgaeBuilderBase {
 	}
 
 	public static function getAddonPath( $addon_name = '') {
-        $app = JFactory::getApplication();
+        $app = Factory::getApplication();
         $template = $app->getTemplate();
         $template_path = JPATH_ROOT . '/templates/' . $template;
         $plugins = self::getPluginsAddons();
@@ -229,51 +236,9 @@ class SpPgaeBuilderBase {
         }
     }
 
-	private static function findDifferentIcons($iconList) {
-		$f4 = $iconList['font_awesome_4']['icons'];
-		$f5 = $iconList['font_awesome_5']['icons'];
-		$f5_missing = new stdClass();
-		$f4_missing = new stdClass();
-		foreach( $f5 as $icon5) {
-			$found = false;
-			$f5_icon = explode(' ', $icon5)[1];
-			$_f4_icon = '';
-			foreach($f4 as $icon4) {
-				$f4_icon = explode(' ', $icon4)[1];
-				if ($f4_icon == $f5_icon){
-					$found = true;
-					break;
-				}
-			}
-			if ($found == false ){
-				$_icon = str_replace('-','_',$f5_icon);
-				$f5_missing->{$_icon} = $f5_icon;
-			}
-		}
-		foreach( $f4 as $icon4) {
-			$found = false;
-			$f4_icon = explode(' ', $icon4)[1];
-			foreach($f5 as $icon5) {
-				$f5_icon = explode(' ', $icon5)[1];
-				if ($f4_icon == $f5_icon){
-					$found = true;
-					break;
-				}
-			}
-			if ($found == false ){
-				$_icon = str_replace('-','_',$f4_icon);
-				$f4_missing->{$_icon} = $f4_icon;
-			}
-		}
-		return ['f5'=>$f5_missing,'f4'=>$f4_missing];
-	}
-
 	public static function getIconList(){
-		$params = JComponentHelper::getParams('com_sppagebuilder');
-		$version = $params->get('fontawesome_version','4');
 		require_once JPATH_ROOT .'/administrator/components/com_sppagebuilder/builder/settings/icon-font-awesome.php';
-		$icon_list['font_awesome_'.$version]['missingIcons'] = self::findDifferentIcons($icon_list);
-		return $icon_list['font_awesome_'.$version];
+		return $icon_list;
 	}
 
 	public static function getAnimationsList(){
@@ -282,7 +247,7 @@ class SpPgaeBuilderBase {
 	}
 
 	public static function getAccessLevelList() {
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true)
 			->select($db->quoteName('a.id', 'value') . ', ' . $db->quoteName('a.title', 'label'))
 			->from($db->quoteName('#__viewlevels', 'a'))
@@ -296,7 +261,7 @@ class SpPgaeBuilderBase {
 	}
 
 	public static function getArticleCategories() {
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true)
 			->select('DISTINCT a.id, a.title, a.level, a.published, a.lft');
 		$subQuery = $db->getQuery(true)
@@ -312,7 +277,7 @@ class SpPgaeBuilderBase {
 		$db->setQuery($query);
 		$categories = $db->loadObjectList();
 
-		$article_cats = array( 0 => array('value' => '', 'label' => JText::_('COM_SPPAGEBUILDER_ADDON_ARTICLE_ALL_CAT') ) );
+		$article_cats = array( 0 => array('value' => '', 'label' => Text::_('COM_SPPAGEBUILDER_ADDON_ARTICLE_ALL_CAT') ) );
 
 		$j = 1;
 		if(count((array) $categories)) {
@@ -331,7 +296,7 @@ class SpPgaeBuilderBase {
 		$moduleAttr = array();
 
 		// Module Name and ID
-		$db     = JFactory::getDbo();
+		$db     = Factory::getDbo();
 		$query  = $db->getQuery(true);
 		$query->select('id, title');
 		$query->from('#__modules');
@@ -351,7 +316,7 @@ class SpPgaeBuilderBase {
 		}
 
 		// Module positions
-		$db     = JFactory::getDbo();
+		$db     = Factory::getDbo();
 		$query  = $db->getQuery(true);
 		$query->select(array('position'))
 			->from('#__modules')

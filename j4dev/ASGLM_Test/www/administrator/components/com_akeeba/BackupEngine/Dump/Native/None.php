@@ -3,17 +3,16 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Dump\Native;
 
-
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Dump\Base;
 use Akeeba\Engine\Factory;
-
 
 /**
  * Dump class for the "None" database driver (ie no database used by the application)
@@ -54,5 +53,19 @@ class None extends Base
 	protected function getDatabaseNameFromConnection()
 	{
 		return '';
+	}
+
+	protected function _run()
+	{
+		Factory::getLog()->info("Reminder: database definitions using the 'None' driver result in no data being backed up.");
+
+		$this->setState(self::STATE_POSTRUN);
+	}
+
+	protected function _finalize()
+	{
+		Factory::getLog()->info("Reminder: database definitions using the 'None' driver result in no data being backed up.");
+
+		$this->setState(self::STATE_FINISHED);
 	}
 }

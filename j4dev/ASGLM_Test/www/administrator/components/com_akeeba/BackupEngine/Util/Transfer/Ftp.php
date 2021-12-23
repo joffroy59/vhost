@@ -3,13 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util\Transfer;
 
-
+defined('AKEEBAENGINE') || die();
 
 use Exception;
 use RuntimeException;
@@ -153,7 +153,7 @@ class Ftp implements TransferInterface, RemoteResourceInterface
 				'username'  => 'demo',
 				'password'  => 'password',
 				'directory' => '',
-				'ssl'       => isset($params['ssl']) ? $params['ssl'] : false,
+				'ssl'       => $params['ssl'] ?? false,
 				'passive'   => true,
 				'timeout'   => 5,
 			]);
@@ -292,7 +292,7 @@ class Ftp implements TransferInterface, RemoteResourceInterface
 	 */
 	public function upload($localFilename, $remoteFilename, $useExceptions = true)
 	{
-		$handle = @fopen($localFilename, 'rb');
+		$handle = @fopen($localFilename, 'r');
 
 		if ($handle === false)
 		{

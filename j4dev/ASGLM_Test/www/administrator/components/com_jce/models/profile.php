@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -85,6 +85,11 @@ class JceModelProfile extends JModelAdmin
             }
         }
 
+        // decode config values for display
+        array_walk_recursive($config, function(&$value) {
+            $value = htmlspecialchars_decode($value);
+        });
+
         $data->config = $config;
 	}
 
@@ -166,7 +171,7 @@ class JceModelProfile extends JModelAdmin
         }
 
         // pro manifest
-        $manifest = WF_EDITOR_LIBRARIES . '/pro/xml/image.xml';
+        $manifest = WF_EDITOR_LIBRARIES . '/pro/xml/pro.xml';
 
         // load pro manifest
         if (is_file($manifest)) {
@@ -198,34 +203,22 @@ class JceModelProfile extends JModelAdmin
     {
         $data = $this->getItem();
 
-        // convert 0 value to string containing both options
+        // convert 0 value to null to force defaults
         if (empty($data->area)) {
-            $data->area = '1,2';
+            $data->area = null;
         }
 
-        $data->device = explode(',', $data->device);
+        // convert to array if set
+        if (!empty($data->device)) {
+        	$data->device = explode(',', $data->device);
+        }
 
         if (!empty($data->components)) {
             $data->components = explode(',', $data->components);
             $data->components_select = 1;
         }
 
-        $data->types = explode(',', $data->types);
-
-        $table = JTable::getInstance('user');
-        $users = array();
-
-        foreach (explode(',', $data->users) as $id) {
-            if ($table->load((int) $id)) {
-                $user = new StdClass();
-                $user->value = $id;
-                $user->text = htmlspecialchars($table->name, ENT_COMPAT, 'UTF-8');
-
-                $users[] = $user;
-            }
-        }
-
-        $data->users    = $users;
+        $data->types    = explode(',', $data->types);
         $data->config   = $data->params;
         
         $this->preprocessData('com_jce.profiles', $data);
@@ -527,8 +520,12 @@ class JceModelProfile extends JModelAdmin
                     $value = implode(',', filter_var_array($value, FILTER_SANITIZE_STRING));
                     break;
                 case 'area':
-                    if (is_array($value)) {
-                        if (count($value) === 2) {
+                    if (is_array($value)) {                        
+                        // remove empty value
+                        $value = array_filter($value, 'strlen');
+                        
+                        // for simplicity, set multiple area selections as "0"
+                        if (count($value) > 1) {
                             $value = 0;
                         } else {
                             $value = $value[0];
@@ -717,12 +714,17 @@ class JceModelProfile extends JModelAdmin
                 if (array_key_exists($item, $data['params'])) {
                     $value = $data['params'][$item];
                     // clean and add to json array for merging
-                    $json[$item] = filter_var_array($value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+                    $json[$item] = filter_var_array($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
                 }
             }
 
             // merge and encode as json string
             $data['params'] = json_encode(WFUtility::array_merge_recursive_distinct($params, $json));
+        }
+
+        // set a default value for validation
+        if (empty($data['params'])) {
+        	$data['params'] = '{}';
         }
 
         if (parent::save($data)) {
@@ -774,7 +776,7 @@ class JceModelProfile extends JModelAdmin
         $buffer .= "\n" . '<export type="profiles">';
         $buffer .= "\n\t" . '<profiles>';
 
-        $private = array('id', 'checked_out', 'checked_out_time');
+        $validFields = array('name', 'description', 'users', 'types', 'components', 'area', 'device', 'rows', 'plugins', 'published', 'ordering', 'params');
 
         foreach ($ids as $id) {
             $table = $this->getTable();
@@ -789,8 +791,8 @@ class JceModelProfile extends JModelAdmin
             $fields = $table->getProperties();
 
             foreach ($fields as $key => $value) {
-                // skip some stuff
-                if (in_array($key, $private)) {
+                // only allow a subset of fields
+                if (false == in_array($key, $validFields)) {
                     continue;
                 }
 

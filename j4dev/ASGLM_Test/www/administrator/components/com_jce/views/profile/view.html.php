@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -27,6 +27,12 @@ class JceViewProfile extends JViewLegacy
 
         $this->formclass = 'form-horizontal options-grid-form options-grid-form-full';
 
+        $params = JComponentHelper::getParams('com_jce');
+
+        if ($params->get('inline_help', 1)) {
+            $this->formclass .= ' form-help-inline';
+        }
+
         $this->plugins = $this->get('Plugins');
         $this->rows = $this->get('Rows');
         $this->available = $this->get('AvailableButtons');
@@ -47,19 +53,25 @@ class JceViewProfile extends JViewLegacy
             return false;
         }
 
-        JHtml::_('jquery.ui', array('core', 'sortable'));
-
         $this->addToolbar();
         parent::display($tpl);
+
+        // only in Joomla 3.x
+        if (version_compare(JVERSION, '4', 'lt')) {
+            JHtml::_('formbehavior.chosen', 'select');
+        }
 
         // version hash
         $hash = md5(WF_VERSION);
 
         $document = JFactory::getDocument();
-        $document->addStyleSheet('components/com_jce/media/css/profile.min.css?' . $hash);
+        $document->addStyleSheet(JURI::root(true) . '/media/com_jce/css/profile.min.css?' . $hash);
+        $document->addStyleSheet(JURI::root(true) . '/components/com_jce/editor/libraries/vendor/jquery/css/jquery-ui.min.css?' . $hash);
 
-        $document->addScript('components/com_jce/media/js/core.min.js?' . $hash);
-        $document->addScript('components/com_jce/media/js/profile.min.js?' . $hash);
+        $document->addScript(JURI::root(true) . '/components/com_jce/editor/libraries/vendor/jquery/js/jquery-ui.min.js?' . $hash);
+
+        $document->addScript(JURI::root(true) . '/media/com_jce/js/core.min.js?' . $hash);
+        $document->addScript(JURI::root(true) . '/media/com_jce/js/profile.min.js?' . $hash);
 
         // default theme
         $document->addStyleSheet(JURI::root(true) . '/components/com_jce/editor/tiny_mce/themes/advanced/skins/default/ui.admin.css?' . $hash);

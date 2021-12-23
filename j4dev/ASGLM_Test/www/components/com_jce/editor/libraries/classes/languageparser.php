@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -15,6 +15,8 @@ class WFLanguageParser extends JObject
     protected $mode = 'editor';
     protected $plugins = array();
     protected $sections = array();
+
+    protected $language = 'en-GB';
 
     /**
      * Cache of processed data.
@@ -33,6 +35,10 @@ class WFLanguageParser extends JObject
 
         if (array_key_exists('sections', $config)) {
             $config['sections'] = (array) $config['sections'];
+        }
+
+        if (array_key_exists('language', $config)) {
+            $config['language'] = $config['language'];
         }
 
         $this->setProperties($config);
@@ -307,22 +313,14 @@ class WFLanguageParser extends JObject
 
     private function getFilter()
     {
-        switch ($this->get('mode')) {
-            case 'editor':
-                return '(dlg|_dlg)$';
-                break;
-            case 'plugin':
-                return '';
-                break;
-        }
+        return '';
     }
 
     public function load($files = array())
     {
-        // get the language file
-        $language = JFactory::getLanguage();
         // get language tag
-        $tag = $language->getTag();
+        $tag = $this->language;
+        
         // base language path
         $path = JPATH_SITE . '/language/' . $tag;
 

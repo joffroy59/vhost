@@ -54,20 +54,15 @@ class JFormFieldMediaJce extends JFormFieldMedia
      */
     public function getLayoutData()
     {
-        // Include jQuery
-        JHtml::_('jquery.framework');
-
-        $document = JFactory::getDocument();
-        $document->addScript(JURI::root(true) . '/plugins/system/jce/js/media.js', array('version' => 'auto'));
-        $document->addStyleSheet(JURI::root(true) . '/plugins/system/jce/css/media.css', array('version' => 'auto'));
-
         require_once JPATH_ADMINISTRATOR . '/components/com_jce/helpers/browser.php';
 
-        $options = WFBrowserHelper::getMediaFieldOptions(array(
+        $config = array(
             'element' => $this->id,
-            'mediatype' => $this->mediatype,
+            'mediatype' => strtolower($this->mediatype),
             'converted' => (int) $this->element['converted'] ? true : false
-        ));
+        );
+
+        $options = WFBrowserHelper::getMediaFieldOptions($config);
 
         $this->link = $options['url'];
 
@@ -81,10 +76,10 @@ class JFormFieldMediaJce extends JFormFieldMedia
 
         $extraData = array(
             'link'      => $this->link,
-            'class'     => $this->element['class'] . ' input-medium wf-media-input'
+            'class'     => $this->element['class'] . ' input-medium wf-media-input wf-media-input-active'
         );
 
-        if ($options['upload'] === 1) {
+        if ($options['upload'] == 1) {
             $extraData['class'] .= ' wf-media-input-upload';
         }
 

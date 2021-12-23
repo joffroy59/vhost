@@ -2,14 +2,19 @@
 /**
 * @package SP Page Builder
 * @author JoomShaper http://www.joomshaper.com
-* @copyright Copyright (c) 2010 - 2019 JoomShaper
+* @copyright Copyright (c) 2010 - 2021 JoomShaper
 * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
 defined ('_JEXEC') or die ('Restricted access');
 
-jimport( 'joomla.filesystem.file' );
-jimport('joomla.filesystem.folder');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Access\Access;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Layout\FileLayout;
+use Joomla\CMS\Plugin\PluginHelper;
 
 require_once __DIR__ . '/addons.php';
 require_once __DIR__ . './../helpers/helper.php';
@@ -17,7 +22,8 @@ require_once __DIR__ . './../helpers/helper.php';
 require_once JPATH_ROOT .'/administrator/components/com_sppagebuilder/builder/classes/base.php';
 require_once JPATH_ROOT .'/administrator/components/com_sppagebuilder/builder/classes/config.php';
 
-class AddonParser {
+class AddonParser
+{
   public static $loaded_addon = array();
   public static $css_content = array();
   public static $module_css_content = array();
@@ -158,11 +164,11 @@ class AddonParser {
     $template_path = JPATH_ROOT . '/templates/' . self::$template;
     $tmpl_folders = array();
     if (file_exists($template_path . '/sppagebuilder/addons')) {
-      $tmpl_folders = JFolder::folders( $template_path . '/sppagebuilder/addons');
+      $tmpl_folders = Folder::folders( $template_path . '/sppagebuilder/addons');
     }
 
 
-    $folders = JFolder::folders( JPATH_ROOT . '/components/com_sppagebuilder/addons');
+    $folders = Folder::folders( JPATH_ROOT . '/components/com_sppagebuilder/addons');
     if($tmpl_folders){
       $merge_folders = array_merge( $folders, $tmpl_folders );
       $folders = array_unique( $merge_folders );
@@ -192,25 +198,25 @@ class AddonParser {
     SpPgaeBuilderBase::loadAddons();
     $addon_list = SpAddonsConfig::$addons;
 
-    self::$authorised = JAccess::getAuthorisedViewLevels(JFactory::getUser()->get('id'));
+    self::$authorised = Access::getAuthorisedViewLevels(Factory::getUser()->get('id'));
 
     $layout_path = JPATH_ROOT . '/components/com_sppagebuilder/layouts';
 
     $layouts =  new stdClass;
 
-    $layouts->row_start       = new JLayoutFile('row.start', $layout_path);
-    $layouts->row_end         = new JLayoutFile('row.end', $layout_path);
-    $layouts->row_css         = new JLayoutFile('row.css', $layout_path);
+    $layouts->row_start       = new FileLayout('row.start', $layout_path);
+    $layouts->row_end         = new FileLayout('row.end', $layout_path);
+    $layouts->row_css         = new FileLayout('row.css', $layout_path);
 
-    $layouts->column_start    = new JLayoutFile('column.start', $layout_path);
-    $layouts->column_end      = new JLayoutFile('column.end', $layout_path);
-    $layouts->column_css      = new JLayoutFile('column.css', $layout_path);
+    $layouts->column_start    = new FileLayout('column.start', $layout_path);
+    $layouts->column_end      = new FileLayout('column.end', $layout_path);
+    $layouts->column_css      = new FileLayout('column.css', $layout_path);
 
-    $layouts->addon_start     = new JLayoutFile('addon.start', $layout_path);
-    $layouts->addon_end       = new JLayoutFile('addon.end', $layout_path);
-    $layouts->addon_css       = new JLayoutFile('addon.css', $layout_path);
+    $layouts->addon_start     = new FileLayout('addon.start', $layout_path);
+    $layouts->addon_end       = new FileLayout('addon.end', $layout_path);
+    $layouts->addon_css       = new FileLayout('addon.css', $layout_path);
 
-    $doc = JFactory::getDocument();
+    $doc = Factory::getDocument();
 
     if (is_array($content)) {
       $output = '';
@@ -299,7 +305,7 @@ class AddonParser {
         return  AddonParser::spDoAddon( $output ) . '<style type="text/css">'. self::convertCssArrayToString(self::minifyCss(self::$module_css_content)).'</style>';
       } else {
         if( $pageName != 'none' ) {
-          $app =JFactory::getApplication();
+          $app = Factory::getApplication();
           $params = $app->getParams('com_sppagebuilder');
           $production_mode = $params->get('production_mode', 0);
          
@@ -308,10 +314,10 @@ class AddonParser {
           if($production_mode) {
             $css_folder_path = JPATH_ROOT . '/media/com_sppagebuilder/css';
             $css_file_path = $css_folder_path . '/'. $pageName . '.css';
-            $css_file_url = JURI::base(true) . '/media/com_sppagebuilder/css/' . $pageName . '.css';
+            $css_file_url = Uri::base(true) . '/media/com_sppagebuilder/css/' . $pageName . '.css';
 
-            if(!JFolder::exists( $css_folder_path )) {
-              JFolder::create( $css_folder_path );
+            if(!Folder::exists( $css_folder_path )) {
+              Folder::create( $css_folder_path );
             }
           
             file_put_contents( $css_file_path, $inline_css );
@@ -342,7 +348,7 @@ class AddonParser {
     $class_name = 'SppagebuilderAddon' . ucfirst( $addon_name );
     $addon_path = AddonParser::getAddonPath( $addon_name );
 
-    $doc = JFactory::getDocument();
+    $doc = Factory::getDocument();
 
     $output = '';
 
@@ -406,13 +412,17 @@ class AddonParser {
         }
       }
 
-      //sbou start
       //plugin support for addonRender
-      JPluginHelper::importPlugin( 'system' );
-      // Get the dispatcher and load the content plugins.
-      $dispatcher = JEventDispatcher::getInstance();
-      $results = $dispatcher->trigger( 'onBeforeAddonRender', array( &$addon) );
-      //sbou end
+      PluginHelper::importPlugin('system');
+
+      if (JVERSION < 4) {
+        $dispatcher = JDispatcher::getInstance();
+        $results = $dispatcher->trigger( 'onBeforeAddonRender', array( &$addon) );
+      } else {
+        $dispatcher = new Joomla\Event\Dispatcher();
+        $results = $dispatcher->triggerEvent( 'onBeforeAddonRender', array( &$addon) );
+      }
+      //end plugin support for addonRender
 
       $output .= $layouts->addon_start->render(array('addon'=>$addon)); // start addon
       require_once $addon_path . '/site.php';
@@ -573,20 +583,20 @@ class AddonParser {
   // Get list of plugin addons
   private static function getPluginsAddons() {
     $path = JPATH_PLUGINS . '/sppagebuilder';
-    if(!JFolder::exists($path)) return;
+    if(!Folder::exists($path)) return;
 
-    $plugins = JFolder::folders($path);
+    $plugins = Folder::folders($path);
     if(!count((array) $plugins)) return;
 
     $elements = array();
     foreach ($plugins as $plugin) {
-      if(JPluginHelper::isEnabled('sppagebuilder', $plugin)) {
+      if(PluginHelper::isEnabled('sppagebuilder', $plugin)) {
         $addons_path = $path . '/' . $plugin . '/addons';
-        if(JFolder::exists($addons_path)) {
-          $addons = JFolder::folders($addons_path);
+        if(Folder::exists($addons_path)) {
+          $addons = Folder::folders($addons_path);
           foreach ($addons as $addon) {
             $path = $addons_path . '/' . $addon;
-            if(JFile::exists($path . '/site.php')) {
+            if(File::exists($path . '/site.php')) {
               $elements[$addon] = $path;
             }
           }
@@ -598,7 +608,7 @@ class AddonParser {
   }
 
   private static function getTemplateName() {
-    $db = JFactory::getDbo();
+    $db = Factory::getDbo();
     $query = $db->getQuery(true);
     $query->select($db->quoteName(array('template')));
     $query->from($db->quoteName('#__template_styles'));
@@ -630,7 +640,7 @@ class AddonParser {
           $access = true;
         }
       }
-      unset($addon->settings->acl);
+      //unset($addon->settings->acl);
     }
 
     return $access;

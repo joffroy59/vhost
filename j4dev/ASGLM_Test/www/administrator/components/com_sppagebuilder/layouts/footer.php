@@ -1,21 +1,23 @@
 <?php
-defined('_JEXEC') or die();
+/**
+ * @package SP Page Builder
+ * @author JoomShaper http://www.joomshaper.com
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
+ * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
+*/
 
-$doc = JFactory::getDocument();
-$input = JFactory::getApplication()->input; 
-$params = JComponentHelper::getParams('com_sppagebuilder');
-if ($params->get('fontawesome_version') == '5' && $input->get('layout', null) == 'edit') { 
-	$doc->addStyleSheet(JURI::base(true) . '/components/com_sppagebuilder/assets/css/font-awesome-5.min.css');
-} else {
-	$doc->addStyleSheet(JURI::base(true) . '/components/com_sppagebuilder/assets/css/font-awesome.min.css');
-}
-$doc->addStylesheet( JURI::base(true) . '/components/com_sppagebuilder/assets/css/common.css' );
+use Joomla\CMS\Uri\Uri;
+
+//no direct accees
+defined('_JEXEC') or die ('Restricted access');
+
+SppagebuilderHelper::addStylesheet('common.css');
 ?>
 <div class="pagebuilder-footer clearfix">
 	<div class="sp-pagebuilder-row">
 		<div class="col-md-5">
 			<div class="copyright-info">
-				Designed &amp; Developed with <i class="fa fa-heart"></i> by <a href="http://www.joomshaper.com" target="_blank">JoomShaper</a>
+				Designed &amp; Developed with <i class="fa fa-heart" aria-hidden="true" title="Love"></i> by <a href="https://www.joomshaper.com" target="_blank">JoomShaper</a>
 			</div>
 		</div>
 
@@ -29,19 +31,13 @@ $doc->addStylesheet( JURI::base(true) . '/components/com_sppagebuilder/assets/cs
 					</li>
 
 					<li>
-						<a target="_blank" href="https://www.youtube.com/playlist?list=PL43bbfiC0wjhKrnJ1XRhSj3Sla8CJ1Jxd">
-							Videos
-						</a>
-					</li>
-
-					<li>
-						<a target="_blank" href="https://www.joomshaper.com/forums/categories/sppagebuilder3">
+						<a target="_blank" href="https://www.joomshaper.com/helpdesk">
 							Support
 						</a>
 					</li>
 
 					<li>
-						<a target="_blank" href="https://www.facebook.com/groups/JoomlaPageBuilderCommunity/">
+						<a target="_blank" href="https://www.facebook.com/groups/sppagebuilder">
 							Community
 						</a>
 					</li>
@@ -54,7 +50,7 @@ $doc->addStylesheet( JURI::base(true) . '/components/com_sppagebuilder/assets/cs
 
 					<li>
 						<a target="_blank" href="http://extensions.joomla.org/extension/sp-page-builder">
-							<img src="<?php echo JURI::base(true) . '/components/com_sppagebuilder/assets/img/joomla.png'; ?>" alt="JED"> Rate on JED
+							<img src="<?php echo Uri::base(true) . '/components/com_sppagebuilder/assets/img/joomla.png'; ?>" alt="JED"> Rate on JED
 						</a>
 					</li>
 				</ul>

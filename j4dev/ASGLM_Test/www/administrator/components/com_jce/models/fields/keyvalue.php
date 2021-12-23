@@ -49,9 +49,6 @@ class JFormFieldKeyValue extends JFormField
             $values = json_decode(htmlspecialchars_decode($this->value), true);
         }
 
-        // cast to array
-        $values = (array) $values;
-
         // default
         if (empty($values)) {
             $values = array(
@@ -75,7 +72,7 @@ class JFormFieldKeyValue extends JFormField
 
         foreach ($values as $value) {
             $str[] = '<div class="form-field-repeatable-item wf-keyvalue">';
-            $str[] = '  <div class="form-field-repeatable-item-group well well-small p-2 bg-light">';
+            $str[] = '  <div class="form-field-repeatable-item-group well well-small p-4 bg-light">';
 
             $n = 0;
 
@@ -97,7 +94,7 @@ class JFormFieldKeyValue extends JFormField
                 // reset name
                 $field->name = $name;
 
-                $str[] = $field->renderField();
+                $str[] = $field->renderField(array('description' => $field->description));
                 
                 $n++;
             }
@@ -112,7 +109,11 @@ class JFormFieldKeyValue extends JFormField
             $str[] = '</div>';
         }
 
-        $str[] = '<input type="hidden" name="' . $this->name . '" value="' . htmlspecialchars($this->value) . '" />';
+        if (!empty($this->value)) {
+            $this->value = htmlspecialchars(json_encode($values));
+        }
+
+        $str[] = '<input type="hidden" name="' . $this->name . '" value="' . $this->value . '" />';
 
         return implode("", $str);
     }

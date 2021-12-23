@@ -1,0 +1,103 @@
+[
+    {
+        "id": 1639607084544,
+        "visibility": true,
+        "collapse": false,
+        "settings": {
+            "admin_label": "",
+            "title": "",
+            "heading_selector": "h3",
+            "title_fontsize": "",
+            "title_fontweight": "",
+            "title_position": "sppb-text-center",
+            "columns_align_center": 0,
+            "fullscreen": 0,
+            "no_gutter": 0,
+            "padding": {
+                "md": "50px 0px 50px 0px",
+                "sm": "   ",
+                "xs": "   "
+            },
+            "margin": {
+                "md": "0px 0px 0px 0px",
+                "sm": "   ",
+                "xs": "   "
+            },
+            "background_image": "images/20160519_0901551.jpg",
+            "background_repeat": "no-repeat",
+            "background_size": "cover",
+            "background_attachment": "inherit",
+            "background_position": "50% 100%",
+            "background_video": 0,
+            "hidden_xs": 0,
+            "hidden_sm": 0,
+            "hidden_md": 0,
+            "animationduration": "300",
+            "animationdelay": "0",
+            "instFormId": 1639606402287
+        },
+        "layout": "6,6",
+        "columns": [
+            {
+                "id": 1639607084545,
+                "class_name": "col-md-6",
+                "visibility": true,
+                "settings": {
+                    "background_image": "",
+                    "background_repeat": "no-repeat",
+                    "background_size": "cover",
+                    "background_attachment": "scroll",
+                    "background_position": "0 0",
+                    "items_align_center": 0,
+                    "boxshadow": "0 0 0 0 #fff",
+                    "sm_col": "",
+                    "xs_col": "",
+                    "hidden_xs": "",
+                    "hidden_sm": "",
+                    "hidden_md": "",
+                    "animationduration": "300",
+                    "animationdelay": "0"
+                },
+                "addons": []
+            },
+            {
+                "id": 1639607084546,
+                "class_name": "col-md-6",
+                "visibility": true,
+                "settings": {
+                    "background_image": "",
+                    "background_repeat": "no-repeat",
+                    "background_size": "cover",
+                    "background_attachment": "scroll",
+                    "background_position": "0 0",
+                    "items_align_center": 0,
+                    "boxshadow": "0 0 0 0 #fff",
+                    "sm_col": "",
+                    "xs_col": "",
+                    "hidden_xs": "",
+                    "hidden_sm": "",
+                    "hidden_md": "",
+                    "animationduration": "300",
+                    "animationdelay": "0"
+                },
+                "addons": [
+                    {
+                        "id": 1639607084547,
+                        "name": "empty_space",
+                        "visibility": true,
+                        "settings": {
+                            "admin_label": "",
+                            "gap": {
+                                "md": 40,
+                                "sm": 30,
+                                "xs": 20
+                            },
+                            "class": "",
+                            "instFormId": 1639606977814
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

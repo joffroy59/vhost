@@ -2,128 +2,154 @@
 
 defined('_JEXEC') or die;
 
-JHtml::_('behavior.formvalidator');
-JHtml::_('formbehavior.chosen', 'select');
+use Joomla\CMS\Toolbar\Toolbar;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Component\ComponentHelper;
 
-$app = JFactory::getApplication();
+HTMLHelper::_('behavior.formvalidator');
 
-JFactory::getDocument()->addScriptDeclaration('
+$app = Factory::getApplication();
+$params = ComponentHelper::getParams(JEV_COM_COMPONENT);
+if ($app->isClient('administrator') || $params->get("newfrontendediting", 1))
+{
+	$translatePage = $this->loadTemplate('uikit');
+	echo $translatePage;
+	return;
+}
+
+$j4 = true;
+$rowclass = "row";
+if (version_compare(JVERSION, '4.0', 'lt'))
+{
+	HTMLHelper::_('formbehavior.chosen', 'select');
+	$j4 = false;
+	$rowclass = "row-fluid";
+}
+
+Factory::getDocument()->addScriptDeclaration('
 	Joomla.submitbutton = function(task)
 	{
 		if (task == "translate.cancel" || document.formvalidator.isValid(document.getElementById("translate-form")))
 		{
-			' . $this->form->getField("trans_description")->save() . '
+			' . (!$j4 ? $this->form->getField("trans_description")->save()  : '') . '
 			Joomla.submitform(task, document.getElementById("translate-form"));
 		}
 	};
 ');
 
-echo JToolbar::getInstance('toolbar')->render('toolbar');
+
 ?>
 
-<form action="<?php echo JRoute::_('index.php?option=com_jevents&task=icalevent.savetranslation');?>" method="post" name="adminForm" id="translate-form" class="form-validate">
+<form action="<?php echo Route::_('index.php?option=com_jevents&task=icalevent.savetranslation'); ?>" method="post"
+      name="adminForm" id="translate-form" class="form-validate">
 
 	<div class="form-horizontal">
-		<div class="row-fluid">
+		<div class="<?php echo $rowclass;?>">
 			<div class="span12">
-				<div class="row-fluid form-horizontal-desktop">
-					<div class="span6">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
+					<div class="span6 col-6">
 						<?php echo $this->form->renderField('evdet_id'); ?>
 						<?php echo $this->form->renderField('ev_id'); ?>
 					</div>
-					<div class="span6">
+					<div class="span6  col-6">
 						<?php echo $this->form->renderField('language'); ?>
 						<?php echo $this->form->renderField('trans_language'); ?>
 						<?php echo $this->form->renderField('trans_evdet_id'); ?>
 						<?php echo $this->form->renderField('trans_translation_id'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
 					<div class="span12">
 						<?php echo $this->form->getLabel('summary'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
-					<div class="span6">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('summary'); ?>
 					</div>
-					<div class="span6">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('trans_summary'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
 					<div class="span12">
 						<?php echo $this->form->getLabel('description'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
-					<div class="span6">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('description'); ?>
 					</div>
-					<div class="span6">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('trans_description'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
 					<div class="span12">
 						<?php echo $this->form->getLabel('location'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
-					<div class="span6">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('location'); ?>
 					</div>
-					<div class="span6">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('trans_location'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
 					<div class="span12">
 						<?php echo $this->form->getLabel('contact_info'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
-					<div class="span6">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('contact_info'); ?>
 					</div>
-					<div class="span6">
-						<?php echo $this->form->getInput('trans_contact_info'); ?>
+					<div class="span6  col-6">
+						<?php echo $this->form->getInput('trans_contact'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
 					<div class="span12">
 						<?php echo $this->form->getLabel('extra_info'); ?>
 					</div>
 				</div>
-				<div class="row-fluid form-horizontal-desktop">
-					<div class="span6">
+				<div class="<?php echo $rowclass;?> form-horizontal-desktop">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('extra_info'); ?>
 					</div>
-					<div class="span6">
+					<div class="span6  col-6">
 						<?php echo $this->form->getInput('trans_extra_info'); ?>
 					</div>
 				</div>
-                                <?php if (isset($this->row->customfieldTranslations) ) {
-                                    foreach ($this->row->customfieldTranslations as $fieldid => $translation) {
-                                        ?>
-				<div class="row-fluid form-horizontal-desktop">
-					<div class="span12">
-                                            <label title="" class="control-label hasTooltip" for="<?php "cf".$fieldid."translation";?>" id="<?php "cf".$fieldid."translation";?>-lbl" >
-                                                <?php echo $translation->label; ?>
-                                            </label>						
-					</div>
-				</div>                            
-				<div class="row-fluid form-horizontal-desktop">
-					<div class="span6">                                           						
-                                                <?php echo $translation->original; ?>
-					</div>
-					<div class="span6">
-						<?php echo $translation->translation; ?>
-					</div>
-				</div>                            
-                                        <?php
-                                    }
-                                    $script = <<< SCRIPT
+				<?php if (isset($this->row->customfieldTranslations))
+				{
+					foreach ($this->row->customfieldTranslations as $fieldid => $translation)
+					{
+						?>
+						<div class="<?php echo $rowclass;?> form-horizontal-desktop">
+							<div class="span12">
+								<label title="" class="control-label hasTooltip"
+								       for="<?php "cf" . $fieldid . "translation"; ?>"
+								       id="<?php "cf" . $fieldid . "translation"; ?>-lbl">
+									<?php echo $translation->label; ?>
+								</label>
+							</div>
+						</div>
+						<div class="<?php echo $rowclass;?> form-horizontal-desktop">
+							<div class="span6  col-6">
+								<?php echo $translation->original; ?>
+							</div>
+							<div class="span6  col-6">
+								<?php echo $translation->translation; ?>
+							</div>
+						</div>
+						<?php
+					}
+					$script = <<< SCRIPT
 	window.setTimeout("setupTranslationBootstrap()", 500);
 
 	function setupTranslationBootstrap(){
@@ -236,13 +262,13 @@ echo JToolbar::getInstance('toolbar')->render('toolbar');
 		})(jQuery);
 	}
 SCRIPT;
-                                    JFactory::getDocument()->addScriptDeclaration($script);
-                                }
-                                ?>
+					Factory::getDocument()->addScriptDeclaration($script);
+				}
+				?>
 			</div>
 		</div>
 
 	</div>
-	<input type="hidden" name="task" value="icalevent.savetranslation" />
-	<?php echo JHtml::_('form.token'); ?>
+	<input type="hidden" name="task" value="icalevent.savetranslation"/>
+	<?php echo HTMLHelper::_('form.token'); ?>
 </form>

@@ -1,28 +1,30 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Engine\Factory;
-use FOF30\Model\Model;
-use JHtml;
-use JText;
+use FOF40\Model\Model;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
 
 class Log extends Model
 {
 	/**
 	 * Get an array with the names of all log files in this backup profile
 	 *
+	 * @param   bool  $onlyFailed  Should I only return the log files of backups marked as failed?
+	 *
 	 * @return  string[]
 	 */
-	public function getLogFiles()
+	public function getLogFiles(bool $onlyFailed = false): array
 	{
 		$configuration = Factory::getConfiguration();
 		$outdir        = $configuration->get('akeeba.basic.output_directory');
@@ -74,6 +76,11 @@ class Log extends Model
 			}
 		}
 
+		if ($onlyFailed)
+		{
+			$ret = $this->keepOnlyFailedLogs($ret);
+		}
+
 		krsort($ret);
 
 		return $ret;
@@ -82,31 +89,33 @@ class Log extends Model
 	/**
 	 * Gets the JHtml options list for selecting a log file
 	 *
+	 * @param   bool  $onlyFailed  Should I only return the log files of backups marked as failed?
+	 *
 	 * @return  array
 	 */
-	public function getLogList()
+	public function getLogList(bool $onlyFailed = false): array
 	{
 		$origin  = null;
 		$options = [];
 
-		$list = $this->getLogFiles();
+		$list = $this->getLogFiles($onlyFailed);
 
 		if (!empty($list))
 		{
-			$options[] = JHtml::_('select.option', null, JText::_('COM_AKEEBA_LOG_CHOOSE_FILE_VALUE'));
+			$options[] = HTMLHelper::_('select.option', null, Text::_('COM_AKEEBA_LOG_CHOOSE_FILE_VALUE'));
 
 			foreach ($list as $item)
 			{
-				$text = JText::_('COM_AKEEBA_BUADMIN_LABEL_ORIGIN_' . $item);
+				$text = Text::_('COM_AKEEBA_BUADMIN_LABEL_ORIGIN_' . $item);
 
 				if (strstr($item, '.') !== false)
 				{
-					list($origin, $backupId) = explode('.', $item, 2);
+					[$origin, $backupId] = explode('.', $item, 2);
 
-					$text = JText::_('COM_AKEEBA_BUADMIN_LABEL_ORIGIN_' . $origin) . ' (' . $backupId . ')';
+					$text = Text::_('COM_AKEEBA_BUADMIN_LABEL_ORIGIN_' . $origin) . ' (' . $backupId . ')';
 				}
 
-				$options[] = JHtml::_('select.option', $item, $text);
+				$options[] = HTMLHelper::_('select.option', $item, $text);
 			}
 		}
 
@@ -145,7 +154,7 @@ class Log extends Model
 
 		// The at sign (silence operator) is necessary to prevent PHP showing a warning if the file doesn't exist or
 		// isn't readable for any reason.
-		$fp = @fopen($logFile, 'rt');
+		$fp = @fopen($logFile, 'r');
 
 		if ($fp === false)
 		{
@@ -158,7 +167,7 @@ class Log extends Model
 		}
 
 		$firstLine = @fgets($fp);
-		if (substr($firstLine, 0, 5) != ('<' . '?' . 'php'))
+		if (substr($firstLine, 0, 5) != '<' . '?' . 'php')
 		{
 			@fclose($fp);
 			@readfile($logFile);
@@ -177,5 +186,31 @@ class Log extends Model
 		{
 			echo "--- END OF RAW LOG ---\r\n";
 		}
+	}
+
+	protected function keepOnlyFailedLogs($logs)
+	{
+		$db            = $this->container->db;
+		$query         = $db->getQuery(true)
+			->select([
+				$db->quoteName('tag'),
+				$db->quoteName('backupid'),
+			])
+			->from($db->quoteName('#__ak_stats'))
+			->where($db->quoteName('status') . ' = ' . $db->quote('fail'));
+		$failedBackups = $db->setQuery($query)->loadObjectList() ?: [];
+
+		if (empty($failedBackups))
+		{
+			return [];
+		}
+
+		$failedBackups = array_map(function ($o) {
+			$tag = $o->tag ?? '';
+
+			return (empty($tag) ? '' : '.') . $o->backupid;
+		}, $failedBackups);
+
+		return array_intersect($logs, $failedBackups);
 	}
 }

@@ -2,18 +2,18 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2019 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
+
+use Joomla\CMS\Uri\Uri;
+
 //no direct accees
 defined ('_JEXEC') or die ('Restricted access');
 
 class SppagebuilderAddonFeature extends SppagebuilderAddons {
 
 	public function render() {
-		//Get FontAwesome Version
-		$config = JComponentHelper::getParams('com_sppagebuilder');
-		$font_awesome_version = $config->get('fontawesome_version', '4');
 
 		$settings = $this->addon->settings;
 		$class = (isset($settings->class) && $settings->class) ? $settings->class : '';
@@ -27,17 +27,46 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 		$title_position = (isset($settings->title_position) && $settings->title_position) ? $settings->title_position : 'before';
 		$feature_type = (isset($settings->feature_type) && $settings->feature_type) ? $settings->feature_type : 'icon';
 		$feature_image = (isset($settings->feature_image) && $settings->feature_image) ? $settings->feature_image : '';
+		$feature_image_src = isset($feature_image->src) ? $feature_image->src : $feature_image;
+		$feature_image_width = (isset($feature_image->width) && $feature_image->width) ? $feature_image->width : '';
+		$feature_image_height = (isset($feature_image->height) && $feature_image->height) ? $feature_image->height : '';
 		$icon_name = (isset($settings->icon_name) && $settings->icon_name) ? $settings->icon_name : '';
 		$text = (isset($settings->text) && $settings->text) ? $settings->text : '';
 		$text_alignment = (isset($settings->alignment) && $settings->alignment) ? $settings->alignment : '';
 
-		$feature_image_link = '';
-		if(strpos($feature_image, "http://") !== false || strpos($feature_image, "https://") !== false){
-			$feature_image_link = $feature_image;
-		} else {
-			$feature_image_link= JURI::base(true) . '/' . $feature_image;
+		//Button options
+		$btn_text = (isset($settings->btn_text) && trim($settings->btn_text)) ? $settings->btn_text : '';
+		$btn_class = '';
+		$btn_class .= (isset($settings->btn_type) && $settings->btn_type) ? ' sppb-btn-' . $settings->btn_type : '';
+        $btn_class .= (isset($settings->btn_size) && $settings->btn_size) ? ' sppb-btn-' . $settings->btn_size : '';
+        $btn_class .= (isset($settings->btn_shape) && $settings->btn_shape) ? ' sppb-btn-' . $settings->btn_shape : ' sppb-btn-rounded';
+        $btn_class .= (isset($settings->btn_appearance) && $settings->btn_appearance) ? ' sppb-btn-' . $settings->btn_appearance : '';
+		$btn_class .= (isset($settings->btn_block) && $settings->btn_block) ? ' ' . $settings->btn_block : '';
+		$attribs = (isset($settings->btn_target) && $settings->btn_target) ? ' target="' . $settings->btn_target . '"' : '';
+        $attribs .= (isset($settings->btn_url) && $settings->btn_url) ? ' href="' . $settings->btn_url . '"' : '';
+        $attribs .= ' id="btn-' . $this->addon->id . '"';
+        $btn_icon = (isset($settings->btn_icon) && $settings->btn_icon) ? $settings->btn_icon : '';
+		$btn_icon_position = (isset($settings->btn_icon_position) && $settings->btn_icon_position) ? $settings->btn_icon_position : 'left';
+		
+		$icon_arr = array_filter(explode(' ', $btn_icon));
+		if (count($icon_arr) === 1) {
+			$btn_icon = 'fa ' . $btn_icon;
 		}
-                
+
+        if ($btn_icon_position == 'left') {
+            $btn_text = ($btn_icon) ? '<i class="' . $btn_icon . '" aria-hidden="true"></i> ' . $btn_text : $btn_text;
+        } else {
+            $btn_text = ($btn_icon) ? $btn_text . ' <i class="' . $btn_icon . '" aria-hidden="true"></i>' : $btn_text;
+		}
+		
+		if(strpos($feature_image_src, "http://") !== false || strpos($feature_image_src, "https://") !== false){
+			$feature_image_src = $feature_image_src;
+		} elseif($feature_image_src) {
+			$feature_image_src = Uri::base(true) . '/' . $feature_image_src;
+		}
+        //Lazyload image
+		$placeholder = $feature_image_src == '' ? false : $this->get_image_placeholder($feature_image_src);
+
 		//Image or icon position
 		$icon_image_position = '';
 		if($title_position == 'before') {
@@ -65,10 +94,6 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 						$icon_arr = array_filter(explode(' ', $icon_name));
 						if (count($icon_arr) === 1) {
 							$icon_name = 'fa ' . $icon_name;
-						} else if (count($icon_arr) === 2) {
-							if ($font_awesome_version == '4') {
-								$icon_name = 'fa ' . $icon_arr[1];
-							}
 						}
 					 
 						$media  .= '<i class="' . $icon_name . '" aria-hidden="true"></i>';
@@ -77,10 +102,10 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 				$media  .= '</div>';
 			}
 		} else {
-			if($feature_image) {
+			if($feature_image_src) {
 				$media  .= '<span class="sppb-img-container">';
 				if( ($title_url && $url_appear == 'icon') || ($title_url && $url_appear == 'both' ) ) $media .= '<a href="'. $title_url .'"'.($link_open_new_window ? ' rel="noopener noreferrer" target="_blank"' : '').'>';
-				$media  .= '<img class="sppb-img-responsive" src="' . $feature_image_link . '" alt="'.strip_tags($title).'">';
+				$media  .= '<img class="sppb-img-responsive'.($placeholder ? ' sppb-element-lazy' : '').'" src="' . ($placeholder ? $placeholder : $feature_image_src) . '" alt="'.strip_tags($title).'" '.($placeholder ? 'data-large="'.$feature_image_src.'"' : '').' '.($feature_image_width ? 'width="'.$feature_image_width.'"' : '').' '.($feature_image_height ? 'height="'.$feature_image_height.'"' : '').' loading="lazy">';
 				if(($title_url && $url_appear == 'icon') || ($title_url && $url_appear == 'both' )) $media .= '</a>';
 				$media  .= '</span>';
 			}
@@ -95,10 +120,6 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 					$icon_arr = array_filter(explode(' ', $icon_name));
 					if (count($icon_arr) === 1) {
 						$icon_name = 'fa ' . $icon_name;
-					} else if (count($icon_arr) === 2) {
-						if ($font_awesome_version == '4') {
-							$icon_name = 'fa ' . $icon_arr[1];
-						}
 					}
 
 					$image_icon .= '<i class="' . $icon_name . '" aria-hidden="true"></i>';
@@ -136,12 +157,18 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 			$output .= '<div class="sppb-media-content">';
 			$output .= ($title) ? $feature_title : '';
 			$output .= $feature_text;
+			if($btn_text){
+				$output .= '<a' . $attribs . ' class="sppb-btn ' . $btn_class . '">' . $btn_text . '</a>';
+			}
 			$output .= '</div>';
 		} else if ($icon_image_position == 'after') {
 			$output .= ($title) ? $feature_title : '';
 			$output .= ($media) ? $media : '';
             $output .= '<div class="sppb-media-content">';
 			$output .= $feature_text;
+			if($btn_text){
+				$output .= '<a' . $attribs . ' class="sppb-btn ' . $btn_class . '">' . $btn_text . '</a>';
+			}
             $output .= '</div>';
 		} else {
 			if($media) {
@@ -154,6 +181,9 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 				$output .= $image_icon;
 				$output .= ($title) ? $feature_title : '';
 				$output .= $feature_text;
+				if($btn_text){
+					$output .= '<a' . $attribs . ' class="sppb-btn ' . $btn_class . '">' . $btn_text . '</a>';
+				}
 				$output .= '</div>';//.sppb-media-content
 				$output .= '</div>';
 				$output .= '</div>';
@@ -191,6 +221,7 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 		$icon_padding = (isset($settings->icon_padding) && $settings->icon_padding) ? $settings->icon_padding : '';
 		$feature_type = (isset($settings->feature_type) && $settings->feature_type) ? $settings->feature_type : 'icon';
 		$feature_image = (isset($settings->feature_image) && $settings->feature_image) ? $settings->feature_image : '';
+		$feature_image_src = isset($feature_image->src) ? $feature_image->src : $feature_image;
 		$icon_name = (isset($settings->icon_name) && $settings->icon_name) ? $settings->icon_name : '';
 		$title_position = (isset($settings->title_position) && $settings->title_position) ? $settings->title_position : '';
 
@@ -419,7 +450,7 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 				}
 			}
 		}
-        if($feature_image && ($feature_type == 'both' || $feature_type =='image')) {
+        if($feature_image_src && ($feature_type == 'both' || $feature_type =='image')) {
             $img_style = 'display:block;';
 
             if($img_style) {
@@ -447,7 +478,42 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
                 $css .= $image_margin;
                 $css .= '}';
             }
-        }
+		}
+		
+		//Button style
+		$layout_path = JPATH_ROOT . '/components/com_sppagebuilder/layouts';
+        $css_path = new JLayoutFile('addon.css.button', $layout_path);
+        $options = new stdClass;
+        $options->button_type = (isset($settings->btn_type) && $settings->btn_type) ? $settings->btn_type : '';
+        $options->button_appearance = (isset($settings->btn_appearance) && $settings->btn_appearance) ? $settings->btn_appearance : '';
+        $options->button_color = (isset($settings->btn_color) && $settings->btn_color) ? $settings->btn_color : '';
+        $options->button_color_hover = (isset($settings->btn_color_hover) && $settings->btn_color_hover) ? $settings->btn_color_hover : '';
+        $options->button_background_color = (isset($settings->btn_background_color) && $settings->btn_background_color) ? $settings->btn_background_color : '';
+        $options->button_background_color_hover = (isset($settings->btn_background_color_hover) && $settings->btn_background_color_hover) ? $settings->btn_background_color_hover : '';
+        $options->button_fontstyle = (isset($settings->btn_fontstyle) && $settings->btn_fontstyle) ? $settings->btn_fontstyle : '';
+        $options->button_font_style = (isset($settings->btn_font_style) && $settings->btn_font_style) ? $settings->btn_font_style : '';
+        $options->button_padding = (isset($settings->button_padding) && trim($settings->button_padding)) ? $settings->button_padding : '';
+        $options->button_padding_sm = (isset($settings->button_padding_sm) && trim($settings->button_padding_sm)) ? $settings->button_padding_sm : '';
+        $options->button_padding_xs = (isset($settings->button_padding_xs) && trim($settings->button_padding_xs)) ? $settings->button_padding_xs : '';
+        $options->fontsize = (isset($settings->btn_fontsize) && $settings->btn_fontsize) ? $settings->btn_fontsize : '';
+        $options->fontsize_sm = (isset($settings->btn_fontsize_sm) && $settings->btn_fontsize_sm) ? $settings->btn_fontsize_sm : '';
+        $options->fontsize_xs = (isset($settings->btn_fontsize_xs) && $settings->btn_fontsize_xs) ? $settings->btn_fontsize_xs : '';
+        $options->button_letterspace = (isset($settings->btn_letterspace) && $settings->btn_letterspace) ? $settings->btn_letterspace : '';
+        $options->button_background_gradient = (isset($settings->btn_background_gradient) && $settings->btn_background_gradient) ? $settings->btn_background_gradient : new stdClass();
+		$options->button_background_gradient_hover = (isset($settings->btn_background_gradient_hover) && $settings->btn_background_gradient_hover) ? $settings->btn_background_gradient_hover : new stdClass();
+
+		//Button Margin
+		$button_margin = (isset($settings->button_margin) && trim($settings->button_margin)) ? $settings->button_margin : '';
+        $button_margin_sm = ((isset($settings->button_margin_sm)) && trim($settings->button_margin_sm)) ? $settings->button_margin_sm : '';
+		$button_margin_xs = ((isset($settings->button_margin_xs)) && trim($settings->button_margin_xs)) ? $settings->button_margin_xs : '';
+		
+		if ($button_margin) {
+            $css .= $addon_id . ' .sppb-media-content .sppb-btn {';
+            $css .= 'margin: ' . $button_margin . ';';
+            $css .= '}';
+		}
+
+		$css .= $css_path->render(array('addon_id' => $addon_id, 'options' => $options, 'id' => 'btn-' . $this->addon->id));
 		
                 
         $css .= '@media (min-width: 768px) and (max-width: 991px) {';
@@ -474,7 +540,12 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
                 $css .= $addon_id . ' .sppb-media .sppb-media-body {';
                 $css .= 'width: auto;';
                 $css .= '}';
-            }
+			}
+			if ($button_margin_sm) {
+				$css .= $addon_id . ' .sppb-media-content .sppb-btn {';
+				$css .= 'margin: ' . $button_margin_sm . ';';
+				$css .= '}';
+			}
         $css .= '}';
 
 
@@ -502,7 +573,12 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
                 $css .= $addon_id . ' .sppb-media .sppb-media-body {';
                 $css .= 'width: auto;';
                 $css .= '}';
-            }
+			}
+			if ($button_margin_xs) {
+				$css .= $addon_id . ' .sppb-media-content .sppb-btn {';
+				$css .= 'margin: ' . $button_margin_xs . ';';
+				$css .= '}';
+			}
 		$css .= '}';
 		
 		//Hover options
@@ -559,25 +635,9 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 		$output = '
 		<#
 			var text_alignment = (data.alignment) ? data.alignment : "";
-			function _isValidIcon(icon, delta=false) {
-				let defaultIcons = "fa-ban";
-				let icon_arr = icon ? icon.split(" ") : "";
-				let iconName = icon_arr.length > 1 ? icon_arr[1] : icon_arr[0];
-				let iconKey = iconName ? iconName.replace(/-/g,"_") : "";
-				if (faIconList.version === 5 && typeof faIconList.missingIcons.f4[iconKey] !== "undefined") {
-				  return delta ? iconName+ " icon is not available in FontAwesome 5" : "fa "+defaultIcons;
-				}
-				if (faIconList.version === 4 && typeof faIconList.missingIcons.f5[iconKey] !== "undefined") {
-				  return delta ? iconName + " icon is not available in FontAwesome 4" : "fa "+defaultIcons;
-				}
-				if (delta) {
-					return false
-				} else {
-					return icon_arr.length === 1 ? "fa "+icon : faIconList.version === 4 ? "fa " + icon_arr[1] : icon;
-				}
-			}
-			var icon_class = _isValidIcon(data.icon_name);
-			var icon_name = _isValidIcon(data.icon_name, true);
+
+			let icon_arr = (typeof data.icon_name !== "undefined" && data.icon_name) ? data.icon_name.split(" ") : "";
+			let icon_name = icon_arr.length === 1 ? "fa "+data.icon_name : data.icon_name;
 
 			var icon_image_position = "";
 			if(data.title_position == "before") {
@@ -601,7 +661,7 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 							media += \'<a href="\'+data.title_url+\'">\';
 						}
 						media  += \'<span class="sppb-icon-container">\';
-							media  += \'<i class="\'+icon_class+\'"></i>\';
+							media  += \'<i class="\'+icon_name+\'"></i>\';
 						media  += \'</span>\';
 						if( (data.title_url && data.url_appear == "icon") || (data.title_url && data.url_appear == "both" ) ){
 							media += \'</a>\';
@@ -609,15 +669,21 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 					media += \'</div>\';
 				}
 			} else {
-                    if(data.feature_image){
+					var feature_image = {}
+					if (typeof data.feature_image !== "undefined" && typeof data.feature_image.src !== "undefined") {
+						feature_image = data.feature_image
+					} else {
+						feature_image = {src: data.feature_image}
+					}
+                    if(feature_image.src){
                         media  += \'<span class="sppb-img-container">\';
                         if( (data.title_url && data.url_appear == "icon") || (data.title_url && data.url_appear == "both" ) ){
                             media += \'<a href="\'+data.title_url+\'">\';
                         }
-                        if(data.feature_image.indexOf("http://") != -1 || data.feature_image.indexOf("https://") != -1){
-                            media  += \'<img class="sppb-img-responsive" src="\'+data.feature_image+\'" alt="\'+data.title+\'">\';
+                        if(feature_image.src?.indexOf("http://") != -1 || feature_image.src?.indexOf("https://") != -1){
+                            media  += \'<img class="sppb-img-responsive" src="\'+feature_image.src+\'" alt="\'+data.title+\'">\';
                         } else {
-                            media  += \'<img class="sppb-img-responsive" src="\'+pagebuilder_base+data.feature_image+\'" alt="\'+data.title+\'">\';
+                            media  += \'<img class="sppb-img-responsive" src="\'+pagebuilder_base+feature_image.src+\'" alt="\'+data.title+\'">\';
                         }
                         if( (data.title_url && data.url_appear == "icon") || (data.title_url && data.url_appear == "both" ) ){
                             media += \'</a>\';
@@ -632,7 +698,7 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 							image_icon += \'<a href="\'+data.title_url+\'">\';
 						}
 						image_icon  += \'<span class="sppb-icon-container">\';
-							image_icon  += \'<i class="\'+icon_class+\'"></i>\';
+							image_icon  += \'<i class="\'+icon_name+\'"></i>\';
 						image_icon  += \'</span>\';
 						if( (data.title_url && data.url_appear == "icon") || (data.title_url && data.url_appear == "both" ) ){
 							image_icon += \'</a>\';
@@ -647,7 +713,9 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 					heading_class = " sppb-media-heading";
 				}
 
-				feature_title += \'<\'+data.heading_selector+\' class="sppb-addon-title sppb-feature-box-title  \'+heading_class+\'">\';
+				let heading_selector = data.heading_selector || "h3";
+
+				feature_title += \'<\'+heading_selector+\' class="sppb-addon-title sppb-feature-box-title  \'+heading_class+\'">\';
 				if( (data.title_url && data.url_appear == "title") || (data.title_url && data.url_appear == "both" ) ){
 					feature_title += \'<a href="\'+data.title_url+\'" class="sp-inline-editable-element" data-id="\'+data.id+\'" data-fieldName="title" contenteditable="true">\';
 				}
@@ -661,7 +729,7 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 				if( (data.title_url && data.url_appear == "title") || (data.title_url && data.url_appear == "both" ) ){
 					feature_title += \'</a>\';
 				}
-				feature_title += \'</\'+data.heading_selector+\'>\';
+				feature_title += \'</\'+heading_selector+\'>\';
 			}
 
 			var feature_text  = \'<div id="addon-text-\'+data.id+\'" class="sppb-addon-text sp-editable-content" data-id="\'+data.id+\'" data-fieldName="text">\';
@@ -715,8 +783,22 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 			}
 		#>
 		<style type="text/css">
-		<# if(data.feature_type == "icon" || data.feature_type == "both"){ #>
-			<# if(data.icon_name){ #>
+		<# 
+			var modern_font_style = false;
+			var classList = "";
+			classList += " sppb-btn-"+data.btn_type;
+			classList += " sppb-btn-"+data.btn_size;
+			classList += " sppb-btn-"+data.btn_shape;
+			if(!_.isEmpty(data.btn_appearance)){
+				classList += " sppb-btn-"+data.btn_appearance;
+			}
+			classList += " "+data.btn_block;
+
+			var button_fontstyle = data.btn_font_style || "";
+			var button_font_style = data.btn_font_style || "";
+		if(data.feature_type == "icon" || data.feature_type == "both"){
+			if(data.icon_name){
+		#>
 				#sppb-addon-{{ data.id }} .sppb-icon {
 					<# if(_.isObject(data.icon_margin_top)){ #>
 						margin-top: {{ data.icon_margin_top.md }}px;
@@ -952,6 +1034,127 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 			<# } #>
 		}
 
+		#sppb-addon-{{ data.id }} .sppb-media-content .sppb-btn {
+			<# if(_.isObject(data.button_margin)) { #>
+				margin: {{data.button_margin.md}};
+			<# } else { #>
+				margin: {{data.button_margin}};
+			<# } #>
+		}
+
+		#sppb-addon-{{ data.id }} #btn-{{ data.id }}.sppb-btn-{{ data.type }}{
+			letter-spacing: {{ data.btn_letterspace }};
+
+			<# if(_.isObject(button_font_style) && button_font_style.underline) { #>
+				text-decoration: underline;
+				<# modern_font_style = true #>
+			<# } #>
+
+			<# if(_.isObject(button_font_style) && button_font_style.italic) { #>
+				font-style: italic;
+				<# modern_font_style = true #>
+			<# } #>
+
+			<# if(_.isObject(button_font_style) && button_font_style.uppercase) { #>
+				text-transform: uppercase;
+				<# modern_font_style = true #>
+			<# } #>
+
+			<# if(_.isObject(button_font_style) && button_font_style.weight) { #>
+				font-weight: {{ button_font_style.weight }};
+				<# modern_font_style = true #>
+			<# } #>
+
+			<# if(!modern_font_style) { #>
+				<# if(_.isArray(button_fontstyle)) { #>
+					<# if(button_fontstyle.indexOf("underline") !== -1){ #>
+						text-decoration: underline;
+					<# } #>
+					<# if(button_fontstyle.indexOf("uppercase") !== -1){ #>
+						text-transform: uppercase;
+					<# } #>
+					<# if(button_fontstyle.indexOf("italic") !== -1){ #>
+						font-style: italic;
+					<# } #>
+					<# if(button_fontstyle.indexOf("lighter") !== -1){ #>
+						font-weight: lighter;
+					<# } else if(button_fontstyle.indexOf("normal") !== -1){#>
+						font-weight: normal;
+					<# } else if(button_fontstyle.indexOf("bold") !== -1){#>
+						font-weight: bold;
+					<# } else if(button_fontstyle.indexOf("bolder") !== -1){#>
+						font-weight: bolder;
+					<# } #>
+				<# } #>
+			<# } #>
+		}
+
+		<# if(data.btn_type == "custom"){ #>
+			#sppb-addon-{{ data.id }} #btn-{{ data.id }}.sppb-btn-custom{
+				<# if(_.isObject(data.btn_fontsize)){ #>
+					font-size: {{data.btn_fontsize.md}}px;
+				<# } else { #>
+					font-size: {{data.btn_fontsize}}px;
+				<# } #>
+				color: {{ data.btn_color }};
+				<# if(_.isObject(data.button_padding)) { #>
+					padding: {{ data.button_padding.md }};
+				<# } else { #>
+					padding: {{ data.button_padding }};
+				<# } #>
+				<# if(data.btn_appearance == "outline"){ #>
+					border-color: {{ data.btn_background_color }};
+					background-color: transparent;
+				<# } else if(data.btn_appearance == "3d"){ #>
+					border-bottom-color: {{ data.btn_background_color_hover }};
+					background-color: {{ data.btn_background_color }};
+				<# } else if(data.btn_appearance == "gradient"){ #>
+					border: none;
+					<# if(typeof data.btn_background_gradient.type !== "undefined" && data.btn_background_gradient.type == "radial"){ #>
+						background-image: radial-gradient(at {{ data.btn_background_gradient.radialPos || "center center"}}, {{ data.btn_background_gradient.color }} {{ data.btn_background_gradient.pos || 0 }}%, {{ data.btn_background_gradient.color2 }} {{ data.btn_background_gradient.pos2 || 100 }}%);
+					<# } else { #>
+						background-image: linear-gradient({{ data.btn_background_gradient.deg || 0}}deg, {{ data.btn_background_gradient.color }} {{ data.btn_background_gradient.pos || 0 }}%, {{ data.btn_background_gradient.color2 }} {{ data.btn_background_gradient.pos2 || 100 }}%);
+					<# } #>
+				<# } else { #>
+					background-color: {{ data.btn_background_color }};
+				<# } #>
+			}
+
+			#sppb-addon-{{ data.id }} #btn-{{ data.id }}.sppb-btn-custom:hover{
+				color: {{ data.btn_color_hover }};
+				background-color: {{ data.btn_background_color_hover }};
+				<# if(data.btn_appearance == "outline"){ #>
+					border-color: {{ data.btn_background_color_hover }};
+				<# } else if(data.btn_appearance == "gradient"){ #>
+					<# if(typeof data.btn_background_gradient_hover.type !== "undefined" && data.btn_background_gradient_hover.type == "radial"){ #>
+						background-image: radial-gradient(at {{ data.btn_background_gradient_hover.radialPos || "center center"}}, {{ data.btn_background_gradient_hover.color }} {{ data.btn_background_gradient_hover.pos || 0 }}%, {{ data.btn_background_gradient_hover.color2 }} {{ data.btn_background_gradient_hover.pos2 || 100 }}%);
+					<# } else { #>
+						background-image: linear-gradient({{ data.btn_background_gradient_hover.deg || 0}}deg, {{ data.btn_background_gradient_hover.color }} {{ data.btn_background_gradient_hover.pos || 0 }}%, {{ data.btn_background_gradient_hover.color2 }} {{ data.btn_background_gradient_hover.pos2 || 100 }}%);
+					<# } #>
+				<# } #>
+			}
+			@media (min-width: 768px) and (max-width: 991px) {
+				#sppb-addon-{{ data.id }} #btn-{{ data.id }}.sppb-btn-custom{
+					<# if(_.isObject(data.btn_fontsize)){ #>
+						font-size: {{data.btn_fontsize.sm}}px;
+					<# } #>
+					<# if(_.isObject(data.button_padding)) { #>
+						padding: {{ data.button_padding.sm }};
+					<# } #>
+				}
+			}
+			@media (max-width: 767px) {
+				#sppb-addon-{{ data.id }} #btn-{{ data.id }}.sppb-btn-custom{
+					<# if(_.isObject(data.btn_fontsize)){ #>
+						font-size: {{data.btn_fontsize.xs}}px;
+					<# } #>
+					<# if(_.isObject(data.button_padding)) { #>
+						padding: {{ data.button_padding.xs }};
+					<# } #>
+				}
+			}
+		<# } #>
+
 		@media (min-width: 768px) and (max-width: 991px) {
 			#sppb-addon-{{ data.id }} .sppb-addon-text {
 				<# if(_.isObject(data.text_fontsize)){ #>
@@ -967,6 +1170,11 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 					padding: {{ data.text_padding.sm }};
 				<# } #>
 			}
+			<# if(_.isObject(data.button_margin)) { #>
+				#sppb-addon-{{ data.id }} .sppb-media-content .sppb-btn {
+					margin: {{data.button_margin.sm}};
+				}
+			<# } #>
 		}
 
 		@media (max-width: 767px) {
@@ -984,6 +1192,11 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 					padding: {{ data.text_padding.xs }};
 				<# } #>
 			}
+			<# if(_.isObject(data.button_margin)) { #>
+				#sppb-addon-{{ data.id }} .sppb-media-content .sppb-btn {
+					margin: {{data.button_margin.xs}};
+				}
+			<# } #>
 		}
 		<# if(data.addon_hover_bg || data.addon_hover_boxshadow || data.addon_hover_color) { #>
 			#sppb-addon-{{ data.id }} {
@@ -1034,7 +1247,13 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
                         <# if(data.title){ #>
                             {{{ feature_title }}}
                         <# } #>
-                        {{{ feature_text }}}
+						{{{ feature_text }}}
+						<# if(data.btn_text && _.trim(data.btn_text)){
+							let icon_arr = (typeof data.btn_icon !== "undefined" && data.btn_icon) ? data.btn_icon.split(" ") : "";
+							let icon_name = icon_arr.length === 1 ? "fa "+data.btn_icon : data.btn_icon;
+						#>
+							<a href=\'{{ data.url }}\' id="btn-{{ data.id }}" target="{{ data.target }}" class="sppb-btn {{ classList }}"><# if(data.btn_icon_position == "left" && !_.isEmpty(data.btn_icon)) { #><i class="{{ icon_name }}"></i> <# } #>{{ data.btn_text }}<# if(data.btn_icon_position == "right" && !_.isEmpty(data.btn_icon)) { #> <i class="{{ icon_name }}"></i><# } #></a>
+						<# } #>
                     </div>
 				<# } else if (icon_image_position == "after") { #>
 					<# if(data.title){ #>
@@ -1045,6 +1264,12 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
 					<# } #>
                     <div class="sppb-media-content">
 					{{{ feature_text }}}
+					<# if(data.btn_text && _.trim(data.btn_text)){
+						let icon_arr = (typeof data.btn_icon !== "undefined" && data.btn_icon) ? data.btn_icon.split(" ") : "";
+						let icon_name = icon_arr.length === 1 ? "fa "+data.btn_icon : data.btn_icon;
+					#>
+						<a href=\'{{ data.url }}\' id="btn-{{ data.id }}" target="{{ data.target }}" class="sppb-btn {{ classList }}"><# if(data.btn_icon_position == "left" && !_.isEmpty(data.btn_icon)) { #><i class="{{ icon_name }}"></i> <# } #>{{ data.btn_text }}<# if(data.btn_icon_position == "right" && !_.isEmpty(data.btn_icon)) { #> <i class="{{ icon_name }}"></i><# } #></a>
+					<# } #>
                     </div>
 				<# } else { #>
 					<# if(media) { #>
@@ -1057,7 +1282,12 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
                                         {{{ feature_title }}}
                                     <# } #>
 									{{{ feature_text }}}
-									<# if(icon_name) { #> <div class="sppb-icon-not-found">{{icon_name}}</div> <# } #>
+									<# if(data.btn_text && _.trim(data.btn_text)){
+										let icon_arr = (typeof data.btn_icon !== "undefined" && data.btn_icon) ? data.btn_icon.split(" ") : "";
+										let icon_name = icon_arr.length === 1 ? "fa "+data.btn_icon : data.btn_icon;
+									#>
+										<a href=\'{{ data.url }}\' id="btn-{{ data.id }}" target="{{ data.target }}" class="sppb-btn {{ classList }}"><# if(data.btn_icon_position == "left" && !_.isEmpty(data.btn_icon)) { #><i class="{{ icon_name }}"></i> <# } #>{{ data.btn_text }}<# if(data.btn_icon_position == "right" && !_.isEmpty(data.btn_icon)) { #> <i class="{{ icon_name }}"></i><# } #></a>
+									<# } #>
                                 </div>
 							</div>
 						</div>
@@ -1070,7 +1300,12 @@ class SppagebuilderAddonFeature extends SppagebuilderAddons {
                                         {{{ feature_title }}}
                                     <# } #>
 									{{{ feature_text }}}
-									<# if(icon_name) { #> <div class="sppb-icon-not-found">{{icon_name}}</div> <# } #>
+									<# if(data.btn_text && _.trim(data.btn_text)){
+										let icon_arr = (typeof data.btn_icon !== "undefined" && data.btn_icon) ? data.btn_icon.split(" ") : "";
+										let icon_name = icon_arr.length === 1 ? "fa "+data.btn_icon : data.btn_icon;
+									#>
+										<a href=\'{{ data.url }}\' id="btn-{{ data.id }}" target="{{ data.target }}" class="sppb-btn {{ classList }}"><# if(data.btn_icon_position == "left" && !_.isEmpty(data.btn_icon)) { #><i class="{{ icon_name }}"></i> <# } #>{{ data.btn_text }}<# if(data.btn_icon_position == "right" && !_.isEmpty(data.btn_icon)) { #> <i class="{{ icon_name }}"></i><# } #></a>
+									<# } #>
                                 </div>
 							</div>
 						</div>

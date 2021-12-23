@@ -3,19 +3,19 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Postproc;
 
-
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Postproc\Exception\BadConfiguration;
 use Awf\Text\Text;
-use JText;
+use Joomla\CMS\Language\Text as JText;
 use RuntimeException;
 
 class Email extends Base
@@ -42,13 +42,23 @@ class Email extends Base
 		{
 			$subject = "You have a new backup part";
 
-			if (class_exists('JText'))
-			{
-				$subject = JText::_('COM_AKEEBA_COMMON_EMAIL_DEAFULT_SUBJECT');
-			}
-			elseif (class_exists('\Awf\Text\Text'))
+			if (class_exists('\Awf\Text\Text'))
 			{
 				$subject = Text::_('COM_AKEEBA_COMMON_EMAIL_DEAFULT_SUBJECT');
+
+				if ($subject === 'COM_AKEEBA_COMMON_EMAIL_DEAFULT_SUBJECT')
+				{
+					$subject = JText::_('COM_AKEEBABACKUP_COMMON_EMAIL_DEAFULT_SUBJECT');
+				}
+			}
+			elseif (class_exists('\Joomla\CMS\Language\Text'))
+			{
+				$subject = JText::_('COM_AKEEBA_COMMON_EMAIL_DEAFULT_SUBJECT');
+
+				if ($subject === 'COM_AKEEBA_COMMON_EMAIL_DEAFULT_SUBJECT')
+				{
+					$subject = JText::_('COM_AKEEBABACKUP_COMMON_EMAIL_DEAFULT_SUBJECT');
+				}
 			}
 		}
 

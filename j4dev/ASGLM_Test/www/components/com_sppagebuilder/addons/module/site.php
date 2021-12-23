@@ -2,11 +2,14 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
-*/
+ */
 //no direct accees
 defined ('_JEXEC') or die ('Restricted access');
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Helper\ModuleHelper;
 
 class SppagebuilderAddonModule extends SppagebuilderAddons{
 
@@ -43,9 +46,9 @@ class SppagebuilderAddonModule extends SppagebuilderAddons{
 				$clean[$module->id]	= $module;
 
 				if($module_type == 'position') {
-					$output .= JModuleHelper::renderModule($module, array('style' => 'sp_xhtml'));
+					$output .= ModuleHelper::renderModule($module, array('style' => 'sp_xhtml'));
 				} else {
-					$output .= JModuleHelper::renderModule($module, array('style' => 'none'));
+					$output .= ModuleHelper::renderModule($module, array('style' => 'none'));
 				}
 
 			}
@@ -61,13 +64,13 @@ class SppagebuilderAddonModule extends SppagebuilderAddons{
 
 	// Get all modules
 	private static function getModules($module_type = 'module', $id = 0, $position = '') {
-		$app		= JFactory::getApplication();
-		$user		= JFactory::getUser();
+		$app		= Factory::getApplication();
+		$user		= Factory::getUser();
 		$groups		= implode(',', $user->getAuthorisedViewLevels());
-		$lang 		= JFactory::getLanguage()->getTag();
+		$lang 		= Factory::getLanguage()->getTag();
 		$clientId 	= (int) $app->getClientId();
 
-		$db	= JFactory::getDbo();
+		$db	= Factory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select('m.id, m.title, m.module, m.position, m.ordering, m.content, m.showtitle, m.params');
 		$query->from('#__modules AS m');
@@ -80,17 +83,19 @@ class SppagebuilderAddonModule extends SppagebuilderAddons{
 			$query->where('m.id = ' . $id);
 		}
 
-		$date = JFactory::getDate();
+		$date = Factory::getDate();
 		$now = $date->toSql();
 		$nullDate = $db->getNullDate();
-		$query->where('(m.publish_up = '.$db->Quote($nullDate).' OR m.publish_up <= '.$db->Quote($now).')');
-		$query->where('(m.publish_down = '.$db->Quote($nullDate).' OR m.publish_down >= '.$db->Quote($now).')');
+
+		$query->where('(m.publish_up = '.$db->Quote($nullDate).' OR m.publish_up IS NULL OR m.publish_up <= '.$db->Quote($now).')');
+		$query->where('(m.publish_down = '.$db->Quote($nullDate).' OR m.publish_down IS NULL OR m.publish_down >= '.$db->Quote($now).')');
 
 		$query->where('m.access IN ('.$groups.')');
 		$query->where('m.client_id = '. $clientId);
 
 		// Filter by language
-		if ($app->isSite() && $app->getLanguageFilter()) {
+		$app = Factory::getApplication();
+		if ($app->isClient('site') && $app->getLanguageFilter()) {
 			$query->where('m.language IN (' . $db->Quote($lang) . ',' . $db->Quote('*') . ')');
 		}
 

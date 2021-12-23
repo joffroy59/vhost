@@ -1,14 +1,14 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\Helper\SecretWord;
 use Akeeba\Backup\Admin\Model\Mixin\Chmod;
@@ -16,14 +16,16 @@ use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\Complexify;
 use Akeeba\Engine\Util\RandomValue;
-use FOF30\Database\Installer;
-use FOF30\Download\Download;
-use FOF30\Model\Model;
-use JFile;
-use JFolder;
-use JLoader;
+use FOF40\Database\Installer;
+use FOF40\Download\Download;
+use FOF40\Model\Model;
+use Joomla\CMS\Filesystem\File;
+use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Http\HttpFactory;
+use Joomla\CMS\Http\Transport\CurlTransport;
+use Joomla\CMS\Http\Transport\StreamTransport;
 use Joomla\CMS\Uri\Uri;
-use JUri;
+use Joomla\Registry\Registry;
 use RuntimeException;
 use stdClass;
 
@@ -186,12 +188,10 @@ class ControlPanel extends Model
 			return true;
 		}
 
-		JLoader::import('joomla.filesystem.folder');
-
 		$result = true;
 
 		// Loop through subdirectories
-		$folders = JFolder::folders($parent, '.', 3, true);
+		$folders = Folder::folders($parent, '.', 3, true);
 
 		foreach ($folders as $folder)
 		{
@@ -204,7 +204,7 @@ class ControlPanel extends Model
 		}
 
 		// Loop through files
-		$files = JFolder::files($parent, '.', 3, true);
+		$files = Folder::files($parent, '.', 3, true);
 
 		foreach ($files as $file)
 		{
@@ -227,10 +227,9 @@ class ControlPanel extends Model
 	public function checkSettingsEncryption()
 	{
 		// Do we have a key file?
-		JLoader::import('joomla.filesystem.file');
 		$filename = JPATH_COMPONENT_ADMINISTRATOR . '/BackupEngine/serverkey.php';
 
-		if (JFile::exists($filename))
+		if (File::exists($filename))
 		{
 			// We have a key file. Do we need to disable it?
 			if ($this->container->params->get('useencryption', -1) == 0)
@@ -269,9 +268,8 @@ class ControlPanel extends Model
 		}
 
 		$this->container->params->set('confwiz_upgrade', 1);
-		$this->container->params->set('siteurl', str_replace('/administrator', '', JUri::base()));
+		$this->container->params->set('siteurl', str_replace('/administrator', '', Uri::base()));
 		$this->container->params->set('jlibrariesdir', Factory::getFilesystemTools()->TranslateWinPath(JPATH_LIBRARIES));
-		$this->container->params->set('jversion', '1.6');
 		$this->container->params->save();
 	}
 
@@ -351,7 +349,6 @@ class ControlPanel extends Model
 		$dbInstaller = new Installer(
 			$this->container->db,
 			JPATH_ADMINISTRATOR . '/components/com_akeeba/sql/xml'
-
 		);
 
 		$dbInstaller->updateSchema();
@@ -428,7 +425,7 @@ class ControlPanel extends Model
 		catch (RuntimeException $e)
 		{
 			// Ah, the current Secret Word is bad. Create a new one if necessary.
-			$newSecret = $this->container->platform->getSessionVar('newSecretWord', null, 'akeeba.cpanel');
+			$newSecret = $this->container->platform->getSessionVar('newSecretWord', null, 'akeeba');
 
 			if (empty($newSecret))
 			{
@@ -675,44 +672,57 @@ class ControlPanel extends Model
 		$checkURL = $baseURL . '/' . $webPath . '/' . $checkFile;
 
 		// Try to download the file's contents
-		$downloader = new Download($this->container);
-
 		$options = [
-			CURLOPT_SSL_VERIFYPEER => 0,
-			CURLOPT_SSL_VERIFYHOST => 0,
-			CURLOPT_FOLLOWLOCATION => 1,
-			CURLOPT_TIMEOUT        => 10,
+			'follow_location'  => true,
+			'transport.curl'   => [
+				CURLOPT_SSL_VERIFYPEER => 0,
+				CURLOPT_SSL_VERIFYHOST => 0,
+				CURLOPT_FOLLOWLOCATION => 1,
+				CURLOPT_TIMEOUT        => 10,
+			],
+			'transport.stream' => [
+				'timeout' => 10,
+			],
 		];
 
-		if ($downloader->getAdapterName() == 'fopen')
+		$adapters = [];
+
+		if (CurlTransport::isSupported())
 		{
-			$options = [
-				'http' => [
-					'follow_location' => true,
-					'timeout'         => 10,
-				],
-				'ssl'  => [
-					'verify_peer' => false,
-				],
-			];
+			$adapters[] = 'Curl';
 		}
 
-		$downloader->setAdapterOptions($options);
+		if (StreamTransport::isSupported())
+		{
+			$adapters[] = 'Stream';
+		}
 
-		$result = $downloader->getFromURL($checkURL);
+		if (empty($adapters))
+		{
+			return $ret;
+		}
 
-		if ($result === 'AKEEBA BACKUP WEB ACCESS CHECK')
+		$downloader = HttpFactory::getHttp(new Registry($options), $adapters);
+
+		if ($downloader === false)
+		{
+			return $ret;
+		}
+
+		$response = $downloader->get($checkURL);
+
+		if ($response->body === 'AKEEBA BACKUP WEB ACCESS CHECK')
 		{
 			$ret['readFile'] = true;
 		}
 
 		// Can I list the directory contents?
 		$folderURL     = $baseURL . '/' . $webPath . '/';
-		$folderListing = $downloader->getFromURL($folderURL);
+		$folderListing = $downloader->get($folderURL)->body;
 
 		@unlink($checkFilePath);
 
-		if (($folderListing !== false) && (strpos($folderListing, basename($checkFile, '.txt')) !== false))
+		if (!is_null($folderListing) && (strpos($folderListing, basename($checkFile, '.txt')) !== false))
 		{
 			$ret['listFolder'] = true;
 		}
@@ -894,8 +904,7 @@ class ControlPanel extends Model
 		// Finally, remove the key file
 		if (!@unlink($filename))
 		{
-			JLoader::import('joomla.filesystem.file');
-			JFile::delete($filename);
+			File::delete($filename);
 		}
 	}
 
@@ -948,8 +957,7 @@ class ControlPanel extends Model
 		$filecontents = "<?php defined('AKEEBAENGINE') or die(); define('AKEEBA_SERVERKEY', '$key'); ?>";
 		$filename     = $this->container->backEndPath . '/BackupEngine/serverkey.php';
 
-		JLoader::import('joomla.filesystem.file');
-		$result = JFile::write($filename, $filecontents);
+		$result = File::write($filename, $filecontents);
 
 		if (!$result)
 		{

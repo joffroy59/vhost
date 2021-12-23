@@ -1,38 +1,67 @@
 <?php
 /**
- * @package Helix Ultimate Framework
- * @author JoomShaper https://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2018 JoomShaper
+ * @package Helix_Ultimate_Framework
+ * @author JoomShaper <support@joomshaper.com>
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or Later
-*/
+ */
 
-defined ('_JEXEC') or die ();
+defined('_JEXEC') or die();
 
-jimport('joomla.form.formfield');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Form\FormField;
+use Joomla\CMS\HTML\HTMLHelper;
 
-class JFormFieldHelixdetails extends JFormField
+/**
+ * Form field for helix details.
+ *
+ * @since   	1.0.0
+ * @deprecated	3.0		Use the Same Class from the src/fields instead.
+ */
+class JFormFieldHelixdetails extends FormField
 {
-    protected $type = 'Helixdetails';
+	/**
+	 * Field type
+	 *
+	 * @var		string	$type
+	 * @since	1.0.0
+	 */
+	protected $type = 'Helixdetails';
 
-    protected function getInput()
-    {
-        \JHtml::_('jquery.framework');
-        $doc = \JFactory::getDocument();
-		$plg_path = \JURI::root(true) . '/plugins/system/helixultimate';
+	/**
+	 * Override getInput function form FormField
+	 *
+	 * @return	string	Field HTML string
+	 * @since	1.0.0
+	 */
+	protected function getInput()
+	{
+		HTMLHelper::_('jquery.framework');
+		$doc = Factory::getDocument();
+
+		$plg_path = Uri::root(true) . '/plugins/system/helixultimate';
 		$doc->addScript($plg_path . '/assets/js/admin/details.js');
 		$doc->addStyleSheet($plg_path . '/assets/css/admin/details.css');
 
-        $app = \JFactory::getApplication();
-        $id  = (int) $app->input->get('id', 0,'INT');
+		$app = Factory::getApplication();
+		$id  = $app->input->get('id', 0, 'INT');
 
-        $url = \JRoute::_('index.php?option=com_ajax&helix=ultimate&id=' . $id);
-        $html = '<a href="'. $url .'" class="helix-ultimate-options"><i class="icon-options"></i> Template Options</a>';
+		$url = Route::_('index.php?option=com_ajax&helix=ultimate&id=' . $id);
+		$html = '<a href="' . $url . '" class="hu-options"><i class="icon-options"></i> Template Options</a>';
 
-        return $html;
-    }
+		return $html;
+	}
 
-    public function getLabel()
-    {
-        return false;
-    }
+	/**
+	 * Override the getLabel method from FormField class.
+	 *
+	 * @return 	boolean
+	 * @since	1.0.0
+	 */
+	public function getLabel()
+	{
+		return false;
+	}
 }

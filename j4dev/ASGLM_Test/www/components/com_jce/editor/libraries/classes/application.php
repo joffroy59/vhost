@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -10,7 +10,7 @@
  */
 defined('JPATH_PLATFORM') or die;
 
-require_once(JPATH_ADMINISTRATOR . '/components/com_jce/includes/base.php');
+require_once JPATH_ADMINISTRATOR . '/components/com_jce/includes/base.php';
 
 /**
  * JCE class.
@@ -77,44 +77,25 @@ class WFApplication extends JObject
 
     protected function getComponent($id = null, $option = null)
     {
-        $component = JTable::getInstance('extension');
+        if ($id) {
+            $components = JComponentHelper::getComponents();
 
-        // find component by option
-        if (empty($id) && $option) {
-            $id = $component->find(array('type' => 'component', 'element' => $option));
+            foreach ($components as $option => $component) {
+                if ($id == $component->id) {
+                    return $component;
+                }
+            }
         }
 
-        // load component
-        $component->load($id);
-
-        return $component;
+        return JComponentHelper::getComponent($option);
     }
 
     public function getContext()
     {
-        /*if ($this->profile) {
-        // get token
-        $token = JSession::getFormToken();
-        // create context hash
-        $this->context = md5($token . serialize($this->profile));
-        // assign profile id to user session
-        $app->setUserState($this->context, $this->profile->id);
-        }*/
-
         $option = JFactory::getApplication()->input->getCmd('option');
-        $extension = $this->getComponent(null, $option);
+        $component = JComponentHelper::getComponent($option, true);
 
-        $extension_id = 0;
-
-        if (isset($extension->extension_id)) {
-            return $extension->extension_id;
-        }
-
-        if (isset($extension->id)) {
-            return $extension->id;
-        }
-
-        return 0;
+        return $component->id;
     }
 
     private function getProfileVars()
@@ -123,46 +104,51 @@ class WFApplication extends JObject
         $user = JFactory::getUser();
         $option = $this->getComponentOption();
 
+        $settings = array(
+            'option' => $option,
+            'area' => 2,
+            'device' => 'desktop',
+            'groups' => array(),
+        );
+
         // find the component if this is called from within the JCE component
         if ($option == 'com_jce') {
             $context = $app->input->getInt('context');
 
             if ($context) {
-                $component = $this->getComponent($context);
-                $option = $component->element;
+
+                if ($context === 'mediafield') {
+                    $settings['option'] = 'mediafield';
+                } else {
+                    $component = $this->getComponent($context);
+                    $settings['option'] = $component->option;
+                }
+            }
+
+            $profile_id = $app->input->getInt('profile_id');
+
+            if ($profile_id) {
+                $settings['profile_id'] = $profile_id;
             }
         }
 
         // get the Joomla! area, default to "site"
-        $area = $app->getClientId() === 0 ? 1 : 2;
-
-        if (!class_exists('Wf_Mobile_Detect')) {
-            // load mobile detect class
-            require_once __DIR__ . '/mobile.php';
-        }
+        $settings['area'] = $app->getClientId() === 0 ? 1 : 2;
 
         $mobile = new Wf_Mobile_Detect();
 
-        // desktop - default
-        $device = 'desktop';
-
         // phone
         if ($mobile->isMobile()) {
-            $device = 'phone';
+            $settings['device'] = 'phone';
         }
 
         if ($mobile->isTablet()) {
-            $device = 'tablet';
+            $settings['device'] = 'tablet';
         }
 
-        $groups = $user->getAuthorisedGroups();
+        $settings['groups'] = $user->getAuthorisedGroups();
 
-        return array(
-            'option' => $option,
-            'area' => $area,
-            'device' => $device,
-            'groups' => $groups
-        );
+        return $settings;
     }
 
     private function isCorePlugin($plugin)
@@ -182,6 +168,14 @@ class WFApplication extends JObject
 
         // get the profile variables for the current context
         $options = $this->getProfileVars();
+
+        // add plugin to options array
+        $options['plugin'] = $plugin;
+
+        // assign profile_id to simple variable
+        if (isset($options['profile_id'])) {
+            $id = (int) $options['profile_id'];
+        }
 
         // create a signature to store
         $signature = md5(serialize($options));
@@ -337,7 +331,7 @@ class WFApplication extends JObject
         if ($plugin) {
             // optional caller, eg: Link
             $caller = '';
-            
+
             // get name and caller from plugin name
             if (strpos($plugin, '.') !== false) {
                 list($plugin, $caller) = explode('.', $plugin);
@@ -426,23 +420,23 @@ class WFApplication extends JObject
         $value = $params->get($key);
 
         // key not present in params or was empty string or empty array (JRegistry returns null), use fallback value
-        if (self::isEmptyValue($value)) {            
+        if (self::isEmptyValue($value)) {
             // set default as empty string
             $value = '';
-            
+
             // key does not exist (parameter was not set) - use fallback
             if ($params->exists($key) === false) {
                 $value = $fallback;
 
                 // if fallback is empty, revert to system default if it is non-empty
-                if ($fallback === '' && $default !== '') {
+                if ($fallback == '' && $default != '') {
                     $value = $default;
 
                     // reset $default to prevent clearing
                     $default = '';
                 }
-            // parameter is set, but is empty, but fallback is not (inherited values)
-            } else if ($fallback !== '') {
+                // parameter is set, but is empty, but fallback is not (inherited values)
+            } else if ($fallback != '') {
                 $value = $fallback;
             }
         }

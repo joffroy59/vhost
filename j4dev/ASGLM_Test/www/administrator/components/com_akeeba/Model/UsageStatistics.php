@@ -1,20 +1,19 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use AkeebaUsagestats;
-use FOF30\Database\Installer;
-use FOF30\Model\Model;
-use JCrypt;
-use JUri;
+use FOF40\Encrypt\Randval;
+use FOF40\Model\Model;
+use Joomla\CMS\Uri\Uri;
 
 /**
  * Usage statistics collection model. Implements the anonymous collection of PHP, MySQL and Joomla! version information
@@ -37,12 +36,12 @@ class UsageStatistics extends Model
 
 		// No id or the saved URL is not the same as the current one (ie site restored to a new url)?
 		// Create a new, random site ID and save it to the database
-		if (empty($siteId) || (md5(JUri::base()) != $siteUrl))
+		if (empty($siteId) || (md5(Uri::base()) != $siteUrl))
 		{
-			$siteUrl = md5(JUri::base());
+			$siteUrl = md5(Uri::base());
 			$this->setCommonVariable('stats_siteurl', $siteUrl);
 
-			$randomData = JCrypt::genRandomBytes(120);
+			$randomData = random_bytes(120);
 			$siteId     = sha1($randomData);
 
 			$this->setCommonVariable('stats_siteid', $siteId);
@@ -106,7 +105,7 @@ class UsageStatistics extends Model
 			define('AKEEBA_DATE', date('Y-m-d'));
 		}
 
-		$db    = $container->db;
+		$db = $container->db;
 
 		try
 		{
@@ -122,14 +121,14 @@ class UsageStatistics extends Model
 		// I can't use list since dev release don't have any dots
 		$at_parts    = explode('.', AKEEBA_VERSION);
 		$at_major    = $at_parts[0];
-		$at_minor    = isset($at_parts[1]) ? $at_parts[1] : '';
-		$at_revision = isset($at_parts[2]) ? $at_parts[2] : '';
+		$at_minor    = $at_parts[1] ?? '';
+		$at_revision = $at_parts[2] ?? '';
 
-		list($php_major, $php_minor, $php_revision) = explode('.', phpversion());
+		[$php_major, $php_minor, $php_revision] = explode('.', phpversion());
 		$php_qualifier = strpos($php_revision, '~') !== false ? substr($php_revision, strpos($php_revision, '~')) : '';
 
-		list($cms_major, $cms_minor, $cms_revision) = explode('.', JVERSION);
-		list($db_major, $db_minor, $db_revision) = explode('.', $db->getVersion());
+		[$cms_major, $cms_minor, $cms_revision] = explode('.', JVERSION);
+		[$db_major, $db_minor, $db_revision] = explode('.', $db->getVersion());
 		$db_qualifier = strpos($db_revision, '~') !== false ? substr($db_revision, strpos($db_revision, '~')) : '';
 
 		$db_driver = get_class($db);
@@ -182,9 +181,9 @@ class UsageStatistics extends Model
 	{
 		$db    = $this->container->db;
 		$query = $db->getQuery(true)
-					->select($db->qn('value'))
-					->from($db->qn('#__akeeba_common'))
-					->where($db->qn('key') . ' = ' . $db->q($key));
+			->select($db->qn('value'))
+			->from($db->qn('#__akeeba_common'))
+			->where($db->qn('key') . ' = ' . $db->q($key));
 
 		try
 		{
@@ -211,9 +210,9 @@ class UsageStatistics extends Model
 	{
 		$db    = $this->container->db;
 		$query = $db->getQuery(true)
-					->select('COUNT(*)')
-					->from($db->qn('#__akeeba_common'))
-					->where($db->qn('key') . ' = ' . $db->q($key));
+			->select('COUNT(*)')
+			->from($db->qn('#__akeeba_common'))
+			->where($db->qn('key') . ' = ' . $db->q($key));
 
 		try
 		{
@@ -229,22 +228,20 @@ class UsageStatistics extends Model
 		{
 			if (!$count)
 			{
-				$insertObject = (object)array(
+				$insertObject = (object) [
 					'key'   => $key,
 					'value' => $value,
-				);
+				];
 				$db->insertObject('#__akeeba_common', $insertObject);
 			}
 			else
 			{
-				$keyName = version_compare(JVERSION, '1.7.0', 'lt') ? $db->qn('key') : 'key';
+				$insertObject = (object) [
+					'key'   => $key,
+					'value' => $value,
+				];
 
-				$insertObject = (object)array(
-					$keyName => $key,
-					'value'  => $value,
-				);
-
-				$db->updateObject('#__akeeba_common', $insertObject, $keyName);
+				$db->updateObject('#__akeeba_common', $insertObject, 'key');
 			}
 		}
 		catch (\Exception $e)

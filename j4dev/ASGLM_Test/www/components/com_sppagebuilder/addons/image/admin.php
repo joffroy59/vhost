@@ -1,47 +1,50 @@
 <?php
+
 /**
-* @package SP Page Builder
-* @author JoomShaper http://www.joomshaper.com
-* @copyright Copyright (c) 2010 - 2019 JoomShaper
-* @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
-*/
+ * @package SP Page Builder
+ * @author JoomShaper http://www.joomshaper.com
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
+ * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
+ */
 //no direct accees
 defined ('_JEXEC') or die ('Restricted access');
+
+use Joomla\CMS\Language\Text;
 
 SpAddonsConfig::addonConfig(
 	array(
 		'type'=>'content',
 		'addon_name'=>'sp_image',
-		'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE'),
-		'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_DESC'),
+		'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE'),
+		'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_DESC'),
 		'category'=>'Media',
 		'attr'=>array(
 			'general' => array(
 				'admin_label'=>array(
 					'type'=>'text',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_ADMIN_LABEL'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_ADMIN_LABEL_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_ADMIN_LABEL'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_ADMIN_LABEL_DESC'),
 					'std'=> ''
 				),
 
 				'title'=>array(
 					'type'=>'text',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_DESC'),
 					'std'=>  ''
 				),
 
 				'heading_selector'=>array(
 					'type'=>'select',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_HEADINGS'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_HEADINGS'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_DESC'),
 					'values'=>array(
-						'h1'=>JText::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H1'),
-						'h2'=>JText::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H2'),
-						'h3'=>JText::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H3'),
-						'h4'=>JText::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H4'),
-						'h5'=>JText::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H5'),
-						'h6'=>JText::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H6'),
+						'h1'=>Text::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H1'),
+						'h2'=>Text::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H2'),
+						'h3'=>Text::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H3'),
+						'h4'=>Text::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H4'),
+						'h5'=>Text::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H5'),
+						'h6'=>Text::_('COM_SPPAGEBUILDER_ADDON_HEADINGS_H6'),
 					),
 					'std'=>'h3',
 					'depends'=>array(array('title', '!=', '')),
@@ -49,8 +52,8 @@ SpAddonsConfig::addonConfig(
 
 				'title_font_family'=>array(
 					'type'=>'fonts',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_FAMILY'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_FAMILY_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_FAMILY'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_FAMILY_DESC'),
 					'depends'=>array(array('title', '!=', '')),
 					'selector'=> array(
 						'type'=>'font',
@@ -61,8 +64,8 @@ SpAddonsConfig::addonConfig(
 
 				'title_fontsize'=>array(
 					'type'=>'slider',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_SIZE'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_SIZE_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_SIZE'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_SIZE_DESC'),
 					'std'=>'',
 					'depends'=>array(array('title', '!=', '')),
 					'responsive' => true,
@@ -71,7 +74,7 @@ SpAddonsConfig::addonConfig(
 
 				'title_lineheight'=>array(
 					'type'=>'slider',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_LINE_HEIGHT'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_LINE_HEIGHT'),
 					'std'=>'',
 					'depends'=>array(array('title', '!=', '')),
 					'responsive' => true,
@@ -80,13 +83,13 @@ SpAddonsConfig::addonConfig(
 
 				'title_font_style'=>array(
 					'type'=>'fontstyle',
-					'title'=> JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_STYLE'),
+					'title'=> Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_FONT_STYLE'),
 					'depends'=>array(array('title', '!=', '')),
 				),
 
 				'title_letterspace'=>array(
 					'type'=>'select',
-					'title'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_LETTER_SPACING'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_LETTER_SPACING'),
 					'values'=>array(
 						'0'=> 'Default',
 						'1px'=> '1px',
@@ -106,15 +109,15 @@ SpAddonsConfig::addonConfig(
 
 				'title_text_color'=>array(
 					'type'=>'color',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_TEXT_COLOR'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_TEXT_COLOR_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_TEXT_COLOR'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_TEXT_COLOR_DESC'),
 					'depends'=>array(array('title', '!=', '')),
 				),
 
 				'title_margin_top'=>array(
 					'type'=>'slider',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_MARGIN_TOP'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_MARGIN_TOP_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_MARGIN_TOP'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_MARGIN_TOP_DESC'),
 					'placeholder'=>'10',
 					'depends'=>array(array('title', '!=', '')),
 					'responsive' => true,
@@ -123,8 +126,8 @@ SpAddonsConfig::addonConfig(
 
 				'title_margin_bottom'=>array(
 					'type'=>'slider',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_MARGIN_BOTTOM'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_MARGIN_BOTTOM_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_MARGIN_BOTTOM'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_MARGIN_BOTTOM_DESC'),
 					'placeholder'=>'10',
 					'depends'=>array(array('title', '!=', '')),
 					'responsive' => true,
@@ -133,7 +136,7 @@ SpAddonsConfig::addonConfig(
 
 				'title_padding'=>array(
 					'type'=>'padding',
-					'title'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_PADDING'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_PADDING'),
 					'placeholder'=>'10',
 					'depends'=>array(array('title', '!=', '')),
 					'responsive' => true,
@@ -142,7 +145,7 @@ SpAddonsConfig::addonConfig(
 
 				'title_position'=>array(
 					'type'=>'select',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_TITLE_POSITION'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_TITLE_POSITION'),
 					'values'=>array(
 						'top'=> 'Top',
 						'bottom'=> 'Bottom',
@@ -153,23 +156,41 @@ SpAddonsConfig::addonConfig(
 
 				'image'=>array(
 					'type'=>'media',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_SELECT'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_SELECT_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_SELECT'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_SELECT_DESC'),
 					'show_input' => true,
-					'std'=>'https://sppagebuilder.com/addons/image/image1.jpg'
+					'std'=> array(
+						'src' => 'https://sppagebuilder.com/addons/image/image1.jpg',
+						'height' => '',
+						'width' => '',
+					)
+				),
+				'image_width'=>array(
+					'type'=>'slider',
+					'title'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_WIDTH'),
+					'max'=> 2000,
+					'min'=> 0,
+					'responsive' => true,
+				),
+				'image_height'=>array(
+					'type'=>'slider',
+					'title'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_HEIGHT'),
+					'max'=> 2000,
+					'min'=> 0,
+					'responsive' => true,
 				),
 
 				'border_radius'=>array(
 					'type'=>'slider',
-					'title'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_BORDER_RADIUS'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_BORDER_RADIUS'),
 					'std'=>0,
 					'max'=>1200
 				),
 
 				'alt_text'=>array(
 					'type'=>'text',
-					'title'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_ALT_TEXT'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_ALT_TEXT_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_ALT_TEXT'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_ALT_TEXT_DESC'),
 					'std'=>'Image',
 					'depends'=>array(
 						array('image', '!=', ''),
@@ -178,12 +199,12 @@ SpAddonsConfig::addonConfig(
 
 				'position'=>array(
 					'type'=>'select',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_ALIGNMENT'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_ALIGNMENT_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_ALIGNMENT'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_ALIGNMENT_DESC'),
 					'values'=>array(
-						'sppb-text-left'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_LEFT'),
-						'sppb-text-center'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_CENTER'),
-						'sppb-text-right'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_RIGHT'),
+						'sppb-text-left'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_LEFT'),
+						'sppb-text-center'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_CENTER'),
+						'sppb-text-right'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_RIGHT'),
 					),
 					'std'=>'sppb-text-center',
 					'depends'=>array(
@@ -193,8 +214,8 @@ SpAddonsConfig::addonConfig(
 
 				'open_lightbox'=>array(
 					'type'=>'checkbox',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_OPEN_LIGHTBOX'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_OPEN_LIGHTBOX_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_OPEN_LIGHTBOX'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_OPEN_LIGHTBOX_DESC'),
 					'std'=>0,
 					'depends'=>array(
 						array('image', '!=', ''),
@@ -203,8 +224,8 @@ SpAddonsConfig::addonConfig(
 
 				'overlay_color'=>array(
 					'type'=>'color',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_OVERLAY'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_IMAGE_OVERLAY_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_OVERLAY'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_IMAGE_OVERLAY_DESC'),
 					'std'=>'rgba(119, 219, 31, .5)',
 					'depends'=>array(
 						array('image', '!=', ''),
@@ -216,8 +237,8 @@ SpAddonsConfig::addonConfig(
 					'type'=>'media',
 					'format'=>'attachment',
 					'hide_preview'=>true,
-					'title'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_LINK'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_GLOBAL_LINK_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_LINK'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_GLOBAL_LINK_DESC'),
 					'std'=>'',
 					'depends'=>array(
 						array('image', '!=', ''),
@@ -227,11 +248,11 @@ SpAddonsConfig::addonConfig(
 
 				'target'=>array(
 					'type'=>'select',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_DESC'),
 					'values'=>array(
-						''=>JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_SAME_WINDOW'),
-						'_blank'=>JText::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_NEW_WINDOW'),
+						''=>Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_SAME_WINDOW'),
+						'_blank'=>Text::_('COM_SPPAGEBUILDER_ADDON_GLOBAL_TARGET_NEW_WINDOW'),
 					),
 
 					'depends'=>array(
@@ -243,8 +264,8 @@ SpAddonsConfig::addonConfig(
 
 				'class'=>array(
 					'type'=>'text',
-					'title'=>JText::_('COM_SPPAGEBUILDER_ADDON_CLASS'),
-					'desc'=>JText::_('COM_SPPAGEBUILDER_ADDON_CLASS_DESC'),
+					'title'=>Text::_('COM_SPPAGEBUILDER_ADDON_CLASS'),
+					'desc'=>Text::_('COM_SPPAGEBUILDER_ADDON_CLASS_DESC'),
 					'std'=>''
 				),
 

@@ -3,12 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Core;
 
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Base\Part;
 use Akeeba\Engine\Factory;
@@ -95,15 +96,6 @@ class Kettenrad extends Part
 	private $warnings_issued = false;
 
 	/**
-	 * Are we running under PHP 7 or later?
-	 *
-	 * Used in tikc() to decide whether to catch Exception or Throwable in the try-catch.
-	 *
-	 * @var bool
-	 */
-	private $isPHPSeven = false;
-
-	/**
 	 * Kettenrad constructor.
 	 *
 	 * Overrides the Part constructor to initialize Kettenrad-specific properties.
@@ -113,9 +105,6 @@ class Kettenrad extends Part
 	public function __construct()
 	{
 		parent::__construct();
-
-		// Is this PHP 7.x or later?
-		$this->isPHPSeven = version_compare(PHP_VERSION, '7.0.0', 'ge');
 
 		// Register the error handler
 		if (!static::$registeredErrorHandler)
@@ -177,31 +166,18 @@ class Kettenrad extends Part
 	 */
 	public function tick($nesting = 0)
 	{
-		if ($this->isPHPSeven)
+		$ret = null;
+		$e   = null;
+
+		// PHP 7.x -- catch any unhandled Throwable, including PHP fatal errors
+		try
 		{
-			// PHP 7.x -- catch any unhandled Throwable, including PHP fatal errors
-			try
-			{
-				$ret = parent::tick($nesting);
-			}
-			catch (Throwable $e)
-			{
-				$this->setState(self::STATE_ERROR);
-				$this->lastException = $e;
-			}
+			$ret = parent::tick($nesting);
 		}
-		else
+		catch (Throwable $e)
 		{
-			// PHP 5.x -- catch unhandled exceptions but not PHP fatal errors
-			try
-			{
-				$ret = parent::tick($nesting);
-			}
-			catch (Exception $e)
-			{
-				$this->setState(self::STATE_ERROR);
-				$this->lastException = $e;
-			}
+			$this->setState(self::STATE_ERROR);
+			$this->lastException = $e;
 		}
 
 		// If an error occurred we don't have a return table. If that's the case create one and do log our errors.
@@ -241,7 +217,7 @@ class Kettenrad extends Part
 		$array['Warnings'] = Factory::getLog()->getWarnings();
 
 		// Did we have warnings?
-		if (count($array['Warnings']))
+		if (is_array($array['Warnings']) || $array['Warnings'] instanceof \Countable ? count($array['Warnings']) : 0)
 		{
 			$this->warnings_issued = true;
 		}
@@ -252,7 +228,7 @@ class Kettenrad extends Part
 		// Add the archive name
 		$statistics       = Factory::getStatistics();
 		$record           = $statistics->getRecord();
-		$array['Archive'] = isset($record['archivename']) ? $record['archivename'] : '';
+		$array['Archive'] = $record['archivename'] ?? '';
 
 		// Translate HasRun to what the rest of the suite expects
 		$array['HasRun'] = ($this->getState() == self::STATE_FINISHED) ? 1 : 0;
@@ -378,6 +354,7 @@ class Kettenrad extends Part
 	 */
 	protected function _run()
 	{
+		$result = null;
 		$logTag = $this->getLogTag();
 		$logger = Factory::getLog();
 		$logger->open($logTag);
@@ -432,6 +409,9 @@ class Kettenrad extends Part
 				set_time_limit(0);
 			}
 		}
+
+		// Update statistics, marking the backup as currently processing a backup step.
+		Factory::getStatistics()->updateInStep(true);
 
 		// Loop until time's up, we're done or an error occurred, or BREAKFLAG is set
 		$this->array_cache = null;
@@ -645,6 +625,7 @@ class Kettenrad extends Part
 				$this->domain
 			));
 		}
+		/** @noinspection PhpStatementHasEmptyBodyInspection */
 		elseif (!is_object($object))
 		{
 			// This is an expected case.
@@ -669,6 +650,9 @@ class Kettenrad extends Part
 
 		// Log step end
 		$logger->debug('====== Finished Step number ' . $stepCounter . ' ======');
+
+		// Update statistics, marking the backup as having just finished processing a backup step.
+		Factory::getStatistics()->updateInStep(false);
 
 		if (!$registry->get('akeeba.tuning.nobreak.domains', 0))
 		{

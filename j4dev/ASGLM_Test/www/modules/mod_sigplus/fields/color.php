@@ -41,18 +41,14 @@ class JFormFieldColor extends JFormField {
 
 	public function getInput() {
 		$class = ( isset($this->element['class']) ? (string)$this->element['class'] : 'inputbox' );
-		$ctrlid = str_replace(array('[',']'), '', $this->name);
 
-		// add script declaration to header and control to page
-		if (file_exists(JPATH_ROOT.DIRECTORY_SEPARATOR.'plugins'.DIRECTORY_SEPARATOR.'content'.DIRECTORY_SEPARATOR.'sigplus'.DIRECTORY_SEPARATOR.'fields'.DIRECTORY_SEPARATOR.'jscolor'.DIRECTORY_SEPARATOR.'jscolor.js')) {
-			// sigplus plug-in is installed, use jscolor.js found in plug-in folder
-			$document = JFactory::getDocument();
-			$document->addScript(JURI::root(true).'/plugins/content/sigplus/fields/jscolor/jscolor.js');
-			return '<input type="text" class="'. $class .' color" name="'. $this->name .'" id="'. $ctrlid .'" value="'. $this->value .'" />';
-		} else {
-			// sigplus plug-in is not installed, revert to a regular text box
-			return '<input type="text" class="'. $class .'" name="'. $this->name .'" id="'. $ctrlid .'" value="'. $this->value .'" />';
-		}
+		// add script declaration to header
+		$document = JFactory::getDocument();
+		$document->addScript(JURI::root(true).'/plugins/content/sigplus/fields/jscolor/jscolor.js');
+
+		// add control to page
+		$ctrlid = str_replace(array('[',']'), '', $this->name);
+		return '<input type="text" class="'. $class .' color" name="'. $this->name .'" id="'. $ctrlid .'" value="'. $this->value .'" />';
 	}
 }
 

@@ -3,18 +3,19 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Archiver;
 
-
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Base\Exceptions\WarningException;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
+use Akeeba\Engine\Util\FileCloseAware;
 use Akeeba\Engine\Util\FileSystem;
 use Exception;
 use RuntimeException;
@@ -24,14 +25,19 @@ use RuntimeException;
  */
 abstract class Base
 {
-	/** @var Filesystem Filesystem utilities object */
-	protected $fsUtils = null;
+	use FileCloseAware;
 
 	/** @var   string  The archive's comment. It's currently used ONLY in the ZIP file format */
 	protected $_comment;
 
+	/** @var Filesystem Filesystem utilities object */
+	protected $fsUtils = null;
+
 	/** @var   resource  JPA transformation source handle */
 	private $_xform_fp;
+
+	/** @var   int  The total size of the source JPA file */
+	private $totalSourceJPASize = 0;
 
 	/**
 	 * Public constructor
@@ -58,29 +64,6 @@ abstract class Base
 	}
 
 	/**
-	 * Notifies the engine on the backup comment and converts it to plain text for
-	 * inclusion in the archive file, if applicable.
-	 *
-	 * @param   string  $comment  The archive's comment
-	 *
-	 * @return  void
-	 */
-	public function setComment($comment)
-	{
-		// First, sanitize the comment in a text-only format
-		$comment        = str_replace("\n", " ", $comment); // Replace newlines with spaces
-		$comment        = str_replace("<br>", "\n", $comment); // Replace HTML4 <br> with single newlines
-		$comment        = str_replace("<br/>", "\n", $comment); // Replace HTML4 <br> with single newlines
-		$comment        = str_replace("<br />", "\n", $comment); // Replace HTML <br /> with single newlines
-		$comment        = str_replace("</p>", "\n\n", $comment); // Replace paragraph endings with double newlines
-		$comment        = str_replace("<b>", "*", $comment); // Replace bold with star notation
-		$comment        = str_replace("</b>", "*", $comment); // Replace bold with star notation
-		$comment        = str_replace("<i>", "_", $comment); // Replace italics with underline notation
-		$comment        = str_replace("</i>", "_", $comment); // Replace italics with underline notation
-		$this->_comment = strip_tags($comment, '');
-	}
-
-	/**
 	 * Adds a single file in the archive
 	 *
 	 * @param   string  $file        The absolute path to the file to add
@@ -99,39 +82,29 @@ abstract class Base
 	}
 
 	/**
-	 * Adds a file to the archive, given the stored name and its contents
+	 * Adds a list of files into the archive, removing $removePath from the
+	 * file names and adding $addPath to them.
 	 *
-	 * @param   string  $fileName        The base file name
-	 * @param   string  $addPath         The relative path to prepend to file name
-	 * @param   string  $virtualContent  The contents of the file to be archived
+	 * @param   array   $fileList    A simple string array of filepaths to include
+	 * @param   string  $removePath  Paths to remove from the filepaths
+	 * @param   string  $addPath     Paths to add in front of the filepaths
 	 *
 	 * @return  void
+	 *
+	 * @throws Exception
 	 */
-	public final function addFileVirtual($fileName, $addPath, &$virtualContent)
+	public final function addFileList(&$fileList, $removePath = '', $addPath = '')
 	{
-		$storedName  = $this->addRemovePaths($fileName, '', $addPath);
-		$mb_encoding = '8bit';
-
-		if (function_exists('mb_internal_encoding'))
+		if (!is_array($fileList))
 		{
-			$mb_encoding = mb_internal_encoding();
-			mb_internal_encoding('ISO-8859-1');
+			Factory::getLog()->warning('addFileList called without a file list array');
+
+			return;
 		}
 
-		try
+		foreach ($fileList as $file)
 		{
-			$this->_addFile(true, $virtualContent, $storedName);
-		}
-		catch (WarningException $e)
-		{
-			Factory::getLog()->warning($e->getMessage());
-		}
-		finally
-		{
-			if (function_exists('mb_internal_encoding'))
-			{
-				mb_internal_encoding($mb_encoding);
-			}
+			$this->addFile($file, $removePath, $addPath);
 		}
 	}
 
@@ -174,29 +147,39 @@ abstract class Base
 	}
 
 	/**
-	 * Adds a list of files into the archive, removing $removePath from the
-	 * file names and adding $addPath to them.
+	 * Adds a file to the archive, given the stored name and its contents
 	 *
-	 * @param   array   $fileList    A simple string array of filepaths to include
-	 * @param   string  $removePath  Paths to remove from the filepaths
-	 * @param   string  $addPath     Paths to add in front of the filepaths
+	 * @param   string  $fileName        The base file name
+	 * @param   string  $addPath         The relative path to prepend to file name
+	 * @param   string  $virtualContent  The contents of the file to be archived
 	 *
 	 * @return  void
-	 *
-	 * @throws Exception
 	 */
-	public final function addFileList(&$fileList, $removePath = '', $addPath = '')
+	public final function addFileVirtual($fileName, $addPath, &$virtualContent)
 	{
-		if (!is_array($fileList))
-		{
-			Factory::getLog()->warning('addFileList called without a file list array');
+		$storedName  = $this->addRemovePaths($fileName, '', $addPath);
+		$mb_encoding = '8bit';
 
-			return;
+		if (function_exists('mb_internal_encoding'))
+		{
+			$mb_encoding = mb_internal_encoding();
+			mb_internal_encoding('ISO-8859-1');
 		}
 
-		foreach ($fileList as $file)
+		try
 		{
-			$this->addFile($file, $removePath, $addPath);
+			$this->_addFile(true, $virtualContent, $storedName);
+		}
+		catch (WarningException $e)
+		{
+			Factory::getLog()->warning($e->getMessage());
+		}
+		finally
+		{
+			if (function_exists('mb_internal_encoding'))
+			{
+				mb_internal_encoding($mb_encoding);
+			}
 		}
 	}
 
@@ -219,6 +202,22 @@ abstract class Base
 	}
 
 	/**
+	 * Makes whatever finalization is needed for the archive to be considered
+	 * complete and useful (or, generally, clean up)
+	 *
+	 * @return  void
+	 */
+	abstract public function finalize();
+
+	/**
+	 * Returns a string with the extension (including the dot) of the files produced
+	 * by this class.
+	 *
+	 * @return  string
+	 */
+	abstract public function getExtension();
+
+	/**
 	 * Initialises the archiver class, creating the archive from an existent
 	 * installer's JPA archive. MUST BE OVERRIDEN BY CHILDREN CLASSES.
 	 *
@@ -230,12 +229,27 @@ abstract class Base
 	abstract public function initialize($targetArchivePath, $options = []);
 
 	/**
-	 * Makes whatever finalization is needed for the archive to be considered
-	 * complete and useful (or, generally, clean up)
+	 * Notifies the engine on the backup comment and converts it to plain text for
+	 * inclusion in the archive file, if applicable.
+	 *
+	 * @param   string  $comment  The archive's comment
 	 *
 	 * @return  void
 	 */
-	abstract public function finalize();
+	public function setComment($comment)
+	{
+		// First, sanitize the comment in a text-only format
+		$comment        = str_replace("\n", " ", $comment); // Replace newlines with spaces
+		$comment        = str_replace("<br>", "\n", $comment); // Replace HTML4 <br> with single newlines
+		$comment        = str_replace("<br/>", "\n", $comment); // Replace HTML4 <br> with single newlines
+		$comment        = str_replace("<br />", "\n", $comment); // Replace HTML <br /> with single newlines
+		$comment        = str_replace("</p>", "\n\n", $comment); // Replace paragraph endings with double newlines
+		$comment        = str_replace("<b>", "*", $comment); // Replace bold with star notation
+		$comment        = str_replace("</b>", "*", $comment); // Replace bold with star notation
+		$comment        = str_replace("<i>", "_", $comment); // Replace italics with underline notation
+		$comment        = str_replace("</i>", "_", $comment); // Replace italics with underline notation
+		$this->_comment = strip_tags($comment, '');
+	}
 
 	/**
 	 * Transforms a JPA archive (containing an installer) to the native archive format
@@ -251,7 +265,7 @@ abstract class Base
 	 */
 	public function transformJPA($index, $offset)
 	{
-		static $totalSize = 0;
+		$xform_source = null;
 
 		// Do we have to open the file?
 		if (!$this->_xform_fp)
@@ -289,8 +303,8 @@ abstract class Base
 
 			if (array_key_exists($embedded_installer, $installerDescriptors))
 			{
-				$packages  = $installerDescriptors[$embedded_installer]['package'];
-				$langPacks = $installerDescriptors[$embedded_installer]['language'];
+				$packages  = $installerDescriptors[$embedded_installer]['package'] ?? '';
+				$langPacks = $installerDescriptors[$embedded_installer]['language'] ?? '';
 
 				if (empty($packages))
 				{
@@ -308,15 +322,15 @@ abstract class Base
 					return $retArray;
 				}
 
-				$packages   = explode(',', $packages);
-				$langPacks  = explode(',', $langPacks);
-				$totalSize  = 0;
-				$pathPrefix = Platform::getInstance()->get_installer_images_path() . '/';
+				$packages                 = explode(',', $packages);
+				$langPacks                = explode(',', $langPacks);
+				$this->totalSourceJPASize = 0;
+				$pathPrefix               = Platform::getInstance()->get_installer_images_path() . '/';
 
 				foreach ($packages as $package)
 				{
-					$filePath  = $pathPrefix . $package;
-					$totalSize += (int) @filesize($filePath);
+					$filePath                 = $pathPrefix . $package;
+					$this->totalSourceJPASize += (int) @filesize($filePath);
 				}
 
 				foreach ($langPacks as $langPack)
@@ -328,8 +342,8 @@ abstract class Base
 						continue;
 					}
 
-					$packages[] = $langPack;
-					$totalSize  += (int) @filesize($filePath);
+					$packages[]               = $langPack;
+					$this->totalSourceJPASize += (int) @filesize($filePath);
 				}
 
 				if (count($packages) < $index)
@@ -344,13 +358,13 @@ abstract class Base
 			}
 
 			// 2.3: Try to use sane default if the indicated installer doesn't exist
-			if (!file_exists($xform_source) && (basename($xform_source) != 'angie.jpa'))
+			if (!is_null($xform_source) && !file_exists($xform_source) && (basename($xform_source) != 'angie.jpa'))
 			{
 				throw new RuntimeException(__CLASS__ . ":: Installer package $xform_source of embedded installer $embedded_installer not found. Please go to the configuration page, select an Embedded Installer, save the configuration and try backing up again.");
 			}
 
 			// Try opening the file
-			if (file_exists($xform_source))
+			if (!is_null($xform_source) && file_exists($xform_source))
 			{
 				$this->_xform_fp = @fopen($xform_source, 'r');
 
@@ -449,22 +463,14 @@ abstract class Base
 		if ($ret['done'])
 		{
 			// We are finished! Close the file
-			fclose($this->_xform_fp);
+			$this->conditionalFileClose($this->_xform_fp);
 			Factory::getLog()->debug('Initializing with JPA package has finished');
 		}
 
-		$ret['filesize'] = $totalSize;
+		$ret['filesize'] = $this->totalSourceJPASize;
 
 		return $ret;
 	}
-
-	/**
-	 * Returns a string with the extension (including the dot) of the files produced
-	 * by this class.
-	 *
-	 * @return  string
-	 */
-	abstract public function getExtension();
 
 	/**
 	 * Common code which gets called on instance creation or wake-up (unserialization)
@@ -483,8 +489,8 @@ abstract class Base
 	 * the archive.
 	 *
 	 * @param   boolean  $isVirtual         If true, the next parameter contains file data instead of a file name
-	 * @param   string   $sourceNameOrData  Absolute file name to read data from or the file data itself is $isVirtual is
-	 *                                      true
+	 * @param   string   $sourceNameOrData  Absolute file name to read data from or the file data itself is $isVirtual
+	 *                                      is true
 	 * @param   string   $targetName        The (relative) file name under which to store the file in the archive
 	 *
 	 * @return  boolean  True on success, false otherwise. DEPRECATED: Use exceptions instead.
@@ -493,80 +499,6 @@ abstract class Base
 	 * @throws  ErrorException    When there's an error (the backup integrity is compromised – backup dead)
 	 */
 	abstract protected function _addFile($isVirtual, &$sourceNameOrData, $targetName);
-
-	/**
-	 * Removes the $p_remove_dir from $p_filename, while prepending it with $p_add_dir.
-	 * Largely based on code from the pclZip library.
-	 *
-	 * @param   string  $p_filename    The absolute file name to treat
-	 * @param   string  $p_remove_dir  The path to remove
-	 * @param   string  $p_add_dir     The path to prefix the treated file name with
-	 *
-	 * @return  string  The treated file name
-	 */
-	private function addRemovePaths($p_filename, $p_remove_dir, $p_add_dir)
-	{
-		$p_filename   = $this->fsUtils->TranslateWinPath($p_filename);
-		$p_remove_dir = ($p_remove_dir == '') ? '' :
-			$this->fsUtils->TranslateWinPath($p_remove_dir); //should fix corrupt backups, fix by nicholas
-
-		$v_stored_filename = $p_filename;
-
-		if (!($p_remove_dir == ""))
-		{
-			if (substr($p_remove_dir, -1) != '/')
-			{
-				$p_remove_dir .= "/";
-			}
-
-			if ((substr($p_filename, 0, 2) == "./") || (substr($p_remove_dir, 0, 2) == "./"))
-			{
-				if ((substr($p_filename, 0, 2) == "./") && (substr($p_remove_dir, 0, 2) != "./"))
-				{
-					$p_remove_dir = "./" . $p_remove_dir;
-				}
-
-				if ((substr($p_filename, 0, 2) != "./") && (substr($p_remove_dir, 0, 2) == "./"))
-				{
-					$p_remove_dir = substr($p_remove_dir, 2);
-				}
-			}
-
-			$v_compare = $this->_PathInclusion($p_remove_dir, $p_filename);
-
-			if ($v_compare > 0)
-			{
-				if ($v_compare == 2)
-				{
-					$v_stored_filename = "";
-				}
-				else
-				{
-					$v_stored_filename =
-						substr($p_filename, (function_exists('mb_strlen') ? mb_strlen($p_remove_dir, '8bit') :
-							strlen($p_remove_dir)));
-				}
-			}
-		}
-		else
-		{
-			$v_stored_filename = $p_filename;
-		}
-
-		if (!($p_add_dir == ""))
-		{
-			if (substr($p_add_dir, -1) == "/")
-			{
-				$v_stored_filename = $p_add_dir . $v_stored_filename;
-			}
-			else
-			{
-				$v_stored_filename = $p_add_dir . "/" . $v_stored_filename;
-			}
-		}
-
-		return $v_stored_filename;
-	}
 
 	/**
 	 * This function indicates if the path $p_path is under the $p_dir tree. Or,
@@ -593,9 +525,9 @@ abstract class Base
 
 		// ----- Explode dir and path by directory separator
 		$v_list_dir       = explode("/", $p_dir);
-		$v_list_dir_size  = sizeof($v_list_dir);
+		$v_list_dir_size  = count($v_list_dir);
 		$v_list_path      = explode("/", $p_path);
-		$v_list_path_size = sizeof($v_list_path);
+		$v_list_path_size = count($v_list_path);
 
 		// ----- Study directories paths
 		$i = 0;
@@ -657,52 +589,6 @@ abstract class Base
 
 		// ----- Return
 		return $v_result;
-	}
-
-	/**
-	 * Skips over the JPA header entry and returns the offset file data starts from
-	 *
-	 * @codeCoverageIgnore
-	 *
-	 * @return  boolean|integer  False on failure, offset otherwise
-	 */
-	private function _xformReadHeader()
-	{
-		// Fail for unreadable files
-		if ($this->_xform_fp === false)
-		{
-			return false;
-		}
-
-		// Go to the beggining of the file
-		rewind($this->_xform_fp);
-
-		// Read the signature
-		$sig = fread($this->_xform_fp, 3);
-
-		// Not a JPA Archive?
-		if ($sig != 'JPA')
-		{
-			return false;
-		}
-
-		// Read and parse header length
-		$header_length_array = unpack('v', fread($this->_xform_fp, 2));
-		$header_length       = $header_length_array[1];
-
-		// Read and parse the known portion of header data (14 bytes)
-		$bin_data    = fread($this->_xform_fp, 14);
-		$header_data = unpack('Cmajor/Cminor/Vcount/Vuncsize/Vcsize', $bin_data);
-
-		// Load any remaining header data (forward compatibility)
-		$rest_length = $header_length - 19;
-
-		if ($rest_length > 0)
-		{
-			$junk = fread($this->_xform_fp, $rest_length);
-		}
-
-		return ftell($this->_xform_fp);
 	}
 
 	/**
@@ -813,5 +699,125 @@ abstract class Base
 		$retArray['offset'] = ftell($this->_xform_fp);
 
 		return $retArray;
+	}
+
+	/**
+	 * Skips over the JPA header entry and returns the offset file data starts from
+	 *
+	 * @codeCoverageIgnore
+	 *
+	 * @return  boolean|integer  False on failure, offset otherwise
+	 */
+	private function _xformReadHeader()
+	{
+		// Fail for unreadable files
+		if ($this->_xform_fp === false)
+		{
+			return false;
+		}
+
+		// Go to the beggining of the file
+		rewind($this->_xform_fp);
+
+		// Read the signature
+		$sig = fread($this->_xform_fp, 3);
+
+		// Not a JPA Archive?
+		if ($sig != 'JPA')
+		{
+			return false;
+		}
+
+		// Read and parse header length
+		$header_length_array = unpack('v', fread($this->_xform_fp, 2));
+		$header_length       = $header_length_array[1];
+
+		// Read and parse the known portion of header data (14 bytes)
+		$bin_data    = fread($this->_xform_fp, 14);
+		$header_data = unpack('Cmajor/Cminor/Vcount/Vuncsize/Vcsize', $bin_data);
+
+		// Load any remaining header data (forward compatibility)
+		$rest_length = $header_length - 19;
+
+		if ($rest_length > 0)
+		{
+			$junk = fread($this->_xform_fp, $rest_length);
+		}
+
+		return ftell($this->_xform_fp);
+	}
+
+	/**
+	 * Removes the $p_remove_dir from $p_filename, while prepending it with $p_add_dir.
+	 * Largely based on code from the pclZip library.
+	 *
+	 * @param   string  $p_filename    The absolute file name to treat
+	 * @param   string  $p_remove_dir  The path to remove
+	 * @param   string  $p_add_dir     The path to prefix the treated file name with
+	 *
+	 * @return  string  The treated file name
+	 */
+	private function addRemovePaths($p_filename, $p_remove_dir, $p_add_dir)
+	{
+		$p_filename   = $this->fsUtils->TranslateWinPath($p_filename);
+		$p_remove_dir = ($p_remove_dir == '') ? '' :
+			$this->fsUtils->TranslateWinPath($p_remove_dir); //should fix corrupt backups, fix by nicholas
+
+		$v_stored_filename = $p_filename;
+
+		if (!($p_remove_dir == ""))
+		{
+			if (substr($p_remove_dir, -1) != '/')
+			{
+				$p_remove_dir .= "/";
+			}
+
+			if ((substr($p_filename, 0, 2) == "./") || (substr($p_remove_dir, 0, 2) == "./"))
+			{
+				if ((substr($p_filename, 0, 2) == "./") && (substr($p_remove_dir, 0, 2) != "./"))
+				{
+					$p_remove_dir = "./" . $p_remove_dir;
+				}
+
+				if ((substr($p_filename, 0, 2) != "./") && (substr($p_remove_dir, 0, 2) == "./"))
+				{
+					$p_remove_dir = substr($p_remove_dir, 2);
+				}
+			}
+
+			$v_compare = $this->_PathInclusion($p_remove_dir, $p_filename);
+
+			if ($v_compare > 0)
+			{
+				if ($v_compare == 2)
+				{
+					$v_stored_filename = "";
+				}
+				else
+				{
+					$v_stored_filename =
+						substr($p_filename, (function_exists('mb_strlen') ? mb_strlen($p_remove_dir, '8bit') :
+							strlen($p_remove_dir)));
+				}
+			}
+		}
+		else
+		{
+			$v_stored_filename = $p_filename;
+		}
+
+		if (!($p_add_dir == ""))
+		{
+			if (substr($p_add_dir, -1) == "/")
+			{
+				$v_stored_filename = $p_add_dir . $v_stored_filename;
+			}
+			else
+			{
+				$v_stored_filename = $p_add_dir . "/" . $v_stored_filename;
+			}
+		}
+
+		return $v_stored_filename;
 	}
 }

@@ -1,5 +1,9 @@
 <?php
+
 namespace RocketTheme\Toolbox\File;
+
+use RuntimeException;
+use function is_array;
 
 /**
  * Implements INI File reader.
@@ -10,27 +14,35 @@ namespace RocketTheme\Toolbox\File;
  */
 class IniFile extends File
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $extension = '.ini';
 
-    /**
-     * @var array|File[]
-     */
+    /** @var static[] */
     static protected $instances = [];
+
+    /**
+     * @param array|null $var
+     * @return array
+     */
+    public function content($var = null)
+    {
+        /** @var array $content */
+        $content = parent::content($var);
+
+        return $content;
+    }
 
     /**
      * Check contents and make sure it is in correct format.
      *
-     * @param array $var
+     * @param mixed $var
      * @return array
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function check($var)
     {
-        if (!\is_array($var)) {
-            throw new \RuntimeException('Provided data is not an array');
+        if (!is_array($var)) {
+            throw new RuntimeException('Provided data is not an array');
         }
 
         return $var;
@@ -41,7 +53,6 @@ class IniFile extends File
      *
      * @param array $var
      * @return string
-     * @throws \RuntimeException
      */
     protected function encode($var)
     {
@@ -53,6 +64,7 @@ class IniFile extends File
                     $value
                 ) . "\"\n";
         }
+
         return $string;
     }
 
@@ -61,14 +73,14 @@ class IniFile extends File
      *
      * @param string $var
      * @return array
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function decode($var)
     {
-        $decoded = file_exists($this->filename) ? @parse_ini_file($this->filename) : [];
+        $decoded = null !== $this->filename && file_exists($this->filename) ? @parse_ini_file($this->filename) : [];
 
         if ($decoded === false) {
-            throw new \RuntimeException("Decoding file '{$this->filename}' failed'");
+            throw new RuntimeException("Decoding file '{$this->filename}' failed'");
         }
 
         return $decoded;

@@ -1,14 +1,14 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Controller;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\Controller\Mixin\CustomACL;
 use Akeeba\Backup\Admin\Controller\Mixin\PredefinedTaskList;
@@ -19,10 +19,12 @@ use Akeeba\Backup\Admin\Model\Updates;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
-use FOF30\Container\Container;
-use FOF30\Controller\Controller;
-use JText;
-use JUri;
+use FOF40\Container\Container;
+use FOF40\Controller\Controller;
+use FOF40\Factory\Exception\ModelNotFound;
+use FOF40\Utils\ViewManifestMigration;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
 use RuntimeException;
 
 /**
@@ -37,7 +39,7 @@ class ControlPanel extends Controller
 		parent::__construct($container, $config);
 
 		$this->setPredefinedTaskList([
-			'main', 'SwitchProfile', 'UpdateInfo', 'applydlid', 'resetSecretWord', 'reloadUpdateInformation',
+			'main', 'SwitchProfile', 'applydlid', 'resetSecretWord',
 			'forceUpdateDb', 'dismissUpsell', 'fixOutputDirectory', 'checkOutputDirectory', 'addRandomToFilename',
 		]);
 	}
@@ -51,7 +53,7 @@ class ControlPanel extends Controller
 
 		if (!is_numeric($newProfile) || ($newProfile <= 0))
 		{
-			$this->setRedirect(JUri::base() . 'index.php?option=com_akeeba', JText::_('COM_AKEEBA_CPANEL_PROFILE_SWITCH_ERROR'), 'error');
+			$this->setRedirect(\Joomla\CMS\Uri\Uri::base() . 'index.php?option=com_akeeba', \Joomla\CMS\Language\Text::_('COM_AKEEBA_CPANEL_PROFILE_SWITCH_ERROR'), 'error');
 
 			return;
 		}
@@ -62,52 +64,10 @@ class ControlPanel extends Controller
 
 		if (empty($url))
 		{
-			$url = JUri::base() . 'index.php?option=com_akeeba';
+			$url = \Joomla\CMS\Uri\Uri::base() . 'index.php?option=com_akeeba';
 		}
 
-		$this->setRedirect($url, JText::_('COM_AKEEBA_CPANEL_PROFILE_SWITCH_OK'));
-	}
-
-	public function UpdateInfo()
-	{
-		/** @var Updates $updateModel */
-		$updateModel = $this->container->factory->model('Updates')->tmpInstance();
-		$infoArray   = $updateModel->getUpdates();
-		$updateInfo  = (object) $infoArray;
-
-		$result = '';
-
-		if ($updateInfo->hasUpdate)
-		{
-			$strings = [
-				'header'  => JText::sprintf('COM_AKEEBA_CPANEL_MSG_UPDATEFOUND', $updateInfo->version),
-				'button'  => JText::sprintf('COM_AKEEBA_CPANEL_MSG_UPDATENOW', $updateInfo->version),
-				'infourl' => $updateInfo->infoURL,
-				'infolbl' => JText::_('COM_AKEEBA_CPANEL_MSG_MOREINFO'),
-			];
-
-			$result = <<<HTML
-	<div class="akeeba-block--warning">
-		<h3>
-			<span class="icon icon-exclamation-sign glyphicon glyphicon-exclamation-sign"></span>
-			{$strings['header']}
-		</h3>
-		<p>
-			<a href="index.php?option=com_installer&view=update" class="akeeba-btn--primary">
-				{$strings['button']}
-			</a>
-			<a href="{$strings['infourl']}" target="_blank" class="akeeba-btn--ghost akeeba-btn--small">
-				{$strings['infolbl']}
-			</a>
-		</p>
-	</div>
-HTML;
-		}
-
-		echo '###' . $result . '###';
-
-		// Cut the execution short
-		$this->container->platform->closeApplication();
+		$this->setRedirect($url, \Joomla\CMS\Language\Text::_('COM_AKEEBA_CPANEL_PROFILE_SWITCH_OK'));
 	}
 
 	/**
@@ -118,7 +78,7 @@ HTML;
 		// CSRF prevention
 		$this->csrfProtection();
 
-		$msg     = JText::_('COM_AKEEBA_CPANEL_ERR_INVALIDDOWNLOADID');
+		$msg     = \Joomla\CMS\Language\Text::_('COM_AKEEBA_CPANEL_ERR_INVALIDDOWNLOADID');
 		$msgType = 'error';
 		$dlid    = $this->input->getString('dlid', '');
 
@@ -142,7 +102,7 @@ HTML;
 
 		if (empty($url))
 		{
-			$url = JUri::base() . 'index.php?option=com_akeeba';
+			$url = \Joomla\CMS\Uri\Uri::base() . 'index.php?option=com_akeeba';
 		}
 
 		$this->setRedirect($url, $msg, $msgType);
@@ -170,23 +130,9 @@ HTML;
 		$this->container->params->set('frontend_secret_word', $newSecret);
 		$this->container->params->save();
 
-		$msg = JText::sprintf('COM_AKEEBA_CPANEL_MSG_FESECRETWORD_RESET', $newSecret);
+		$msg = \Joomla\CMS\Language\Text::sprintf('COM_AKEEBA_CPANEL_MSG_FESECRETWORD_RESET', $newSecret);
 
 		$url = 'index.php?option=com_akeeba';
-		$this->setRedirect($url, $msg);
-	}
-
-	public function reloadUpdateInformation()
-	{
-		$msg = null;
-
-		/** @var Updates $model */
-		$model = $this->container->factory->model('Updates')->tmpInstance();
-		$model->getUpdates(true);
-
-		$msg = JText::_('COM_AKEEBA_COMMON_UPDATE_INFORMATION_RELOADED');
-		$url = 'index.php?option=com_akeeba';
-
 		$this->setRedirect($url, $msg);
 	}
 
@@ -355,6 +301,18 @@ HTML;
 		$wizmodel = $this->container->factory->model('ConfigurationWizard')->tmpInstance();
 		$wizmodel->autofixDirectories();
 
+		// Rebase Off-site Folder Inclusion filters to use site path variables
+		/** @var \Akeeba\Backup\Admin\Model\IncludeFolders $incFoldersModel */
+		try
+		{
+			$incFoldersModel = $this->container->factory->model('IncludeFolders')->tmpInstance();
+			$incFoldersModel->rebaseFiltersToSiteDirs();
+		}
+		catch (ModelNotFound $e)
+		{
+			// Not a problem. This is expected to happen in the Core version.
+		}
+
 		// Check if we need to toggle the settings encryption feature
 		$model->checkSettingsEncryption();
 
@@ -367,6 +325,9 @@ HTML;
 		/** @var Updates $updateModel */
 		$updateModel = $this->container->factory->model('Updates')->tmpInstance();
 		$updateModel->refreshUpdateSite();
+
+		ViewManifestMigration::migrateJoomla4MenuXMLFiles($this->container);
+		ViewManifestMigration::removeJoomla3LegacyViews($this->container);
 	}
 
 }

@@ -1,8 +1,10 @@
 <?php
+
 namespace RocketTheme\Toolbox\StreamWrapper;
 
 use RocketTheme\Toolbox\ResourceLocator\ResourceLocatorInterface;
 use RocketTheme\Toolbox\ResourceLocator\UniformResourceLocator;
+use function in_array;
 
 /**
  * Implements Read/Write Streams.
@@ -13,31 +15,30 @@ use RocketTheme\Toolbox\ResourceLocator\UniformResourceLocator;
  */
 class Stream implements StreamInterface
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $uri;
-
-    /**
-     * A generic resource handle.
-     *
-     * @var Resource
-     */
-    protected $handle = null;
-
-    /**
-     * @var ResourceLocatorInterface|UniformResourceLocator
-     */
+    /** @var Resource A generic resource handle. */
+    protected $handle;
+    /** @var ResourceLocatorInterface|UniformResourceLocator|null */
     protected static $locator;
 
     /**
      * @param ResourceLocatorInterface $locator
+     * @return void
      */
     public static function setLocator(ResourceLocatorInterface $locator)
     {
         static::$locator = $locator;
     }
 
+    /**
+     * @param string $uri
+     * @param string $mode
+     * @param int $options
+     * @param string $opened_url
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function stream_open($uri, $mode, $options, &$opened_url)
     {
         $path = $this->getPath($uri, $mode);
@@ -51,29 +52,51 @@ class Stream implements StreamInterface
         }
 
         $this->uri = $uri;
-        $this->handle = ($options & STREAM_REPORT_ERRORS) ? fopen($path, $mode) : @fopen($path, $mode);
 
-        if (static::$locator instanceof UniformResourceLocator && !\in_array($mode, ['r', 'rb', 'rt'], true)) {
-            static::$locator->clearCache($this->uri);
+        $handle = ($options & STREAM_REPORT_ERRORS) ? fopen($path, $mode) : @fopen($path, $mode);
+        if ($handle) {
+            $this->handle = $handle;
+
+            if (static::$locator instanceof UniformResourceLocator && !in_array($mode, ['r', 'rb', 'rt'], true)) {
+                static::$locator->clearCache($this->uri);
+            }
+
+            return true;
         }
 
-        return (bool) $this->handle;
+        return false;
     }
 
+    /**
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function stream_close()
     {
         return fclose($this->handle);
     }
 
+    /**
+     * @param int $operation
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function stream_lock($operation)
     {
-        if (\in_array($operation, [LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB], true)) {
+        if (in_array($operation, [LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB], true)) {
             return flock($this->handle, $operation);
         }
 
         return false;
     }
 
+    /**
+     * @param string $uri
+     * @param int $option
+     * @param mixed $value
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function stream_metadata($uri, $option, $value)
     {
         $path = $this->findPath($uri);
@@ -99,54 +122,94 @@ class Stream implements StreamInterface
         return false;
     }
 
+    /**
+     * @param int $count
+     * @return string|false
+     */
+    #[\ReturnTypeWillChange]
     public function stream_read($count)
     {
+        if ($count < 1) {
+            return false;
+        }
+
         return fread($this->handle, $count);
     }
 
+    /**
+     * @param string $data
+     * @return int|false
+     */
+    #[\ReturnTypeWillChange]
     public function stream_write($data)
     {
         return fwrite($this->handle, $data);
     }
 
+    /**
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function stream_eof()
     {
         return feof($this->handle);
     }
 
+    /**
+     * @param int $offset
+     * @param int $whence
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function stream_seek($offset, $whence)
     {
         // fseek returns 0 on success and -1 on a failure.
         return !fseek($this->handle, $offset, $whence);
     }
 
+    /**
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function stream_flush()
     {
         return fflush($this->handle);
     }
 
+    /**
+     * @return int|false
+     */
+    #[\ReturnTypeWillChange]
     public function stream_tell()
     {
         return ftell($this->handle);
     }
 
+    /**
+     * @return array
+     */
+    #[\ReturnTypeWillChange]
     public function stream_stat()
     {
-        return fstat($this->handle);
+        return fstat($this->handle) ?: [];
     }
 
     /**
-     * @return bool
+     * @param int $option
+     * @param int $arg1
+     * @param int $arg2
+     * @return bool|int
      */
+    #[\ReturnTypeWillChange]
     public function stream_set_option($option, $arg1, $arg2)
     {
-        switch ((int)$option) {
+        switch ($option) {
             case STREAM_OPTION_BLOCKING:
-                return stream_set_blocking($this->handle, (int)$arg1);
+                return stream_set_blocking($this->handle, (bool)$arg1);
             case STREAM_OPTION_READ_TIMEOUT:
-                return stream_set_timeout($this->handle, (int)$arg1, (int)$arg2);
+                return stream_set_timeout($this->handle, $arg1, $arg2);
             case STREAM_OPTION_WRITE_BUFFER:
-                return stream_set_write_buffer($this->handle, (int)$arg2);
+                return stream_set_write_buffer($this->handle, $arg2);
             default:
                 return false;
         }
@@ -156,6 +219,7 @@ class Stream implements StreamInterface
      * @param string $uri
      * @return bool
      */
+    #[\ReturnTypeWillChange]
     public function unlink($uri)
     {
         $path = $this->getPath($uri);
@@ -167,6 +231,12 @@ class Stream implements StreamInterface
         return unlink($path);
     }
 
+    /**
+     * @param string $fromUri
+     * @param string $toUri
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function rename($fromUri, $toUri)
     {
         $fromPath = $this->getPath($fromUri);
@@ -184,6 +254,13 @@ class Stream implements StreamInterface
         return rename($fromPath, $toPath);
     }
 
+    /**
+     * @param string $uri
+     * @param int $mode
+     * @param int $options
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function mkdir($uri, $mode, $options)
     {
         $recursive = (bool) ($options & STREAM_MKDIR_RECURSIVE);
@@ -204,6 +281,12 @@ class Stream implements StreamInterface
         return ($options & STREAM_REPORT_ERRORS) ? mkdir($path, $mode, $recursive) : @mkdir($path, $mode, $recursive);
     }
 
+    /**
+     * @param string $uri
+     * @param int $options
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function rmdir($uri, $options)
     {
         $path = $this->getPath($uri);
@@ -223,6 +306,12 @@ class Stream implements StreamInterface
         return ($options & STREAM_REPORT_ERRORS) ? rmdir($path) : @rmdir($path);
     }
 
+    /**
+     * @param string $uri
+     * @param int $flags
+     * @return array|false
+     */
+    #[\ReturnTypeWillChange]
     public function url_stat($uri, $flags)
     {
         $path = $this->getPath($uri);
@@ -236,25 +325,45 @@ class Stream implements StreamInterface
         return ($flags & STREAM_URL_STAT_QUIET || !file_exists($path)) ? @stat($path) : stat($path);
     }
 
+    /**
+     * @param string $uri
+     * @param int $options
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function dir_opendir($uri, $options)
     {
         $path = $this->getPath($uri);
 
-        if (!$path) {
+        if ($path === false) {
             return false;
         }
 
         $this->uri = $uri;
-        $this->handle = opendir($path);
 
-        return (bool) $this->handle;
+        $handle = opendir($path);
+        if ($handle) {
+            $this->handle = $handle;
+
+            return true;
+        }
+
+        return false;
     }
 
+    /**
+     * @return string|false
+     */
+    #[\ReturnTypeWillChange]
     public function dir_readdir()
     {
         return readdir($this->handle);
     }
 
+    /**
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function dir_rewinddir()
     {
         rewinddir($this->handle);
@@ -262,6 +371,10 @@ class Stream implements StreamInterface
         return true;
     }
 
+    /**
+     * @return bool
+     */
+    #[\ReturnTypeWillChange]
     public function dir_closedir()
     {
         closedir($this->handle);
@@ -269,6 +382,11 @@ class Stream implements StreamInterface
         return true;
     }
 
+    /**
+     * @param string $uri
+     * @param string|null $mode
+     * @return string|false
+     */
     protected function getPath($uri, $mode = null)
     {
         if ($mode === null) {
@@ -307,6 +425,10 @@ class Stream implements StreamInterface
         return $path . '/' .  implode('/', array_reverse($filename));
     }
 
+    /**
+     * @param string $uri
+     * @return string|false
+     */
     protected function findPath($uri)
     {
         return static::$locator && static::$locator->isStream($uri) ? static::$locator->findResource($uri) : false;

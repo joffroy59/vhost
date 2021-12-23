@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 3 - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -93,10 +93,20 @@ class JceController extends JControllerLegacy
 
         // Get and render the view.
         if ($view) {
+            
+            if ($vName != "cpanel") {
+                // use "profiles" for validating "profile" view
+                if ($vName == "profile") {
+                    $vName = "profiles";
+                }
 
-            if ($vName !== "cpanel" && !$user->authorise('jce.' . $vName, 'com_jce')) {
-                throw new JAccessExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
+                if (!$user->authorise('jce.' . $vName, 'com_jce')) {
+                    throw new JAccessExceptionNotallowed(JText::_('JERROR_ALERTNOAUTHOR'), 403);
+                }
             }
+            
+            // reset view name
+            $vName = $view->getName();
 
             // Get the model for the view.
             $model = $this->getModel($vName, 'JceModel', array('name' => $vName));
@@ -108,12 +118,14 @@ class JceController extends JControllerLegacy
             // Push document object into the view.
             $view->document = $document;
 
-            // Load the submenu.
-            require_once JPATH_ADMINISTRATOR . '/components/com_jce/helpers/admin.php';
+            // only for Joomla 3.x
+            if (version_compare(JVERSION, '4', 'lt')) {
+                // Load the submenu.
+                require_once JPATH_ADMINISTRATOR . '/components/com_jce/helpers/admin.php';
+                JceHelperAdmin::addSubmenu($vName);
+            }
 
-            JceHelperAdmin::addSubmenu($vName);
-
-            $document->addStyleSheet('components/com_jce/media/css/global.min.css?' . md5(WF_VERSION));
+            $document->addStyleSheet(JURI::root(true) . '/media/com_jce/css/global.min.css?' . md5(WF_VERSION));
 
             $view->display();
         }

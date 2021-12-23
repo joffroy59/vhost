@@ -3,13 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util;
 
-
+defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
@@ -136,14 +136,7 @@ class FileSystem
 			$version      = defined('AKEEBABACKUP_VERSION') ? AKEEBABACKUP_VERSION : $version;
 			$platformVars = Platform::getInstance()->getPlatformVersion();
 
-			$siteName = Platform::getInstance()->get_site_name();
-			$siteName = htmlentities(utf8_decode($siteName));
-			$siteName = preg_replace(
-				['/&szlig;/', '/&(..)lig;/', '/&([aouAOU])uml;/', '/&(.)[^;]*;/'],
-				['ss', "$1", "$1" . 'e', "$1"],
-				$siteName);
-			$siteName = trim(strtolower($siteName));
-			$siteName = preg_replace(['/\s+/', '/[^A-Za-z0-9\-]/'], ['-', ''], $siteName);
+			$siteName = $this->stringUrlUnicodeSlug(Platform::getInstance()->get_site_name());
 
 			if (strlen($siteName) > 50)
 			{
@@ -177,7 +170,7 @@ class FileSystem
 				'[PLATFORM_NAME]'    => $platformVars['name'],
 				'[PLATFORM_VERSION]' => $platformVars['version'],
 				'[SITENAME]'         => $siteName,
-				'[RANDOM]'           => $randVal->generateString(16),
+				'[RANDOM]'           => $randVal->generateString(16, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789'),
 			];
 		}
 
@@ -234,6 +227,54 @@ class FileSystem
 		}
 
 		return $temp;
+	}
+
+	/**
+	 * Rebase a path to the platform filesystem variables (most to least specific).
+	 *
+	 * This is the inverse procedure of translateStockDirs().
+	 *
+	 * @param   string  $path
+	 *
+	 * @return  string
+	 * @since   7.3.0
+	 */
+	public function rebaseFolderToStockDirs(string $path): string
+	{
+		// Normalize the path
+		$path = $this->TrimTrailingSlash($path);
+		$path = $this->TranslateWinPath($path);
+
+		// Get the stock directories, normalize them and sort them by longest to shortest
+		$stock_directories = Platform::getInstance()->get_stock_directories();
+
+		$stock_directories = array_map(function ($path) {
+			$path = $this->TrimTrailingSlash($path);
+
+			return $this->TranslateWinPath($path);
+		}, $stock_directories);
+
+		uasort($stock_directories, function ($a, $b) {
+			return -($a <=> $b);
+		});
+
+		// Start replacing paths with variables
+		foreach ($stock_directories as $var => $stockPath)
+		{
+			if (empty($stockPath))
+			{
+				continue;
+			}
+
+			if (strpos($path, $stockPath) !== 0)
+			{
+				continue;
+			}
+
+			$path = $var . substr($path, strlen($stockPath));
+		}
+
+		return $path;
 	}
 
 	/**
@@ -386,4 +427,37 @@ TEXT;
 			@file_put_contents($dir . '/index.php', $deadPHP);
 		}
 	}
+
+	/**
+	 * Convert a string to a (Unicode) slug
+	 *
+	 * @param   string  $string  String to process
+	 *
+	 * @return  string  Processed string
+	 *
+	 * @since   7.5.0
+	 */
+	public function stringUrlUnicodeSlug(string $string): string
+	{
+		// Replace double byte whitespaces by single byte (East Asian languages)
+		$str = preg_replace('/\xE3\x80\x80/', ' ', $string);
+
+		// Remove any '-' from the string as they will be used as concatenator.
+		$str = str_replace('-', ' ', $str);
+
+		// Replace forbidden characters by whitespaces
+		$str = preg_replace('#[:\?\#\*"@+=;!><&\.%()\]\/\'\\\\|\[]#', "\x20", $str);
+
+		// Delete all '?'
+		$str = str_replace('?', '', $str);
+
+		// Trim white spaces at beginning and end of alias and make lowercase
+		$str = trim(strtolower($str));
+
+		// Remove any duplicate whitespace and replace whitespaces by hyphens
+		$str = preg_replace('#\x20+#', '-', $str);
+
+		return $str;
+	}
+
 }

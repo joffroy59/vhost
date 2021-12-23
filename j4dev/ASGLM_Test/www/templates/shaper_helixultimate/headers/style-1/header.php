@@ -1,116 +1,124 @@
 <?php
 /**
- * @package Helix Ultimate Framework
- * @author JoomShaper https://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2018 JoomShaper
+ * @package Helix_Ultimate_Framework
+ * @author JoomShaper <support@joomshaper.com>
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or Later
-*/
+ */
 
-defined ('_JEXEC') or die();
+defined ('_JEXEC') or die('Restricted Access');
+
+use HelixUltimate\Framework\Platform\Helper;
+use Joomla\CMS\Helper\ModuleHelper;
+use Joomla\CMS\Language\Text;
 
 $data = $displayData;
-$offcanvs_position = $displayData->params->get('offcanvas_position', 'right');
+$offcanvas_position = $displayData->params->get('offcanvas_position', 'right');
+$menu_type = $displayData->params->get('menu_type');
 
-$feature_folder_path     = JPATH_THEMES . '/' . $data->template->template . '/features/';
+$feature_folder_path = JPATH_THEMES . '/' . $data->template->template . '/features';
 
-include_once $feature_folder_path.'logo.php';
-include_once $feature_folder_path.'social.php';
-include_once $feature_folder_path.'contact.php';
-include_once $feature_folder_path.'menu.php';
+include_once $feature_folder_path . '/social.php';
+include_once $feature_folder_path . '/contact.php';
+include_once $feature_folder_path . '/logo.php';
+include_once $feature_folder_path . '/menu.php';
 
-$output  = '';
+/**
+ * Helper classes for-
+ * social icons, contact info, site logo, Menu header.
+ *
+ */
+$social 	= new HelixUltimateFeatureSocial($data->params);
+$contact 	= new HelixUltimateFeatureContact($data->params);
+$logo    	= new HelixUltimateFeatureLogo($data->params);
+$menu    	= new HelixUltimateFeatureMenu($data->params);
 
-$output .= '<div id="sp-top-bar">';
-$output .= '<div class="container">';
-$output .= '<div class="container-inner">';
-$output .= '<div class="row">';
+/** Logo and menu html classes */
+$logoClass = 'col-auto';
+$menuClass = 'col-auto flex-auto';
 
-$output .= '<div id="sp-top1" class="col-lg-6">';
-$output .= '<div class="sp-column text-center text-lg-left">';
-$social = new HelixUltimateFeatureSocial($data->params);
-if(isset($social->load_pos) && $social->load_pos == 'before')
-{
-    $output .= $social->renderFeature();
-    $output .= '<jdoc:include type="modules" name="top1" style="sp_xhtml" />';
-}
-else
-{
-    $output .= '<jdoc:include type="modules" name="top1" style="sp_xhtml" />';
-    $output .= $social->renderFeature();
-}
-$output .= '</div>';
-$output .= '</div>';
+/**
+ * Get related modules
+ * The modules are mod_search
+ */
+$searchModule = Helper::getSearchModule();
+?>
 
-$output .= '<div id="sp-top2" class="col-lg-6">';
-$output .= '<div class="sp-column text-center text-lg-right">';
-$contact = new HelixUltimateFeatureContact($data->params);
-if(isset($contact->load_pos) && $contact->load_pos == 'before')
-{
-    $output .= $contact->renderFeature();
-    $output .= '<jdoc:include type="modules" name="top2" style="sp_xhtml" />';
-}
-else
-{
-    $output .= '<jdoc:include type="modules" name="top2" style="sp_xhtml" />';
-    $output .= $contact->renderFeature();
-}
-$output .= '</div>';
-$output .= '</div>';
+<?php if($displayData->params->get('sticky_header')) { ?>
+	<div class="sticky-header-placeholder"></div>
+<?php } ?>
+<div id="sp-top-bar">
+	<div class="container">
+		<div class="container-inner">
+			<div class="row">
+				<div id="sp-top1" class="col-lg-6">
+					<div class="sp-column text-center text-lg-start">
+						<?php if ($displayData->params->get('social_position') === 'top1'): ?>
+							<?php echo $social->renderFeature(); ?>
+						<?php endif ?>
 
-$output .= '</div>';
-$output .= '</div>';
-$output .= '</div>';
-$output .= '</div>';
+						<?php if ($displayData->params->get('contact_position') === 'top1'): ?>
+							<?php echo $contact->renderFeature(); ?>
+						<?php endif ?>
+						<jdoc:include type="modules" name="top1" style="sp_xhtml"/>
+					</div>
+				</div>
 
+				<div id="sp-top2" class="col-lg-6">
+					<div class="sp-column text-center text-lg-end">
+						<?php if ($displayData->params->get('social_position') === 'top2'): ?>
+							<?php echo $social->renderFeature(); ?>
+						<?php endif ?>
 
-$output .= '<header id="sp-header">';
-$output .= '<div class="container">';
-$output .= '<div class="container-inner">';
-$output .= '<div class="row">';
+						<?php if ($displayData->params->get('contact_position') === 'top2'): ?>
+							<?php echo $contact->renderFeature(); ?>
+						<?php endif ?>
+						<jdoc:include type="modules" name="top2" style="sp_xhtml" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 
-$class1 = 'col-8 col-lg-3';
-$class2 = 'col-4 col-lg-9';
-if($offcanvs_position == 'left')
-{
-    $class1 = 'col-12 col-lg-3';
-    $class2 = 'd-none d-lg-block col-lg-9';
-}
+<header id="sp-header">
+	<div class="container">
+		<div class="container-inner">
+			<div class="row">
+				<!-- Logo -->
+				<div id="sp-logo" class="<?php echo $logoClass; ?>">
+					<div class="sp-column">
+						<?php echo $logo->renderFeature(); ?>
+						<jdoc:include type="modules" name="logo" style="sp_xhtml" />
+					</div>
+				</div>
 
-$output .= '<div id="sp-logo" class="'. $class1 .'">';
-$output .= '<div class="sp-column">';
-$logo    = new HelixUltimateFeatureLogo($data->params);
-if(isset($logo->load_pos) && $logo->load_pos == 'before')
-{
-    $output .= $logo->renderFeature();
-    $output .= '<jdoc:include type="modules" name="logo" style="sp_xhtml" />';
-}
-else
-{
-    $output .= '<jdoc:include type="modules" name="logo" style="sp_xhtml" />';
-    $output .= $logo->renderFeature();
-}
-$output .= '</div>';
-$output .= '</div>';
+				<!-- Menu -->
+				<div id="sp-menu" class="<?php echo $menuClass; ?>">
+					<div class="sp-column d-flex justify-content-end align-items-center">
+						<?php echo $menu->renderFeature(); ?>
+						<jdoc:include type="modules" name="menu" style="sp_xhtml" />
 
-$output .= '<div id="sp-menu" class="'. $class2 .'">';
-$output .= '<div class="sp-column">';
-$menu    = new HelixUltimateFeatureMenu($data->params);
-if(isset($menu->load_pos) && $menu->load_pos == 'before')
-{
-    $output .= $menu->renderFeature();
-    $output .= '<jdoc:include type="modules" name="menu" style="sp_xhtml" />';
-}
-else
-{
-    $output .= '<jdoc:include type="modules" name="menu" style="sp_xhtml" />';
-    $output .= $menu->renderFeature();
-}
-$output .= '</div>';
-$output .= '</div>';
+						<!-- Related Modules -->
+						<div class="d-none d-lg-flex header-modules align-items-center">
+							<?php if ($data->params->get('enable_search', 0)): ?>
+								<?php echo ModuleHelper::renderModule($searchModule, ['style' => 'sp_xhtml']); ?>
+							<?php endif ?>
 
-$output .= '</div>';
-$output .= '</div>';
-$output .= '</div>';
-$output .= '</header>';
+							<?php if ($data->params->get('enable_login', 0)): ?>
+								<?php echo $menu->renderLogin(); ?>
+							<?php endif ?>
+						</div>
 
-echo $output;
+						<!-- if offcanvas position right -->
+						<?php if($offcanvas_position === 'right') : ?>
+							<a id="offcanvas-toggler"  aria-label="<?php echo Text::_('HELIX_ULTIMATE_NAVIGATION'); ?>" title="<?php echo Text::_('HELIX_ULTIMATE_NAVIGATION'); ?>"  class="<?php echo $menu_type; ?> offcanvas-toggler-secondary offcanvas-toggler-right d-flex align-items-center" href="#">
+							<div class="burger-icon" aria-hidden="true"><span></span><span></span><span></span></div>
+							</a>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</header>

@@ -4,7 +4,7 @@
  *
  * @package     Joomla.Plugin
  * @subpackage  Fabrik.visualization.calendar
- * @copyright   Copyright (C) 2005-2016  Media A-Team, Inc. - All rights reserved.
+ * @copyright   Copyright (C) 2005-2020  Media A-Team, Inc. - All rights reserved.
  * @license     GNU/GPL http://www.gnu.org/copyleft/gpl.html
  */
 
@@ -137,7 +137,7 @@ class FabrikViewFullcalendar extends JViewLegacy
 
 		// Get all list where statements - which are then included in the ajax call to ensure we get the correct data set loaded
 		$urlFilters        = new stdClass;
-		$urlFilters->where = $model->buildQueryWhere();
+		//$urlFilters->where = $model->buildQueryWhere();
 
 		// Don't JRoute as its wont load with sef?
 		$urls->del = 'index.php?option=com_' . $package
@@ -158,6 +158,7 @@ class FabrikViewFullcalendar extends JViewLegacy
 		}
 
 		$options                  = new stdClass;
+		$options->id              = $model->getVisualization()->get('id');
 		$options->url             = $urls;
 		$options->dateLimits      = $model->getDateLimits();
 		$options->deleteables     = $model->getDeleteAccess();

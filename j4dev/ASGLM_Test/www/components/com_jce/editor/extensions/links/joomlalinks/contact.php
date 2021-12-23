@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -52,7 +52,8 @@ class JoomlalinksContact extends JObject
 
         $language = '';
 
-        require_once JPATH_SITE . '/components/com_contact/helpers/route.php';
+        // create a new RouteHelper instance
+        $router = new JHelperRoute();
 
         switch ($view) {
             default:
@@ -63,7 +64,9 @@ class JoomlalinksContact extends JObject
                     if (isset($category->language)) {
                         $language = $category->language;
                     }
-                    $url = ContactHelperRoute::getCategoryRoute($category->id, $language);
+
+                    $url = JHelperRoute::getCategoryRoute($category->id, $language, 'com_contact');
+                    
                     // convert to SEF
                     $url = self::route($url);
 
@@ -87,9 +90,9 @@ class JoomlalinksContact extends JObject
                     }
 
                     if ($children) {
-                        $id = ContactHelperRoute::getCategoryRoute($category->id, $language);
+                        $id = JHelperRoute::getCategoryRoute($category->id, $language, 'com_contact');
                     } else {
-                        $id = ContactHelperRoute::getCategoryRoute($category->slug, $language);
+                        $id = JHelperRoute::getCategoryRoute($category->slug, $language, 'com_contact');
                     }
 
                     // convert to SEF
@@ -111,7 +114,7 @@ class JoomlalinksContact extends JObject
                         $language = $contact->language;
                     }
 
-                    $id = ContactHelperRoute::getContactRoute($contact->id, $args->id, $language);
+                    $id = $router->getRoute($contact->id, 'com_contact.contact', '', $language, $args->id);
                     $id = self::route($id);
 
                     $items[] = array(
@@ -130,8 +133,16 @@ class JoomlalinksContact extends JObject
     {
         $wf = WFEditorPlugin::getInstance();
         
-        if ($wf->getParam('links.joomlalinks.sef_url', 0)) {
-            $url = WFLinkBrowser::route($url);
+        if ((bool) $wf->getParam('links.joomlalinks.sef_url', 0)) {
+            $url = WFLinkHelper::route($url);
+        }
+
+        // remove Itemid if "home"
+        $url = WFLinkHelper::removeHomeItemId($url);
+
+        // remove Itemid
+        if ((bool) $wf->getParam('links.joomlalinks.itemid', 1) === false) {
+            $url = WFLinkHelper::removeItemId($url);
         }
 
         return $url;

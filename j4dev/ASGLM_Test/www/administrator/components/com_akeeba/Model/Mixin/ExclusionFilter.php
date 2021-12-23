@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -10,7 +10,7 @@ namespace Akeeba\Backup\Admin\Model\Mixin;
 // Protect from unauthorized access
 use Akeeba\Engine\Factory;
 
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 /**
  * Trait for handling Akeeba Engine exclusion filters in models
@@ -133,7 +133,7 @@ trait ExclusionFilter
 	 *
 	 * @param   string  $root  Root directory
 	 *
-	 * @return  array
+	 * @return  void
 	 */
 	protected function resetAllFilters($root)
 	{

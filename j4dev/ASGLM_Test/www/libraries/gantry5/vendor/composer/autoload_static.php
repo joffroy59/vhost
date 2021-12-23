@@ -4,10 +4,12 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a
+class ComposerStaticInit24dc231f0b322a29dd32ccf2e78687a5
 {
     public static $files = array (
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '23c18046f52bef3eea034657bafda50f' => __DIR__ . '/..' . '/symfony/polyfill-php81/bootstrap.php',
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -21,9 +23,12 @@ class ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a
         ),
         'S' => 
         array (
+            'Symfony\\Polyfill\\Php81\\' => 23,
+            'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Component\\Yaml\\' => 23,
             'Symfony\\Component\\EventDispatcher\\' => 34,
+            'ScssPhp\\ScssPhp\\' => 16,
         ),
         'R' => 
         array (
@@ -42,10 +47,6 @@ class ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a
             'Psr\\Log\\' => 8,
             'Psr\\Container\\' => 14,
         ),
-        'L' => 
-        array (
-            'Leafo\\ScssPhp\\' => 14,
-        ),
         'G' => 
         array (
             'Gantry\\' => 7,
@@ -61,6 +62,14 @@ class ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a
         array (
             0 => __DIR__ . '/..' . '/twig/twig/src',
         ),
+        'Symfony\\Polyfill\\Php81\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php81',
+        ),
+        'Symfony\\Polyfill\\Php80\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
+        ),
         'Symfony\\Polyfill\\Ctype\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
@@ -72,6 +81,10 @@ class ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a
         'Symfony\\Component\\EventDispatcher\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
+        ),
+        'ScssPhp\\ScssPhp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/scssphp/scssphp/src',
         ),
         'RocketTheme\\Toolbox\\StreamWrapper\\' => 
         array (
@@ -117,14 +130,9 @@ class ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
-        'Leafo\\ScssPhp\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/classes/Leafo/ScssPhp',
-            1 => __DIR__ . '/..' . '/leafo/scssphp/src',
-        ),
         'Gantry\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/classes/Gantry',
+            0 => __DIR__ . '/../..' . '/src/classes/Gantry',
         ),
     );
 
@@ -153,12 +161,22 @@ class ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a
         ),
     );
 
+    public static $classMap = array (
+        'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'ReturnTypeWillChange' => __DIR__ . '/..' . '/symfony/polyfill-php81/Resources/stubs/ReturnTypeWillChange.php',
+        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
+        'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
+        'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit35ebe4700d36971ed56fa38404e0c71a::$prefixesPsr0;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit24dc231f0b322a29dd32ccf2e78687a5::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit24dc231f0b322a29dd32ccf2e78687a5::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit24dc231f0b322a29dd32ccf2e78687a5::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit24dc231f0b322a29dd32ccf2e78687a5::$classMap;
 
         }, null, ClassLoader::class);
     }

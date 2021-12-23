@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ @package   akeebabackup
-  ~ @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
   ~ @license   GNU General Public License version 3, or later
   -->
 
-<extension version="3.8.0" type="package" method="upgrade">
+<extension version="3.9.0" type="package" method="upgrade">
     <name>Akeeba Backup package</name>
     <author>Nicholas K. Dionysopoulos</author>
-    <creationDate>2020-04-07</creationDate>
+    <creationDate>2021-12-06</creationDate>
     <packagename>akeeba</packagename>
-    <version>7.1.3</version>
-    <url>https://www.akeebabackup.com</url>
+    <version>8.0.14</version>
+    <url>https://www.akeeba.com</url>
     <packager>Akeeba Ltd</packager>
-    <packagerurl>https://www.akeebabackup.com</packagerurl>
+    <packagerurl>https://www.akeeba.com</packagerurl>
     <copyright>Copyright (c)2006-2019 Akeeba Ltd / Nicholas K. Dionysopoulos</copyright>
     <license>GNU GPL v3 or later</license>
-    <description>Akeeba Backup installation package v.7.1.3</description>
+    <description>Akeeba Backup installation package v.8.0.14</description>
 
     <!-- List of extensions to install -->
     <files>
@@ -26,11 +26,13 @@
         <!-- Modules -->
         <!--<file type="module" client="site" id="mod_example">mod_example.zip</file>-->
 
+        <!-- Plugins: console (Joomla 4 only) -->
+        <file type="plugin" group="console" id="akeebabackup">plg_console_akeebabackup.zip</file>
+
         <!-- Plugins: quickicon -->
         <file type="plugin" group="quickicon" id="akeebabackup">plg_quickicon_akeebabackup.zip</file>
 
         <!-- Plugins: system -->
-        <file type="plugin" group="system" id="akeebaupdatecheck">plg_system_akeebaupdatecheck.zip</file>
         <file type="plugin" group="system" id="backuponupdate">plg_system_backuponupdate.zip</file>
 
         <!-- Plugins: actionlog -->
@@ -42,6 +44,6 @@
 
     <!-- Update servers -->
     <updateservers>
-        <server type="extension" priority="1" name="Akeeba Backup Core">https://cdn.akeebabackup.com/updates/pkgakeebacore.xml</server>
+        <server type="extension" priority="1" name="Akeeba Backup Core">https://cdn.akeeba.com/updates/pkgakeebacore.xml</server>
     </updateservers>
 </extension>

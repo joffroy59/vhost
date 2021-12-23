@@ -2,7 +2,7 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2019 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
@@ -39,6 +39,7 @@ class SppagebuilderAddonDivider extends SppagebuilderAddons {
 		$border_width 	 	= (isset($settings->border_width) && $settings->border_width) ? $settings->border_width : 1;
 		$divider_height 	= (isset($settings->divider_height) && $settings->divider_height) ? $settings->divider_height : 10;
 		$divider_image 		= (isset($settings->divider_image) && $settings->divider_image) ? $settings->divider_image : '';
+		$divider_image_src = isset($divider_image->src) ? $divider_image->src : $divider_image;
 		$background_repeat 	= (isset($settings->background_repeat) && $settings->background_repeat) ? $settings->background_repeat : 'no-repeat';
 		$border_radius 	= (isset($settings->border_radius) && $settings->border_radius) ? $settings->border_radius : '';
 		$divider_vertical 	= (isset($settings->divider_vertical) && $settings->divider_vertical) ? $settings->divider_vertical : '';
@@ -46,7 +47,7 @@ class SppagebuilderAddonDivider extends SppagebuilderAddons {
 		$container_div_width = (isset($settings->container_div_width) && $settings->container_div_width) ? $settings->container_div_width : '';
 		$container_div_width_sm = (isset($settings->container_div_width_sm) && $settings->container_div_width_sm) ? $settings->container_div_width_sm : '';
 		$container_div_width_xs = (isset($settings->container_div_width_xs) && $settings->container_div_width_xs) ? $settings->container_div_width_xs : '';
-		//Divider height in vertical mod
+		//Divider height in vertical mode
 		$divider_height_vertical = (isset($settings->divider_height_vertical) && $settings->divider_height_vertical) ? $settings->divider_height_vertical : '';
 		$divider_height_vertical_sm = (isset($settings->divider_height_vertical_sm) && $settings->divider_height_vertical_sm) ? $settings->divider_height_vertical_sm : '';
 		$divider_height_vertical_xs = (isset($settings->divider_height_vertical_xs) && $settings->divider_height_vertical_xs) ? $settings->divider_height_vertical_xs : '';
@@ -85,10 +86,10 @@ class SppagebuilderAddonDivider extends SppagebuilderAddons {
 		} else {
 			$inner_style .= ($divider_height) ? 'height:' . (int) $divider_height  . 'px;' : '';
 
-			if(strpos($divider_image, 'http://') !== false || strpos($divider_image, 'https://') !== false){
-				$inner_style .= ($divider_image) ? 'background-image: url(' . $divider_image  . ');background-repeat:' . $background_repeat . ';background-position:50% 50%;' : '';
+			if(strpos($divider_image_src, 'http://') !== false || strpos($divider_image_src, 'https://') !== false){
+				$inner_style .= ($divider_image_src) ? 'background-image: url(' . $divider_image_src  . ');background-repeat:' . $background_repeat . ';background-position:50% 50%;' : '';
 			} else {
-				$inner_style .= ($divider_image) ? 'background-image: url(' . JURI::base() . '/' . $divider_image  . ');background-repeat:' . $background_repeat . ';background-position:50% 50%;' : '';
+				$inner_style .= ($divider_image_src) ? 'background-image: url(' . JURI::base() . '/' . $divider_image_src  . ');background-repeat:' . $background_repeat . ';background-position:50% 50%;' : '';
 			}
 		}
 
@@ -199,11 +200,17 @@ class SppagebuilderAddonDivider extends SppagebuilderAddons {
 					border-radius:{{data.border_radius}}px;
 				<# }
 				} else { 
+					var media = {}
+					if (typeof data.divider_image !== "undefined" && typeof data.divider_image.src !== "undefined") {
+						media = data.divider_image
+					} else {
+						media = {src: data.divider_image}
+					}
 				#>
 					height: {{ data.divider_height }}px;
-					<# if(data.divider_image.indexOf("http://") == -1 && data.divider_image.indexOf("https://") == -1){ #>background-image: url({{ pagebuilder_base + data.divider_image }});
+					<# if(media.src?.indexOf("http://") == -1 && media.src?.indexOf("https://") == -1){ #>background-image: url({{ pagebuilder_base + media.src }});
 					<# } else { #>
-						background-image: url({{ data.divider_image }});
+						background-image: url({{ media.src }});
 					<# } #>
 					background-repeat: {{ data.background_repeat }};
 					background-position:50% 50%;

@@ -3,13 +3,16 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Postproc\Exception;
 
+defined('AKEEBAENGINE') || die();
+
 use Akeeba\Engine\Postproc\Base;
+use Exception;
 use RuntimeException;
 use Throwable;
 
@@ -20,11 +23,11 @@ class EngineException extends RuntimeException
 	/**
 	 * Construct the exception. If a message is not defined the default message for the exception will be used.
 	 *
-	 * @param   string     $message   [optional] The Exception message to throw.
-	 * @param   int        $code      [optional] The Exception code.
-	 * @param   Throwable  $previous  [optional] The previous throwable used for the exception chaining.
+	 * @param   string               $message   [optional] The Exception message to throw.
+	 * @param   int                  $code      [optional] The Exception code.
+	 * @param   Exception|Throwable  $previous  [optional] The previous throwable used for the exception chaining.
 	 */
-	public function __construct($message = "", $code = 0, Throwable $previous = null)
+	public function __construct($message = "", $code = 0, $previous = null)
 	{
 		if (empty($message))
 		{

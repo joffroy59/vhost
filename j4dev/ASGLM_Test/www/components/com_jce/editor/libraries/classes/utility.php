@@ -1,14 +1,14 @@
 <?php
 
 /**
- * @copyright    Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright    Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license    GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses
  */
-defined('_JEXEC') or die('RESTRICTED');
+defined('JPATH_PLATFORM') or die('RESTRICTED');
 
 /* Set internal character encoding to UTF-8 */
 if (function_exists('mb_internal_encoding')) {
@@ -126,9 +126,12 @@ abstract class WFUtility
         $path = trim(rawurldecode($path));
 
         // check for UNC path on IIS and set prefix
-        if ($ds == '\\' && $path[0] == '\\' && $path[1] == '\\') {
-            $prefix = '\\';
+        if ($ds == '\\' && strlen($path) > 1) {
+            if ($path[0] == '\\' && $path[1] == '\\') {
+                $prefix = '\\';
+            }
         }
+        
         // clean path, removing double slashes, replacing back/forward slashes with DIRECTORY_SEPARATOR
         $path = preg_replace('#[/\\\\]+#', $ds, $path);
 
@@ -156,7 +159,7 @@ abstract class WFUtility
             return false;
         }
 
-        if (preg_match('#([^\w\.\-~\/\\\\\s ])#i', $string, $matches)) {
+        if (preg_match('#([^\w\.\-\/\\\\\s ])#i', $string, $matches)) {
             foreach ($matches as $match) {
                 // not a safe UTF-8 character
                 if (ord($match) < 127) {
@@ -271,7 +274,7 @@ abstract class WFUtility
     private static function cleanUTF8($string)
     {
         // remove some common characters
-        $string = preg_replace('#[\+\\\/\?\#%&<>"\'=\[\]\{\},;@\^\(\)£€$]#', '', $string);
+        $string = preg_replace('#[\+\\\/\?\#%&<>"\'=\[\]\{\},;@\^\(\)£€$~]#', '', $string);
 
         $result = '';
         $length = strlen($string);
@@ -280,7 +283,7 @@ abstract class WFUtility
             $char = $string[$i];
 
             // only process on possible restricted characters or utf-8 letters/numbers
-            if (preg_match('#[^\w\.\-~\s ]#', $char)) {
+            if (preg_match('#[^\w\.\-\s ]#', $char)) {
                 // skip any character less than 127, eg: &?@* etc.
                 if (ord($char) < 127) {
                     continue;
@@ -326,10 +329,10 @@ abstract class WFUtility
         }
 
         if ($mode === 'utf-8') {
-            $search[] = '#[^\pL\pM\pN_\.\-~\s ]#u';
+            $search[] = '#[^\pL\pM\pN_\.\-\s ]#u';
         } else {
             $subject = self::utf8_latin_to_ascii($subject);
-            $search[] = '#[^a-zA-Z0-9_\.\-~\s ]#';
+            $search[] = '#[^a-zA-Z0-9_\.\-\s ]#';
         }
 
         // remove multiple . characters
@@ -474,7 +477,13 @@ abstract class WFUtility
         $parts = explode('/', $path);
 
         // return basename
-        return end($parts);
+        $path = end($parts);
+
+        if ($ext === '.' . self::getExtension($path)) {
+            $path = self::stripExtension($path);
+        }
+    
+        return $path;
     }
 
     public static function convertEncoding($string)
@@ -509,7 +518,7 @@ abstract class WFUtility
 
         // invalid encoding, so make a "safe" string
         if ($encoding === false) {
-            return preg_replace('#[^a-zA-Z0-9_\.\-~\s ]#', '', $string);
+            return preg_replace('#[^a-zA-Z0-9_\.\-\s ]#', '', $string);
         }
 
         // convert to utf-8 and return
@@ -550,18 +559,25 @@ abstract class WFUtility
 
         if (isset($matches[2])) {
             $unit = $matches[2];
+
+            // extract first character only, eg: g, m, k
+            if ($unit) {
+                $unit = strtolower($unit[0]);
+            }
         }
 
+        $value = intval($value);
+
         // Convert to bytes
-        switch (strtolower($unit)) {
+        switch ($unit) {
             case 'g':
-                $value = intval($value) * 1073741824;
+                $value = $value * 1073741824;
                 break;
             case 'm':
-                $value = intval($value) * 1048576;
+                $value = $value * 1048576;
                 break;
             case 'k':
-                $value = intval($value) * 1024;
+                $value = $value * 1024;
                 break;
         }
 

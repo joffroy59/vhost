@@ -30,9 +30,10 @@ services:
     restart: "no"
     volumes:
       - /home/joffroy/vhost/j4dev/ASGLM_Test/db:/var/lib/mysql:rw
-
     networks:
       - data
+    ports:
+      - 13307:3306
     environment:
       MYSQL_ROOT_PASSWORD: example
 
@@ -44,3 +45,5 @@ services:
       - "91:80"
     environment:
       PMA_HOST: joomladb
+    networks:
+      - data

@@ -3,15 +3,13 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Filter;
 
-
-
-use Akeeba\Engine\Factory;
+defined('AKEEBAENGINE') || die();
 
 /**
  * Extra Directories inclusion filter
@@ -24,15 +22,11 @@ class Extradirs extends Base
 		$this->subtype = 'inclusion';
 		$this->method  = 'direct';
 
-		if (Factory::getKettenrad()->getTag() == 'restorepoint')
-		{
-			$this->enabled = false;
-		}
-
 		if (empty($this->filter_name))
 		{
 			$this->filter_name = strtolower(basename(__FILE__, '.php'));
 		}
+
 		parent::__construct();
 	}
 }

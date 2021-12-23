@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ @package   akeebabackup
-  ~ @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
   ~ @license   GNU General Public License version 3, or later
   -->
 
-<extension version="3.8.0" type="component" method="upgrade">
+<extension version="3.9.0" type="component" method="upgrade">
 	<name>Akeeba</name>
-	<creationDate>2020-04-07</creationDate>
+	<creationDate>2021-12-06</creationDate>
 	<author>Nicholas K. Dionysopoulos</author>
 	<authorEmail>nicholas@dionysopoulos.me</authorEmail>
-	<authorUrl>http://www.akeebabackup.com</authorUrl>
+	<authorUrl>https://www.akeeba.com</authorUrl>
 	<copyright>Copyright (c)2006-2019 Akeeba Ltd / Nicholas K. Dionysopoulos</copyright>
 	<license>GNU GPL v3 or later</license>
-	<version>7.1.3</version>
+	<version>8.0.14</version>
 	<description>Akeeba Backup Core - Full Joomla! site backup solution, Core Edition.</description>
 
 	<!-- Public front end files -->
@@ -45,6 +45,7 @@
 			<folder>backup</folder>
 			<folder>BackupEngine</folder>
 			<folder>BackupPlatform</folder>
+			<folder>CliCommands</folder>
 			<folder>Controller</folder>
 			<folder>Dispatcher</folder>
 			<folder>fields</folder>
@@ -54,8 +55,7 @@
 			<folder>sql</folder>
 			<folder>Toolbar</folder>
 			<folder>View</folder>
-			<folder>views</folder>
-			<folder>ViewTemplates</folder>
+			<folder>tmpl</folder>
 
 			<filename>akeeba.php</filename>
 			<filename>fof.xml</filename>

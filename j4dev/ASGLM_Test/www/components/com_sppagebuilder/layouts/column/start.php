@@ -2,16 +2,18 @@
 /**
  * @package SP Page Builder
  * @author JoomShaper http://www.joomshaper.com
- * @copyright Copyright (c) 2010 - 2016 JoomShaper
+ * @copyright Copyright (c) 2010 - 2021 JoomShaper
  * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 or later
 */
 //no direct accees
 defined ('_JEXEC') or die ('restricted aceess');
 
+use Joomla\CMS\Factory;
+
 $options = $displayData['options'];
 $custom_class  = (isset($options->class)) ? ' ' . $options->class : '';
 $data_attr = '';
-$doc = JFactory::getDocument();
+$doc = Factory::getDocument();
 
 // Responsive
 if(isset($options->sm_col) && $options->sm_col) {

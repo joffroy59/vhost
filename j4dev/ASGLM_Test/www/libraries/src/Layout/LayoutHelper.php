@@ -69,7 +69,15 @@ class LayoutHelper
 		// Make sure we send null to FileLayout if no path set
 		$basePath = empty($basePath) ? null : $basePath;
 		$layout = new FileLayout($layoutFile, $basePath, $options);
+		//printf("ARF: ".get_class($layout)." ".serialize($layout)."<BR>");
+/*
+ 		var_dump($displayData);
+		printf("<BR>");
+		printf("<BR>");
+		printf("<BR>");
+*/
 
+		//printf("<BR>DEBUG: ".get_class($displayData));
 		return $layout->render($displayData);
 	}
 }

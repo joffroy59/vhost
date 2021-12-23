@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2020 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -128,9 +128,9 @@ class WFFileBrowser extends JObject
         ));
 
         // assign session data
-        $view->assign('session', $session);
+        $view->session = $session;
         // assign form action
-        $view->assign('action', $this->getFormAction());
+        $view->action = $this->getFormAction();
         // return view output
         $view->display();
     }
@@ -237,7 +237,7 @@ class WFFileBrowser extends JObject
                 // create flattened array, eg: ["jpg", "jpeg", "gif", "png"]
                 if ($format === 'array' || $format === 'list') {
                     $data = array_merge($data, array_map('strtolower', $items));
-                // create associative array, eg:  or ["images" => ["jpg", "jpeg", "gif", "png"]]
+                    // create associative array, eg:  or ["images" => ["jpg", "jpeg", "gif", "png"]]
                 } else {
                     $data[$type] = $items;
                 }
@@ -256,7 +256,7 @@ class WFFileBrowser extends JObject
 
         // return array
         $data = array_values($data);
-        
+
         return $data;
     }
 
@@ -355,12 +355,17 @@ class WFFileBrowser extends JObject
 
         if (!empty($filters)) {
             $filesystem = $this->getFileSystem();
-            
-            $path = ltrim($path, '/');
+
+            // remove slashes
+            $path = trim($path, '/');
 
             foreach ($filters as $filter) {
+                // remove whitespace
                 $filter = trim($filter);
-                
+
+                // remove slashes
+                $filter = trim($filter, '/');
+
                 // show this folder
                 if ($filter[0] === "+") {
                     $path_parts = explode('/', $path);
@@ -368,7 +373,7 @@ class WFFileBrowser extends JObject
                     // remove "+" from filter
                     $filter = substr($filter, 1);
 
-                    // process path for variables, text case etc. 
+                    // process path for variables, text case etc.
                     $filesystem->processPath($filter);
 
                     // explode to array
@@ -381,16 +386,35 @@ class WFFileBrowser extends JObject
 
                     $return = false;
 
-                // hide this folder    
+                // hide this folder
                 } else {
                     $return = true;
-                    
+
+                    if ($filter[0] === "*") {
+                        // remove "-" from filter
+                        $filter = substr($filter, 1);
+
+                        // process path for variables, text case etc.
+                        $filesystem->processPath($filter);
+
+                        // explode to array
+                        $path_parts = explode('/', $path);
+
+                        // explode to array
+                        $filter_parts = explode('/', $filter);
+
+                        // filter match
+                        if (false === empty(array_intersect($filter_parts, $path_parts))) {
+                            return false;
+                        }
+                    }
+
                     if ($filter[0] === "-") {
                         // remove "-" from filter
                         $filter = substr($filter, 1);
                     }
 
-                    // process path for variables, text case etc. 
+                    // process path for variables, text case etc.
                     $filesystem->processPath($filter);
 
                     if ($filter === $path) {
@@ -428,7 +452,7 @@ class WFFileBrowser extends JObject
             if (empty($item['id'])) {
                 return true;
             }
-            
+
             return $this->checkPathAccess(dirname($item['id']));
         });
 
@@ -451,7 +475,7 @@ class WFFileBrowser extends JObject
             if (empty($item['id'])) {
                 return true;
             }
-            
+
             return $this->checkPathAccess($item['id']);
         });
 
@@ -509,9 +533,9 @@ class WFFileBrowser extends JObject
         // copy query
         $keyword = self::sanitizeSearchTerm($query);
 
-        // allow for wildcards 
+        // allow for wildcards
         $keyword = str_replace('*', '.*', $keyword);
-            
+
         // query filter
         $keyword = '^(?i).*' . $keyword . '.*';
 
@@ -519,7 +543,7 @@ class WFFileBrowser extends JObject
             // clean query removing leading .
             $extension = WFUtility::makeSafe($query);
 
-            $filetypes = array_filter($filetypes, function($value) use ($extension) {
+            $filetypes = array_filter($filetypes, function ($value) use ($extension) {
                 return $value === $extension;
             });
 
@@ -541,7 +565,7 @@ class WFFileBrowser extends JObject
         }
 
         // get properties for found items by type
-        foreach($items as $item) {            
+        foreach ($items as $item) {
             $type = $item['type'];
 
             if ($type === 'files') {
@@ -762,6 +786,7 @@ class WFFileBrowser extends JObject
 
         if ($init) {
             $treedir = $dir;
+
             if ($root) {
                 $result = '<ul>'
                 . '<li data-id="/" class="uk-tree-open uk-tree-root uk-padding-remove">'
@@ -771,42 +796,45 @@ class WFFileBrowser extends JObject
                 . '       <i class="uk-icon uk-icon-home"></i>'
                 . '     </span>'
                 . '     <span class="uk-tree-text">' . JText::_('WF_LABEL_HOME', 'Home') . '</span>'
-                    . '   </a>'
-                    . ' </div>';
+                . '   </a>'
+                . ' </div>';
 
                 $dir = '/';
             }
         }
+
         $folders = $this->getFolders($dir);
 
         if ($folders) {
             $result .= '<ul class="uk-tree-node">';
+
             foreach ($folders as $folder) {
                 $name = ltrim($folder['id'], '/');
 
                 $open = preg_match('#' . $name . '\b#', $treedir);
 
                 $result .= '<li data-id="' . $this->escape($name) . '" class="' . ($open ? 'uk-tree-open' : '') . '">'
-                    . ' <div class="uk-tree-row">'
-                    . '   <a href="#">'
-                    . '     <span class="uk-tree-icon" role="presentation"></span>'
-                    . '     <span class="uk-tree-text uk-text-truncate" title="' . $folder['name'] . '">' . $folder['name'] . '</span>'
-                    . '   </a>'
-                    . ' </div>';
-
-                if ($open) {
-                    if ($h = $this->getTreeItems($folder['id'], false, false)) {
-                        $result .= $h;
-                    }
-                }
+                . ' <div class="uk-tree-row">'
+                . '   <a href="#">'
+                . '     <span class="uk-tree-icon" role="presentation"></span>'
+                . '     <span class="uk-tree-text uk-text-truncate" title="' . $folder['name'] . '">' . $folder['name'] . '</span>'
+                . '   </a>'
+                . ' </div>';
+                
+                /*if ($open) {                    
+                    $result .= $this->getTreeItems($folder['id'], false, false);
+                }*/
 
                 $result .= '</li>';
             }
+
             $result .= '</ul>';
         }
+
         if ($init && $root) {
             $result .= '</li></ul>';
         }
+
         $init = false;
 
         return $result;
@@ -1158,7 +1186,7 @@ class WFFileBrowser extends JObject
     public function upload()
     {
         // Check for request forgeries
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        JSession::checkToken('request') or jexit(JText::_('JINVALID_TOKEN'));
 
         // check for feature access
         if (!$this->checkFeature('upload')) {
@@ -1292,6 +1320,9 @@ class WFFileBrowser extends JObject
                 if (empty($result->url)) {
                     $result->url = WFUtility::makePath($filesystem->getRootDir(), WFUtility::makePath($dir, $name));
                 }
+
+                // trim slashes
+                $result->url = trim($result->url, '/');
 
                 // run events
                 $data = $this->fireEvent('onUpload', array($result->path, $result->url));

@@ -1,17 +1,17 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Helper;
 
 // Protect from unauthorized access
-use Joomla\Filter\InputFilter;
-use JUri;
+defined('_JEXEC') || die();
 
-defined('_JEXEC') or die();
+use Joomla\CMS\Uri\Uri;
+use Joomla\Filter\InputFilter;
 
 class Utils
 {
@@ -38,7 +38,7 @@ class Utils
 		foreach ($from as $depth => $dir)
 		{
 			// find first non-matching dir
-			if ($dir === $to[ $depth ])
+			if ($dir === $to[$depth])
 			{
 				// ignore this directory
 				array_shift($relPath);
@@ -132,12 +132,12 @@ class Utils
 		}
 
 		// Check if it's an internal URL
-		if (!JUri::isInternal($returnUrl))
+		if (!Uri::isInternal($returnUrl))
 		{
 			return '';
 		}
 
-		$disallowedCharacters = ['"' ,"'", '>', '<'];
+		$disallowedCharacters = ['"', "'", '>', '<'];
 
 		foreach ($disallowedCharacters as $check)
 		{
