@@ -1,4 +1,9 @@
-is_healthy() {
+#!/bin/bash
+
+template_folder="ASGLM_template"
+
+
+function is_healthy() {
     service="$1"
     container_id="$(docker-compose ps -q "$service")"
     health_status="$(docker inspect -f "{{.State.Health.Status}}" "$container_id")"
@@ -7,11 +12,5 @@ is_healthy() {
         return 0
     else
         return 1
-    fi
-}
-
-git_cmd(){
-    if [ "$repot_git" == "yes" ]; then
-        git $@
     fi
 }
