@@ -19,9 +19,10 @@ cd $instance_name
 docker_up
 docker_up_wait
 docker_stop
+cd ..
 
 if [ "$import_site_backup" == "yes" ]; then
-    importSiteBackup
+    importSiteBackup $instance_name
 fi
 
 if [ "$set_permission" == "yes" ]; then
