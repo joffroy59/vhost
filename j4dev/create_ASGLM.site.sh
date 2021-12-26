@@ -74,4 +74,4 @@ while ! is_healthy joomla; do sleep 1; done
 # echo "stop joomla ..."
 docker-compose stop 
 
-sh permission.sh
+# sh permission.sh
