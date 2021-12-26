@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source common.sh
+source script/common.sh
 
 template_folder="ASGLM_template"
 
@@ -75,3 +75,5 @@ while ! is_healthy joomla; do sleep 1; done
 docker-compose stop 
 
 # sh permission.sh
+
+# sh prepare_import_akeebah.sh

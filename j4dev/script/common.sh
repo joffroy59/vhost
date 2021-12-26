@@ -12,6 +12,6 @@ is_healthy() {
 
 git_cmd(){
     if [ "$repot_git" == "yes" ]; then
-        echo "parameter |$@|"
+        git $@
     fi
 }
