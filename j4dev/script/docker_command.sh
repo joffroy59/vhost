@@ -17,3 +17,8 @@ function docker_stop(){
     echo "stop joomla ..."
     docker-compose stop 
 }
+
+function docker_start(){
+    echo "start joomla ..."
+    docker-compose start 
+}

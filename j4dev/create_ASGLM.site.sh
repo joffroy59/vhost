@@ -18,7 +18,7 @@ gitInit_instance
 cd $instance_name
 docker_up
 docker_up_wait
-docker_stop
+# docker_stop
 cd ..
 
 if [ "$import_site_backup" == "yes" ]; then
@@ -28,3 +28,9 @@ fi
 if [ "$set_permission" == "yes" ]; then
     setPermission $instance_name
 fi
+
+cd $instance_name
+docker_start
+cd ..
+
+echo "open : http://localhost/kickstart.php"

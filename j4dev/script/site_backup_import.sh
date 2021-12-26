@@ -42,10 +42,11 @@ function importSiteBackup(){
     echo "Backup selected: $slectedBackup"
 
     echo "Remove $INSTANCE_FOLDER/www/*"
-    #rm -rf $INSTANCE_FOLDER/www/*
+    sudo rm -rf $INSTANCE_FOLDER/www/*
     
     echo "Copy kickstarter in $INSTANCE_FOLDER/www/"
-    # cp -p akeebah/kickstart-core-7.1.0/kickstart.php  $INSTANCE_FOLDER/www/ 
+    sudo cp -p akeebah/kickstart-core-7.1.0/kickstart.php  $INSTANCE_FOLDER/www/ 
 
     echo "Copy Backup jpa: $BACKUP_FOLDER/$slectedBackup in $INSTANCE_FOLDER/www/"
+    sudo cp -p $BACKUP_FOLDER/$slectedBackup  $INSTANCE_FOLDER/www/ 
 }
