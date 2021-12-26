@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function docker_up(){
-    docker-compose up -d 
+    docker-compose up --build -d  
     if [ $? -ne 0 ]; then
         echo "Error creating docker container"
         exit 1
