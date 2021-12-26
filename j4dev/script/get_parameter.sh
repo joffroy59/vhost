@@ -11,11 +11,11 @@ function setParameter(){
     read -p "Creer un repository git [no|yes] [no]: " repot_git
     repot_git=${repot_git:-no}
 
+    read -p "Import ASGLM site [no|yes] [yes]: " import_site_backup
+    import_site_backup=${import_site_backup:-yes}
+
     read -p "Set permission [no|yes] [no]: " set_permission
     set_permission=${set_permission:-no}
-
-    read -p "Import ASGLM site [no|yes] [no]: " import_site_backup
-    import_site_backup=${import_site_backup:-no}
 }
 
 
