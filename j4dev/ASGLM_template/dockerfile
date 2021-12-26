@@ -7,4 +7,3 @@ FROM joomla:3.9.18-php7.4
 #clean joomla isntallation
 #RUN rm -rf /var/www/html/*
 RUN chmod -R g+rw /var/www/html
-RUN chmod -R g+rw /var/www/db
