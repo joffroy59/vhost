@@ -18,6 +18,9 @@ external_port_joomla=${external_port_joomla:-80}
 read -p "Creer un repository git [no|yes] [no]: " repot_git
 repot_git=${repot_git:-no}
 
+read -p "Set permission [no|yes] [no]: " set_permission
+set_permission=${set_permission:-no}
+
 external_port_db_default=$(expr $default_bd_port_base + $(expr $external_port_joomla - 80))
 external_port_db=${external_port_db:-${external_port_db_default}}
 
@@ -74,6 +77,10 @@ while ! is_healthy joomla; do sleep 1; done
 # echo "stop joomla ..."
 docker-compose stop 
 
-# sh permission.sh
+if [ "$set_permission" == "yes" ]; then
+    echo "set folde permission" 
+    sh script/permission.sh $isntance_name
+fi
+
 
 # sh prepare_import_akeebah.sh
