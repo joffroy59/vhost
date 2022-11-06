@@ -5,7 +5,7 @@
  *
  * @version     $Id: helper.php 3549 2012-04-20 09:26:21Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd, 2006-2008 JEvents Project Group
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd, 2006-2008 JEvents Project Group
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -707,9 +707,10 @@ class JEVHelper
 
 			list ($yearpart, $monthpart, $daypart) = explode("-", $value);
 			$value = str_replace(array("Y", "m", "d"), array($yearpart, $monthpart, $daypart), $format);
-
+			$attributes = $attribs;
 			// Build the attributes array.
 			empty($onchange) ? null : $attributes['onchange'] = $onchange;
+			empty($onchange) ? null : $attributes['onChange'] = $onchange;
 			//$attributes['onselect']="function{this.hide();}";
 			/*
 			empty($this->size)      ? null : $attributes['size'] = $this->size;
@@ -4234,25 +4235,11 @@ SCRIPT;
 
 	}
 
-	/**
-	 * DEPRECATED use JevHtmlBootstrap::modal instead
-	 */
 	public static
 	function modal($selector = 'a.modal', $params = array())
 	{
 
-		if (version_compare(JVERSION, "3.0", "ge"))
-		{
-			// Load the code Joomla version
-			//	HTMLHelper::_('jquery.framework');
-			//	HTMLHelper::_('bootstrap.modal');
-			//	return;
-		}
-
-		HTMLHelper::_('behavior.modal', $selector, $params);
-
-		return;
-
+		JevModal::modal($selector, $params);
 		return;
 	}
 
@@ -4333,7 +4320,10 @@ SCRIPT;
 			//Joomla! no longer provides HTML allowed in input so we need to fetch raw
 			//Then filter on through with InputFilter to HTML
 
-			foreach ($array as $key => $row)
+            // Ensure it is an array for filtering.
+            $array	= is_string($array) ? array($array) : $array;
+
+            foreach ($array as $key => $row)
 			{
 				//Single row check
 				if (!is_array($row))

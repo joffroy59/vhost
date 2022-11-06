@@ -4,7 +4,7 @@
  *
  * @version     $Id: jevselectevent.php 3503 2012-04-10 11:04:26Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -49,8 +49,8 @@ class FormFieldJEVselectEvent extends FormField
 		}
 
 		// Load the modal behavior script.
-		JLoader::register('JevModal', JPATH_LIBRARIES . "/jevents/jevmodal/jevmodal.php");
-		JevModal::modal("a.selectmodal");
+		JLoader::register('JevModal',JPATH_LIBRARIES."/jevents/jevmodal/jevmodal.php");
+		JevModal::framework();
 
 		$js = "
 		function jSelectEvent_" . $this->id . "(link, title, Itemid, evid, rpid) {

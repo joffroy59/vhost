@@ -4,7 +4,7 @@
  * @package     GWE Systems
  * @subpackage  System.Gwejson
  *
- * @copyright   Copyright (C)  2015 - 2021 GWE Systems Ltd. All rights reserved.
+ * @copyright   Copyright (C)  2015 - 2022 GWE Systems Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 defined('JPATH_BASE') or die;
@@ -168,8 +168,9 @@ class PlgSystemGwejson extends JPlugin
 			{
 				$requestObject            = new stdClass();
 				$requestObject->typeahead = $input->get('typeahead', '', 'string');
-				$data                     = null;
-				$data                     = ProcessJsonRequest($requestObject, $data);
+				// Needed for PHP 8
+				$data = new stdClass();
+				$data = ProcessJsonRequest($requestObject, $data);
 			}
 			catch (Exception $e)
 			{
@@ -291,4 +292,16 @@ class PlgSystemGwejson extends JPlugin
 		}
 	}
 	*/
+
+	public
+	function onAfterRender()
+	{
+		if (version_compare(JVERSION, '4.0.0', 'ge'))
+		{
+
+			$document = Factory::getApplication()->getDocument();
+			$wa      = $document->getWebAssetManager();
+			$scripts = $wa->getAssets('script');
+		}
+	}
 }

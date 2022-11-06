@@ -1,8 +1,8 @@
 /**
- * @version    CVS: 3.6.23
+ * @version    CVS: 3.6.33
  * @package    com_jevents
  * @author     Geraint Edwards
- * @copyright  2017--2021 GWESystems Ltd
+ * @copyright  2017--2022 GWESystems Ltd
  * @license    GNU General Public License version 3 or later; see LICENSE.txt
  */
 
@@ -268,6 +268,12 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 	}
 
+	// remove phoca top menu
+	if (document.querySelector('.ph-topmenu-navbar'))
+	{
+		document.querySelector('.ph-topmenu-navbar').style.display = 'none';
+	}
+
 	// Hide toggled left-menu if in click mode
 	document.querySelector('#right-col > .gsl-content, #right-col > #top-head').addEventListener('mouseover', () => {
 		if (document.getElementById('left-col') && document.getElementById('left-col') && !document.getElementById('left-col').classList.contains('hide-label')) {
@@ -437,7 +443,7 @@ function ys_setuppopover(selector)
 	hoveritems.forEach(function (hoveritem) {
 
 		let title = hoveritem.getAttribute('data-yspoptitle') || hoveritem.getAttribute('data-original-title') || hoveritem.getAttribute('title');
-		let body = hoveritem.getAttribute('data-yspopcontent') || hoveritem.getAttribute('data-content') || '';
+		let body = hoveritem.getAttribute('data-yspopcontent') || hoveritem.getAttribute('data-content')  || hoveritem.getAttribute('data-bs-content') || '';
 		let options = hoveritem.getAttribute('data-yspopoptions') || '{"mode" : "click, hover", "offset" : 20,"delayHide" : 200, "pos" : "top"}';
 		//options = '{ "offset" : 20,"delay" : 20, "pos" : "top", "duration" : 200}';
 		options = JSON.parse(options);

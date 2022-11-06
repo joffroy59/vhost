@@ -4,7 +4,7 @@
  *
  * @version     $Id: edit.php 3543 2012-04-20 08:17:42Z geraint edwards $
  * @package     JEvents
- * @copyright   Copyright (C)  2008-2021 GWESystems Ltd
+ * @copyright   Copyright (C)  2008-2022 GWESystems Ltd
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -709,10 +709,12 @@ $accesslevels = "jeval" . implode(" jeval", array_unique($accesslevels));
                         $extraTab['content'] = str_replace('class="span2', 'class="gsl-width-1-6@m gsl-width-1-1 gsl-margin-small-bottom', $extraTab['content'] );
                         $extraTab['content'] = str_replace(array('class="span10', 'class=" span10'), 'class="gsl-width-expand gsl-margin-small-bottom  ', $extraTab['content'] );
 
-                            // Needed to deal with early execution of initTemplate in backend
+                        // Needed to deal with early execution of initTemplate in backend
                         $extraTab['content'] = str_replace('btn-group', 'btn-group-ysts', $extraTab['content']);
 
-                      //  echo "<h2 class='gsl-h2'>Do controls and control-label replacements too</h2>";
+                        //  echo "<h2 class='gsl-h2'>Do controls and control-label replacements too</h2>";
+                        // replace out of date showon
+                        $extraTab['content'] = str_replace(' data-showon', ' data-showon-gsl', $extraTab['content']);
 
 						echo $extraTab['content'];
 						echo "</div>";

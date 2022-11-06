@@ -17,6 +17,7 @@
 .jevmodal-small .modal-dialog {
     width: auto;
     margin: 0px;
+    max-width: 100%;
 }
 
 .jevmodal-medium {
@@ -30,6 +31,7 @@
 .jevmodal-medium .modal-dialog {
     height: 100%;
     width: auto;
+    max-width: 100%;
 }
 
 .jevmodal-full {
@@ -43,6 +45,7 @@
     bottom: 5%;
     top: 5%;
     left: 5%;
+    max-height: 90%;
     margin: 0px;
     z-index: 1050;
     width: 90%;
@@ -81,6 +84,11 @@
 }
 
 /* Common CSS */
+
+body > div.jevmodal.show {
+    z-index:10000
+}
+
 .jevmodal .close {
     float: right;
     font-size: 20px;
@@ -186,16 +194,18 @@
 }
 
 .jevmodal .modal-body iframe {
-    width: 100%;
+    width: 100%!important;
     border: none;
-    height: 100%;
+    height: 100%!important;
     max-height: 100%;
+    max-width: 100%;
 }
 
 .jevmodal .modal-dialog {
     height: 100%;
     width: auto;
     margin: 0px;
+    max-width: 100%;
 }
 
 .jevmodal .modal-content {

@@ -1,9 +1,9 @@
 <?php
 /**
- * @version    CVS: 3.6.23
+ * @version    CVS: 3.6.33
  * @package    com_jevents
  * @author     Geraint Edwards <yoursites@gwesystems.com>
- * @copyright  2016-2021 GWESystems Ltd
+ * @copyright  2016-2022 GWESystems Ltd
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -457,7 +457,7 @@ class GslHelper
 			$iconLink->icon           = "";
 			$iconLink->iconSrc        = "components/com_yoursites/assets/images/YourSitesIcon.png";
 			$iconLink->label          = strip_tags(Text::_('COM_YOURSITES'));
-			$iconLink->tooltip        = $leftmenutrigger !== 2 ? "" : Text::_('COM_YOURSITES', true);
+			$iconLink->tooltip        = $leftmenutrigger !== 2 ? "" :str_replace("'", '"',  Text::_('COM_YOURSITES', false));
 			$iconLink->tooltip_detail = "";
 			$iconLinks[]              = $iconLink;
 		}

@@ -4,7 +4,7 @@
  *
  * @version     $Id: jevents.defines.php 3090 2011-12-11 10:00:17Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -40,6 +40,7 @@ JLoader::register('SaveIcalEvent', JEV_ADMINLIBS . "saveIcalEvent.php");
 JLoader::register('JEVHelper', JEV_PATH . "libraries/helper.php");
 JLoader::register('JevModuleHelper', JEV_PATH . "libraries/jevmodulehelper.php");
 JLoader::register('JevHtmlBootstrap', JEV_PATH . "libraries/bootstrap.php");
+JLoader::register('JevModal', JPATH_LIBRARIES . "/jevents/jevmodal/jevmodal.php");
 
 // TODO replace with Date
 JLoader::register('JEventDate', JEV_PATH . "libraries/jeventdate.php");

@@ -4,7 +4,7 @@
  *
  * @version     $Id: overview.php 3548 2012-04-20 09:25:43Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C)  2008-2021 GWESystems Ltd
+ * @copyright   Copyright (C)  2008-2022 GWESystems Ltd
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -45,7 +45,7 @@ $data['options'] = array_merge($customOptions, $data['options']);
 			<!-- End Filters -->
 			<div class="clearfix"></div>
 
-			<table cellpadding="4" cellspacing="0" border="0" width="100%" class="adminlist table table-striped">
+			<table class="adminlist gsl-table gsl-table-striped gsl-table-hover">
 				<tr>
 					<th width="20" nowrap="nowrap">
 						<?php echo HTMLHelper::_('grid.checkall'); ?>
@@ -74,7 +74,7 @@ $data['options'] = array_merge($customOptions, $data['options']);
 						</td>
 						<td >
 							<?php
-							$times = '<table style="border: 1px solid #666666; width:100%;">';
+							$times = '<table class="gsl-table gsl-table-small gsl-margin-remove" >';
 							$times .= '<tr><td>' . Text::_('JEV_FROM') . ' : ' . ($row->alldayevent() ? StringHelper::substr($row->publish_up(), 0, 10) : StringHelper::substr($row->publish_up(), 0, 16)) . '</td></tr>';
 							$times .= '<tr><td>' . Text::_('JEV_TO') . ' : ' . (($row->noendtime() || $row->alldayevent()) ? StringHelper::substr($row->publish_down(), 0, 10) : StringHelper::substr($row->publish_down(), 0, 16)) . '</td></tr>';
 							$times .= "</table>";

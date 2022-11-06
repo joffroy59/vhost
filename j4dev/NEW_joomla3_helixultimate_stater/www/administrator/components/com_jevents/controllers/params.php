@@ -7,7 +7,7 @@
  *
  * @version     $Id: params.php 3548 2012-04-20 09:25:43Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd, 2006-2008 JEvents Project Group
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd, 2006-2008 JEvents Project Group
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -279,6 +279,11 @@ class AdminParamsController extends AdminController
 				}
 			}
 		}
+
+		// Must clear plugin cache too!
+		$this->cleanCache('com_plugins', 1); // admin
+		$this->cleanCache('com_plugins', 0); // site
+
 
 		//SAVE AND APPLY CODE FROM PRAKASH
 		switch ($this->getTask())

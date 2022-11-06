@@ -3,7 +3,7 @@
  *
  * @version     $Id: editicalJQ.js 3576 2012-05-01 14:11:04Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008--2021 GWESystems Ltd, 2006-2008 JEvents Project Group
+ * @copyright   Copyright (C) 2008--2022 GWESystems Ltd, 2006-2008 JEvents Project Group
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -433,7 +433,7 @@ function setEndDateWhenNotRepeating(elem){
 	endDate = endDate.dateFromYMD(end_date.value);
 
     defaultEndDate = new Date();
-    defaultEndDate = endDate.dateFromYMD(end_date.defaultValue);
+    defaultEndDate = defaultEndDate.dateFromYMD(end_date.defaultValue);
 
 	/** If the end date is not visible then always set the end date to match the start date **/
 	enddate_container = document.querySelector('.jevenddate');
@@ -441,7 +441,7 @@ function setEndDateWhenNotRepeating(elem){
 		end_date.value = start_date.value;
 	}
 
-	/** New way of handling publidh_up and publish_down calendar inputs **/
+	/** New way of handling publish_up and publish_down calendar inputs **/
 
 	if (id === 'publish_up' && startDate != defaultStartDate) {
         end_date.value = start_date.value;
@@ -1192,7 +1192,11 @@ document.addEventListener('DOMContentLoaded', function() {
         jevjq('#byyearday, #bymonth, #byweekno, #bymonthday, #byday, #byirregular, #bysetpos').on('click', function() {
             jevjq('#'+this.id).find('legend input[name="whichby"]').attr('checked', true);
             toggleWhichBy(this.id);
-        });
+        })
+
+	document.addEventListener('gslshowon', function(e) {
+		hideEmptyJevTabs();
+	})
 
 });
 
@@ -1250,6 +1254,21 @@ function hideEmptyJevTabs() {
 				{
 					uitablabels[index].style.display = 'none';
 				}
+				else
+				{
+					tab.classList.add('cleverGetHeightCSS');
+					//console.log(index + ' ' + tab.scrollHeight);
+					if (tab.scrollHeight == 0)
+					{
+						//console.log('hide tab ' + index);
+						uitablabels[index].classList.add('hiddenTab');
+					}
+					else
+					{
+						uitablabels[index].classList.remove('hiddenTab');
+					}
+					tab.classList.remove('cleverGetHeightCSS');
+				}
 			});
 		}
 
@@ -1265,7 +1284,7 @@ function selectIrregularDate() {
 	var calpopup = document.querySelector(".irregularDateSelector .js-calendar");
 
 	// Trap month to month movement!
-	if (calpopup.style.display !== "none")
+	if (calpopup.style.display !== "none" && !calpopup.hidden)
 	{
 		return;
 	}

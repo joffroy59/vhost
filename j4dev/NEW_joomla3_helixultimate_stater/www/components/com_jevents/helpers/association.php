@@ -3,7 +3,7 @@
  * @package     JEvents
  * @subpackage  com_jvents
  *
- * @copyright   Copyright (C) 2014-2021 GWESystems Ltd. All rights reserved.
+ * @copyright   Copyright (C) 2014-2022 GWESystems Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 if (file_exists(JPATH_ADMINISTRATOR . '/components/com_categories/helpers/association.php'))

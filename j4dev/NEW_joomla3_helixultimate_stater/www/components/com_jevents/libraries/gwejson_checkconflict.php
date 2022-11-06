@@ -1,6 +1,6 @@
 <?php
 /**
-* @copyright	Copyright (C) 2015-2021 GWESystems Ltd. All rights reserved.
+* @copyright	Copyright (C) 2015-2022 GWESystems Ltd. All rights reserved.
  * @license		By negotiation with author via http://www.gwesystems.com
 */
 

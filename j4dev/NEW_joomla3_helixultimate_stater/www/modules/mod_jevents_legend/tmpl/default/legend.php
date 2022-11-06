@@ -1,7 +1,7 @@
 <?php
 
 /**
- * copyright (C) 2008-2021 GWESystems Ltd - All rights reserved
+ * copyright (C) 2008-2022 GWESystems Ltd - All rights reserved
  */
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die();

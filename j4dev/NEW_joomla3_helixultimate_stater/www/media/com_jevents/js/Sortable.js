@@ -2473,6 +2473,6 @@
 
 
 	// Export
-	Sortable.version = '3.6.23';
+	Sortable.version = '3.6.33';
 	return Sortable;
 });

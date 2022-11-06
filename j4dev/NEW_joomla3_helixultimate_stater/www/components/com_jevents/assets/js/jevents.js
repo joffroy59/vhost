@@ -1,8 +1,8 @@
 /**
- * @version    CVS: 3.6.23
+ * @version    CVS: 3.6.33
  * @package    com_jevents
  * @author     Geraint Edwards
- * @copyright  2017--2021 GWESystems Ltd
+ * @copyright  2017--2022 GWESystems Ltd
  * @license    GNU General Public License version 3 or later; see LICENSE.txt
  */
 

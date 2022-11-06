@@ -5,7 +5,7 @@
  *
  * @version     $Id: dbmodel.php 3575 2012-05-01 14:06:28Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd, 2006-2008 JEvents Project Group
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd, 2006-2008 JEvents Project Group
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -3172,7 +3172,7 @@ class JEventsDBModel
 		$user    = Factory::getUser();
 
 		$app     = Factory::getApplication();
-		$db      = Factory::getDBO();
+		$db      = Factory::getDbo();
 		$lang    = Factory::getLanguage();
 		$langtag = $lang->getTag();
 
@@ -3254,7 +3254,7 @@ class JEventsDBModel
 			. "  AND icsf.state=1 AND icsf.access IN (" . JEVHelper::getAid($user) . ")"
 			. "\n Group by DATE(rpt.startrepeat)";
 
-		$db = Factory::getDBO();
+		$db = Factory::getDbo();
 		$db->setQuery($query);
 		$res = $db->loadObjectList();
 

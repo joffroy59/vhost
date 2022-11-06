@@ -4,7 +4,7 @@
  *
  * @version     $Id: iCalRRule.php 3467 2012-04-03 09:36:16Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd, 2006-2008 JEvents Project Group
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd, 2006-2008 JEvents Project Group
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -58,7 +58,7 @@ class iCalRRule extends Joomla\CMS\Table\Table
 		$temp->freq = $temp->data['FREQ'];
 
 		// Should really test count
-		$temp->processField("count", 999);
+		$temp->processField("count", 10);
 		$temp->processField("interval", 1);
 		//interval ios a mysql reserved word
 		$temp->rinterval = $temp->interval;
@@ -128,7 +128,7 @@ class iCalRRule extends Joomla\CMS\Table\Table
 
 		// Should really test count
 		$temp->processField2("freq", "YEARLY");
-		$temp->processField2("count", 999);
+		$temp->processField2("count", 10);
 		$temp->processField2("rinterval", 1);
 		//interval ios a mysql reserved word
 		$temp->_interval = $temp->rinterval;
@@ -747,6 +747,20 @@ class iCalRRule extends Joomla\CMS\Table\Table
 					$this->byday = "+" . $daynames[$currentWeekDay];
 					$days        = array($this->byday);
 				}
+				// If we have a SU in the list then it can get skipped since its weekdayMap value is zero and other days could get used first
+				// So if $days includes SU we must put it first IFF day of the week starts on Monday in the config!
+				if (in_array("SU", $days))
+				{
+					$newdays = array("SU");
+					foreach ($days as $day)
+					{
+						if ($day != "SU")
+						{
+							$newdays[] = $day;
+						}
+					}
+					$days = $newdays;
+				}
 				while ($countRepeats < $this->count && !$this->_afterUntil($currentWeekStart))
 				{
 					list ($currentDay, $currentMonth, $currentYear) = explode(":", JevDate::strftime("%d:%m:%Y", $currentWeekStart));
@@ -877,10 +891,10 @@ class iCalRRule extends Joomla\CMS\Table\Table
 	/**
 	 * Creates a repeat if not an exception date returns 1 anyway
 	 *
-	 * @param unknown_type $start
-	 * @param unknown_type $end
+	 * @param (int) $start
+	 * @param (int) $end
 	 *
-	 * @return unknown
+	 * @return bool
 	 */
 	public function _makeRepeat($start, $end)
 	{

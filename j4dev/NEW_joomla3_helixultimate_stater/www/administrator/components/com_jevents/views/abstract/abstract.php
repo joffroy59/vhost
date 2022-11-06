@@ -4,7 +4,7 @@
  *
  * @version     $Id: abstract.php 3229 2012-01-30 12:06:34Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C)  2008-2021 GWESystems Ltd
+ * @copyright   Copyright (C)  2008-2022 GWESystems Ltd
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -89,6 +89,10 @@ class JEventsAbstractView extends Joomla\CMS\MVC\View\HtmlView
 		if (method_exists($this, $layout))
 		{
 			$this->$layout($tpl);
+			if (isset($this->jevviewdone) && $this->jevviewdone)
+			{
+				return;
+			}
 		}
 
 		// Allow the layout to be overriden by menu parameter - this only works if its valid for the task
@@ -702,27 +706,26 @@ class JEventsAbstractView extends Joomla\CMS\MVC\View\HtmlView
 		$params = ComponentHelper::getParams(JEV_COM_COMPONENT);
 		$jversion = new Joomla\CMS\Version;
 
-        if ($params->get("bootstrapchosen", 1))
+        if ($app->isClient('administrator') || $params->get("newfrontendediting", 1))
+        {
+            HTMLHelper::script('media/com_jevents/js/gslselect.js', array('version' => JEventsHelper::JEvents_Version(false), 'relative' => false), array('defer' => true));
+            //HTMLHelper::script('media/com_jevents/js/gslselect.js', array('version' => JEventsHelper::JEvents_Version(false) . base64_encode(rand(0,99999)), 'relative' => false), array('defer' => true));
+
+            $script = <<< SCRIPT
+			document.addEventListener('DOMContentLoaded', function () {
+				gslselect('#adminForm select:not(.gsl-hidden)');
+			})
+SCRIPT;
+            Factory::getDocument()->addScriptDeclaration($script);
+
+        }
+        else if ($params->get("bootstrapchosen", 1))
         {
 	        if (!$jversion->isCompatible('4.0'))
 	        {
 		        HTMLHelper::_('formbehavior.chosen', '#jevents select:not(.notchosen)');
 	        }
         }
-        else if ($app->isClient('administrator') || $params->get("newfrontendediting", 1))
-        {
-	        HTMLHelper::script('media/com_jevents/js/gslselect.js', array('version' => JEventsHelper::JEvents_Version(false), 'relative' => false), array('defer' => true));
-	        //HTMLHelper::script('media/com_jevents/js/gslselect.js', array('version' => JEventsHelper::JEvents_Version(false) . base64_encode(rand(0,99999)), 'relative' => false), array('defer' => true));
-
-			$script = <<< SCRIPT
-			document.addEventListener('DOMContentLoaded', function () {
-				gslselect('#adminForm select:not(.gsl-hidden)');
-			})
-SCRIPT;
-			Factory::getDocument()->addScriptDeclaration($script);
-
-        }
-
 
         $uEditor    = Factory::getUser()->getParam('editor',  Factory::getConfig()->get('editor', 'none'));
 
@@ -1037,9 +1040,20 @@ SCRIPT;
 			$showon = ob_get_clean();
 			if (isset($this->customfields[$key]["showon"]) && !empty($this->customfields[$key]["showon"]))
 			{
-				$showon = $this->customfields[$key]["showon"];
-				// keep a copy for custom fields since for customised layouts we loose the general showon handling!
-				$showon .= str_replace("data-showon-gsl", "data-showon-2gsl" , $showon);
+				// merge a copy for custom fields since for customised layouts we loose the general showon handling!
+				$originalShowon = $this->customfields[$key]["showon"];
+				$originalShowon = trim($originalShowon);
+				$originalShowon = str_replace("data-showon-gsl='[", "", $originalShowon);
+				$originalShowon = substr($originalShowon, 0, strlen($originalShowon) - 2);
+				if (strpos($originalShowon, "{") === 0 && strrpos($originalShowon, "}") === (strlen($originalShowon)-1))
+				{
+					$originalShowon = str_replace('"op":""', '"op":"AND"', $originalShowon);
+					$showon = substr($showon, 0, strlen($showon) - 2) . "," . $originalShowon . "]'";
+					//$showon = str_replace("data-showon-gsl='[", "data-showon-gsl='[" . $originalShowon . ",", $showon);
+
+					// replace the custom field showon attribute so that direct editing pages pick up the adjusted value
+					$this->customfields[$key]["showon"] = $showon;
+				}
 			}
 			?>
 			<div class=" gsl-margin-small-top gsl-child-width-1-1 gsl-grid  jevplugin_<?php echo $key; ?>" <?php echo $showon; ?>>

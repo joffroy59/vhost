@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension version="1.6" type="file" client="site" method="upgrade">
+	<name>French Translation for JEvents</name>
+	<packagename>French Translation for JEvents</packagename>
+	<version>3.20200831</version>
+	<tag>fr-FR</tag>
+	<copyright>2020 GWE Systems Ltd. All Rights reserved</copyright>
+	<license>http://www.gnu.org/licenses/gpl-3.0.html GNU/GPL</license>
+	<creationDate>2020-08-31</creationDate>
+	<author>Xavier Spirlet, Didier and Gilles</author>
+	<authoremail>carlos@jevents.net</authoremail>
+	<authorurl>https://www.jevents.net</authorurl>
+	<description><![CDATA[<div style="margin-bottom: 20px;" align="center">
+	<table border="0" 
+	width="90%">
+	<tbody>
+	<tr>
+	<td colspan="2" 
+	width="100%">
+	<div align="center"><a href="https://www.jevents.net" target="_blank" 
+	rel="noopener noreferrer"><img src="https://www.jevents.net/images/JeventsTransparent.png" alt="JEvents" 
+	width="287" 
+	height="63" 
+	border="0" 
+	/></a>
+	<h3>French Language for JEvents</h3>
+	</div>
+	<hr /></td>
+	</tr>
+	<tr>
+	<td width="18%"><b>Language:</b></td>
+	<td width="80%">French (fr-FR)</td>
+	</tr>
+	<tr>
+	<td width="18%"><b>Authors:</b></td>
+	<td width="80%">
+	<p>Xavier Spirlet, Didier and Gilles</p>
+	</td>
+	</tr>
+	<tr>
+	<td width="18%"><strong>Updated on:</strong></td>
+	<td width="80%">2020-08-31</td>
+	</tr>
+	</tbody>
+	</table>
+	</div>]]></description>
+	<scriptfile>install.php</scriptfile>		
+	<fileset>
+		<files folder="admin" target="administrator/language/fr-FR">
+			<filename>fr-FR.com_jevents.ini</filename>
+			<filename>fr-FR.com_jevents.sys.ini</filename>
+			<filename>fr-FR.com_jevents.menu.ini</filename>
+			<filename>fr-FR.mod_jevents_latest.ini</filename>
+			<filename>fr-FR.pkg_jevents.sys.ini</filename>
+			<filename>fr-FR.plg_content_jevents.ini</filename>
+			<filename>fr-FR.plg_content_jevents.sys.ini</filename>
+			<filename>fr-FR.plg_finder_jevents.ini</filename>
+			<filename>fr-FR.plg_finder_jevents.sys.ini</filename>
+			<filename>fr-FR.plg_search_eventsearch.ini</filename>
+			<filename>fr-FR.plg_system_gwejson.ini</filename>
+			<filename>fr-FR.plg_system_gwejson.sys.ini</filename>
+		</files>
+		<files folder="site" target="/language/fr-FR">
+			<filename>fr-FR.com_jevents.ini</filename>
+			<filename>fr-FR.mod_jevents_cal.ini</filename>
+			<filename>fr-FR.mod_jevents_custom.ini</filename>
+			<filename>fr-FR.mod_jevents_detail.ini</filename>
+			<filename>fr-FR.mod_jevents_latest.ini</filename>
+		</files>
+	</fileset>
+</extension>

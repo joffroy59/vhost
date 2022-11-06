@@ -4,7 +4,7 @@
  *
  * @version     $Id: jeventshtml.php 3549 2012-04-20 09:26:21Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd, 2006-2008 JEvents Project Group
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd, 2006-2008 JEvents Project Group
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -445,8 +445,8 @@ class JEventsHTML
 		{
 			
 		}
-		// if only one category then preselect it
-		if (count($options) == 1)
+		// if only one category then preselect it but NOT when editing layouts
+		if (count($options) == 1 && $jevtask !== "defaults.edit")
 		{
 			$catid = current($options)->value;
 		}
@@ -479,7 +479,7 @@ class JEventsHTML
 		    </select>
 		    <?php
 		    $html = ob_get_clean();
-		    if (count($options) == 1)
+		    if (count($options) == 1  && $jevtask !== "defaults.edit")
 		    {
 			$html   =  "<div class='catname'>".  $options[0]->text. "</div><div style='display:none'>" . $html . "</div>";
 			// this doesn't work because it throws JS error on showon!

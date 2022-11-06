@@ -5,7 +5,7 @@
  *
  * @version     $Id: calendar_cell.php 2679 2011-10-03 08:52:57Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd, 2006-2008 JEvents Project Group
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd, 2006-2008 JEvents Project Group
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -158,7 +158,7 @@ class EventCalendarCell_alternative extends EventCalendarCell_default
 					$fground = "#ffffff";
 				}
 
-				JevHtmlBootstrap::popover('.hasjevtip', array("trigger" => "hover focus", "placement" => "top", "container" => "#jevents_body", "delay" => array("show" => 150, "hide" => 150)));
+				JevModal::popover('.hasjevtip', array("trigger" => "hover focus", "placement" => "top", "container" => "#jevents_body", "delay" => array("show" => 150, "hide" => 150)));
 
 				$tooltip = $this->loadOverride("tooltip");
 				// allow fallback to old method

@@ -4,7 +4,7 @@
  *
  * @version     $Id: icalevent.php 3576 2012-05-01 14:11:04Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C) 2008-2021 GWESystems Ltd, 2006-2008 JEvents Project Group
+ * @copyright   Copyright (C) 2008-2022 GWESystems Ltd, 2006-2008 JEvents Project Group
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -241,8 +241,8 @@ class AdminIcaleventController extends Joomla\CMS\MVC\Controller\AdminController
 			// Should we allow raw content through unfiltered
 			if ($params->get("allowraw", 0))
 			{
-				$array['jevcontent'] = $input->post->get("jevcontent", "", RAW);
-				$array['extra_info'] = $input->post->get("extra_info", "", RAW);
+				$array['jevcontent'] = $input->post->get("jevcontent", "", 'RAW');
+				$array['extra_info'] = $input->post->get("extra_info", "", 'RAW');
 			}
 			// Convert nl2br if there is no HTML
 			if (strip_tags($array['jevcontent']) == $array['jevcontent'])
@@ -895,8 +895,8 @@ SQL;
 		// Should we allow raw content through unfiltered
 		if ($params->get("allowraw", 0))
 		{
-			$array['jevcontent'] = $input->post->get("jevcontent", "", RAW);
-			$array['extra_info'] = $input->post->get("extra_info", "", RAW);
+			$array['jevcontent'] = $input->post->get("jevcontent", "", 'RAW');
+			$array['extra_info'] = $input->post->get("extra_info", "", 'RAW');
 		}
 		// Convert nl2br if there is no HTML
 		if (strip_tags($array['jevcontent']) == $array['jevcontent'])

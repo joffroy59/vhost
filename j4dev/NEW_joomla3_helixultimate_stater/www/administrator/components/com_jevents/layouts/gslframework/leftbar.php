@@ -1,9 +1,9 @@
 <?php
 /**
- * @version    CVS: 3.6.23
+ * @version    CVS: 3.6.33
  * @package    com_jevents
  * @author     Geraint Edwards <yoursites@gwesystems.com>
- * @copyright  2016-2021 GWESystems Ltd
+ * @copyright  2016-2022 GWESystems Ltd
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 defined('JPATH_BASE') or die;

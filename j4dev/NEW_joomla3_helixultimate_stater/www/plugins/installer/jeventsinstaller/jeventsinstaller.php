@@ -4,7 +4,7 @@
  * @package     GWE Systems
  * @subpackage  Installer.JEventsInstaller
  *
- * @copyright   Copyright (C)  2016 - 2021 GWE Systems Ltd. All rights reserved.
+ * @copyright   Copyright (C)  2016 - 2022 GWE Systems Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 defined('JPATH_BASE') or die;

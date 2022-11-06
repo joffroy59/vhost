@@ -4,7 +4,7 @@
  *
  * @version     $Id: edit16.php 2983 2011-11-10 14:02:23Z geraintedwards $
  * @package     JEvents
- * @copyright   Copyright (C)  2008-2021 GWESystems Ltd
+ * @copyright   Copyright (C)  2008-2022 GWESystems Ltd
  * @license     GNU/GPLv2, see http://www.gnu.org/licenses/gpl-2.0.html
  * @link        http://www.jevents.net
  */
@@ -420,7 +420,7 @@ jQuery(document).ready(function(){
 });                                
 SCRIPT;
 
-			JevHtmlBootstrap::popover('#myPluginAccordion .icon-info' , array("trigger"=>"hover focus", "placement"=>"top", "container"=>"#plugin_options", "delay"=> array( "show"=> 150, "hide"=> 150 )));
+			JevModal::popover('#myPluginAccordion .icon-info' , array("trigger"=>"hover focus", "placement"=>"top", "container"=>"#plugin_options", "delay"=> array( "show"=> 150, "hide"=> 150 )));
 			Factory::getDocument()->addScriptDeclaration($script);
 
 			$i = 0;

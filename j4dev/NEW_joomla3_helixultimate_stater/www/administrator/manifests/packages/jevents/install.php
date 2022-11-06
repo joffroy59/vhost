@@ -162,10 +162,10 @@ class Pkg_JeventsInstallerScript
 			$logo      = "JeventsTransparent.png";
 		}
 
-		// TODO Replace 3.6.23
+		// TODO Replace 3.6.33
 		echo "<div class='jev_install'>
 				<div class='jev_logo'><a href='index.php?option=com_jevents' ><img src='https://www.jevents.net/logo/$logo' /></a></div>
-				<div class='version'><h2 class='gsl-h2'>" . $inst_text . ": 3.6.23 </h2></div>
+				<div class='version'><h2 class='gsl-h2'>" . $inst_text . ": 3.6.33 </h2></div>
 				<h3>Exciting New Styling & Joomla 4 Support</h3>
 				<p>JEvents 3.6 brings you</p>
 				<ul>
@@ -273,7 +273,14 @@ class Pkg_JeventsInstallerScript
 		// Joomla updater special case
 		if ($app->input->getCmd("option") == "com_installer" && $app->input->getCmd("view") == "update")
 		{
-			$app->enqueueMessage("<div class='jev_logo'><img src='https://www.jevents.net/logo/JeventsTransparent3.png' /></div>" . Text::_('JEV_INST_VERSION_UPRG') . " :: 3.6.23", 'message');
+			$app->enqueueMessage("<div class='jev_logo'><img src='https://www.jevents.net/logo/JeventsTransparent3.png' /></div>" . Text::_('JEV_INST_VERSION_UPRG') . " :: 3.6.33", 'message');
+		}
+
+		if (version_compare(JVERSION, '4.0', 'ge'))
+		{
+			$query = "UPDATE #__modules SET published=1, position='cpanel-jevents' WHERE client_id=1 and module='mod_jevents_dashboard'";
+			$db->setQuery($query);
+			$db->execute();
 		}
 
 	}

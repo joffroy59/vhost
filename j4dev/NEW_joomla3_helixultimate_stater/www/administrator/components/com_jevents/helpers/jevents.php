@@ -449,7 +449,7 @@ STYLE;
 	static public function JEvents_Version($outputinput = true)
 	{
 		static $packageversionset = false;
-		static $packageversion = '3.6.23';
+		static $packageversion = '3.6.33';
 
 		if (!$packageversionset)
 		{
