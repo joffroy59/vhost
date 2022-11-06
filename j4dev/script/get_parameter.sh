@@ -14,6 +14,11 @@ function setParameter(){
     read -p "Import ASGLM site [no|yes] [yes]: " import_site_backup
     import_site_backup=${import_site_backup:-yes}
 
+    if [ "$import_site_backup" == "no" ]; then
+        read -p "Init Helix Starter site [no|yes] [yes]: " init_helix
+        init_helix=${init_helix:-yes}
+    fi
+
     read -p "Set permission [no|yes] [no]: " set_permission
     set_permission=${set_permission:-no}
 }
@@ -44,6 +49,7 @@ function showConfiguration(){
     echo -e "  Use git                : $repot_git"
     echo -e "  Set Folder permission  : $set_permission"
     echo -e "  Import site backup     : $import_site_backup"
+    echo -e "  Init Helix Starter     : $init_helix"
     echo -e ""
 
     read -p "Configuration ok [yes|no] [yes]:" configuration_ok

@@ -9,28 +9,41 @@ setParameter
 setConfiguration
 showConfiguration
 
-createInstance
-adaptInstance
+if [ "$configuration_ok" == "yes" ]; then
+    createInstance
+    adaptInstance
 
-gitInit_main
-gitInit_instance
+    gitInit_main
+    gitInit_instance
 
-cd $instance_name
-docker_up
-docker_up_wait
-# docker_stop
-cd ..
+    cd $instance_name
+    docker_up
+    docker_up_wait
+    docker_stop
+    cd ..
 
-if [ "$import_site_backup" == "yes" ]; then
-    importSiteBackup $instance_name
+    if [ "$import_site_backup" == "yes" ]; then
+        importSiteBackup $instance_name
+    fi
+
+    if [ "$set_permission" == "yes" ]; then
+        setPermission $instance_name
+    fi
+
+    cd $instance_name
+    docker_start
+    cd ..
+
+    echo "open : http://localhost:${external_port_joomla}/"
+    echo ""
+    echo "configuration DB :"
+    echo "  hostname          JOOMLA_DB_HOST: joomladb"
+    echo "  user                            : root"
+    echo "  user password JOOMLA_DB_PASSWORD: example"
+
+    echo "PHP MyAdmin:"
+    echo "open : http://localhost:${external_port_db_admin}/"
+else
+    echo "Stop"
 fi
 
-if [ "$set_permission" == "yes" ]; then
-    setPermission $instance_name
-fi
-
-cd $instance_name
-docker_start
-cd ..
-
-echo "open : http://localhost/kickstart.php"
