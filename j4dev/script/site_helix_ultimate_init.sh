@@ -26,17 +26,18 @@ function initHelixStarter(){
     echo "Init Helix Ultimate Starter site"
 
     echo "Existing Version:"
-    ls -lhd $HELIX_STARTER_FOLDER/*/
+    HELIX_STARTKIT_FOLDER=$HELIX_STARTER_FOLDER/$joomla_version/*/
+    ls -lhd $HELIX_STARTKIT_FOLDER
     echo "Get Last version"
-    if [ -z "$(ls -Ad $HELIX_STARTER_FOLDER/*/)" ]; then
+    if [ -z "$(ls -Ad $HELIX_STARTKIT_FOLDER)" ]; then
         echo "No backup in $HELIX_STARTER_FOLDER"
         exit 1
     fi
-    LAST_VERSION=$(ls -1td $HELIX_STARTER_FOLDER/*/ | head -1)
+    LAST_VERSION=$(ls -1td $HELIX_STARTKIT_FOLDER | head -1)
     echo "$LAST_VERSION"
     
     echo "Choose version:"
-    menu_from_array2 $(ls -1d $HELIX_STARTER_FOLDER/*/)
+    menu_from_array2 $(ls -1d $HELIX_STARTKIT_FOLDER)
 
     echo "Version selected: $itemSelected"
 

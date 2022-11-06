@@ -5,6 +5,9 @@ function setParameter(){
     instance_name=${instance_name:-ASGLM_INSTANCE}
     docker_compose_path="$instance_name/docker-compose.yml"
 
+    read -p "Version de joomal de base joomla(3/4) [3]: " joomla_version
+    joomla_version=${joomla_version:-3}
+
     read -p "Enter the externla port for Joomla [80]: " external_port_joomla
     external_port_joomla=${external_port_joomla:-80}
 
@@ -39,6 +42,7 @@ function setConfiguration(){
 
 function showConfiguration(){
     echo -e "Configuration:"
+    echo -e "  Joomla version         : joomla$joomla_version"
     echo -e "  External Joomla Port   : $external_port_joomla"
     echo -e "  External Db Port       : $external_port_db"
     echo -e "  External Db Admin Port : $external_port_db_admin"

@@ -6,8 +6,9 @@ function createInstance(){
         echo "$instance_name exists"
         exit 1 
     fi
-    echo "Create instance $instance_name"
+    echo "Create instance $instance_name (joomla version: $joomla_version)"
     cp -prf $template_folder $instance_name
+    cp -pf  $instance_name/dockerfile.joomla$joomla_version $instance_name/dockerfile
 }
 
 function adaptInstance(){
