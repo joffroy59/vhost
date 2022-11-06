@@ -6,7 +6,7 @@ networks:
 services:
   joomla:
     image: joomla:3.9.18-php7.3
-    restart: "off"
+    #restart: "off"
     links:
       - joomladb:mysql
     ports:
@@ -22,7 +22,7 @@ services:
 
   joomladb:
     image: mysql:5.6
-    restart: "off"
+    #restart: "off"
     volumes:
       - /home/joffroy/vhost/j4dev/NEW_joomla3_default/db:/var/lib/mysql:rw
 
