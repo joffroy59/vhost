@@ -26,6 +26,10 @@ if [ "$configuration_ok" == "yes" ]; then
         importSiteBackup $instance_name
     fi
 
+    if [ "$import_site_backup" == "no" -a "$init_helix" == "yes" ]; then
+        initHelixStarter $instance_name
+    fi
+
     if [ "$set_permission" == "yes" ]; then
         setPermission $instance_name
     fi

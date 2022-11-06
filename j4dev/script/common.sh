@@ -1,6 +1,7 @@
 #!/bin/bash
 
 template_folder="ASGLM_template"
+helix_template_folder="archive/helixultimate_quickstart_j3_v2.0.9"
 
 
 function is_healthy() {

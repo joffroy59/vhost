@@ -6,7 +6,6 @@ function setPermission(){
     if [ $# -eq 1 ]; then
         cd $1
     fi
-    exit 123
 
     WLUSER=joffroy
     PROD_FILE="LICENSE.txt htaccess.txt web.config.txt README.txt configuration.php index.php robots.txt.dist"
