@@ -13,15 +13,15 @@ function setParameter() {
     read -p "Enter the externla port for Joomla [80]: " external_port_joomla
     external_port_joomla=${external_port_joomla:-80}
 
-    read -p "Creer un repository git [no|yes] [no]: " repot_git
-    repot_git=${repot_git:-no}
+    read -p "Creer un repository git [no|yes] [yes]: " repot_git
+    repot_git=${repot_git:-yes}
 
-    read -p "Import ASGLM site [no|yes] [yes]: " import_site_backup
-    import_site_backup=${import_site_backup:-yes}
+    read -p "Import ASGLM site [no|yes] [no]: " import_site_backup
+    import_site_backup=${import_site_backup:-no}
 
     if [ "$import_site_backup" == "no" ]; then
-        read -p "Init Helix Starter site [no|yes] [yes]: " init_helix
-        init_helix=${init_helix:-yes}
+        read -p "Init Helix Starter site [no|yes] [no]: " init_helix
+        init_helix=${init_helix:-no}
         if [ "$init_helix" == "no" ]; then
             read -p "Init Joomla 5 Starter site [no|yes] [yes]: " ininit_joomla5it_helix
             init_joomla5=${init_joomla5:-yes}
@@ -29,8 +29,8 @@ function setParameter() {
         fi
     fi
 
-    read -p "Set permission [no|yes] [no]: " set_permission
-    set_permission=${set_permission:-no}
+    read -p "Set permission [no|yes] [yes]: " set_permission
+    set_permission=${set_permission:-yes}
 }
 
 function setConfiguration() {
