@@ -5,11 +5,6 @@ function setParameter() {
     instance_name=${instance_name:-ASGLM_INSTANCE}
     docker_compose_path="$instance_name/docker-compose.yml"
 
-
-    # TODO a deplacer
-    read -p "Version de joomal de base joomla(3/4) [4]: " joomla_version
-    joomla_version=${joomla_version:-4}
-
     read -p "Enter the externla port for Joomla [80]: " external_port_joomla
     external_port_joomla=${external_port_joomla:-80}
 
@@ -18,6 +13,11 @@ function setParameter() {
 
     read -p "Import ASGLM site [no|yes] [no]: " import_site_backup
     import_site_backup=${import_site_backup:-no}
+
+    if [ "$import_site_backup" == "yes" -o "$init_helix" == "yes" ]; then
+        read -p "Version de joomal de base joomla(3/4) [4]: " joomla_version
+        joomla_version=${joomla_version:-4}
+    fi
 
     if [ "$import_site_backup" == "no" ]; then
         read -p "Init Helix Starter site [no|yes] [no]: " init_helix
