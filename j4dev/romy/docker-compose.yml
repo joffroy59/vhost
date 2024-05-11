@@ -1,0 +1,52 @@
+version: '3.8'
+
+networks:
+  data_romy: {}
+
+services:
+  joomla:
+    #image: joomla:3.9.18-php7.4
+    build:
+      context: /home/joffroy/vhost/j4dev/romy/
+      dockerfile: ./dockerfile
+    restart: "no"
+    links:
+      - joomladb:mysql
+    ports:
+      - 80:80
+    volumes:
+      - /home/joffroy/vhost/j4dev/romy/uploads.ini:/usr/local/etc/php/conf.d/upload-limit.ini
+      - /home/joffroy/vhost/j4dev/romy/www:/var/www/html:rw
+    environment:
+      JOOMLA_DB_HOST: joomladb
+      JOOMLA_DB_PASSWORD: example
+    networks:
+      - data_romy
+    healthcheck:
+      test: ["CMD-SHELL", "test $$(curl --write-out '%{http_code}' --silent --output /dev/null http://localhost/installation/index.php) -eq 200 || exit 1"]
+      timeout: 10s
+      interval: 5s
+      retries: 10
+
+  joomladb:
+    image: mysql:5.6
+    restart: "no"
+    volumes:
+      - /home/joffroy/vhost/j4dev/romy/db:/var/lib/mysql:rw
+    networks:
+      - data_romy
+    ports:
+      - 13306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - joomladb
+    ports:
+      - "90:80"
+    environment:
+      PMA_HOST: joomladb
+    networks:
+      - data_romy
