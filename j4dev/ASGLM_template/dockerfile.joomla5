@@ -1,4 +1,4 @@
-FROM joomla:4.0.6-php8.0
+FROM joomla:5.1.0-php8.1-apache
 
 # Install Xdebug
 #RUN pecl install -f xdebug && docker-php-ext-enable xdebug
