@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function setParameter(){
+function setParameter() {
     read -p "Enter the name of the instance [ASGLM_INSTANCE]: " instance_name
     instance_name=${instance_name:-ASGLM_INSTANCE}
     docker_compose_path="$instance_name/docker-compose.yml"
@@ -26,8 +26,7 @@ function setParameter(){
     set_permission=${set_permission:-no}
 }
 
-
-function setConfiguration(){
+function setConfiguration() {
     external_port_db_default=$(expr $default_bd_port_base + $(expr $external_port_joomla - 80))
     external_port_db=${external_port_db:-${external_port_db_default}}
 
@@ -40,7 +39,7 @@ function setConfiguration(){
     volumes_db="${context_name}db"    
 }
 
-function showConfiguration(){
+function showConfiguration() {
     echo -e "Configuration:"
     echo -e "  Joomla version         : joomla$joomla_version"
     echo -e "  External Joomla Port   : $external_port_joomla"
