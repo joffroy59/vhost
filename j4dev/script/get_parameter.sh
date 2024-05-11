@@ -31,6 +31,17 @@ function setParameter() {
 
     read -p "Set permission [no|yes] [yes]: " set_permission
     set_permission=${set_permission:-yes}
+
+    if [ "$init_helix" == "yes" ]; then
+        setJoomla5Base
+    else
+        if [ "$init_joomla5" == "yes" ]; then
+            setHelixStarterBase
+        fi
+    fi
+
+    joomla_base=$itemSelected
+    echo -e "  Joomla base         : $joomla_base"
 }
 
 function setConfiguration() {
@@ -44,6 +55,9 @@ function setConfiguration() {
     volumes_uploads_ini="${context_name}uploads.ini"
     volumes_www="${context_name}www"
     volumes_db="${context_name}db"
+
+    joomla5_base = "TODO"
+
 }
 
 function showConfiguration() {
@@ -61,6 +75,7 @@ function showConfiguration() {
     echo -e "  Import site backup     : $import_site_backup"
     echo -e "  Init Helix Starter     : $init_helix"
     echo -e "  Init Joomla 5          : $init_joomla5"
+    echo -e "  joomla_base            : $joomla_base"
     echo -e ""
 
     read -p "Configuration ok [yes|no] [yes]:" configuration_ok

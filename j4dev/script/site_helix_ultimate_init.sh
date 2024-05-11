@@ -24,6 +24,24 @@ function initHelixStarter(){
         exit 1
     fi
 
+    echo "Remove $INSTANCE_FOLDER/www/*"
+    sudo rm -rf $INSTANCE_FOLDER/www/*
+
+    echo "Inix Helix Ultimate Starter: $itemSelected in $INSTANCE_FOLDER/www/"
+    sudo cp -rfp $itemSelected/*  $INSTANCE_FOLDER/www/
+    sudo chmod -R a+w $INSTANCE_FOLDER/www/
+
+}
+
+function setHelixStarterBase(){
+    INSTANCE_FOLDER=""
+    if [ $? -ne 1 ]; then
+        INSTANCE_FOLDER="$1"
+    else
+        echo "No Folder for instance set"
+        exit 1
+    fi
+
     echo "Init Helix Ultimate Starter site"
 
     echo "Existing Version:"
@@ -41,17 +59,27 @@ function initHelixStarter(){
     menu_from_array2 $(ls -1d $HELIX_STARTKIT_FOLDER)
 
     echo "Version selected: $itemSelected"
+}
+
+function initJoomla5Starter(){
+    INSTANCE_FOLDER=""
+    if [ $? -ne 1 ]; then
+        INSTANCE_FOLDER="$1"
+    else
+        echo "No Folder for instance set"
+        exit 1
+    fi
 
     echo "Remove $INSTANCE_FOLDER/www/*"
     sudo rm -rf $INSTANCE_FOLDER/www/*
 
-    echo "Inix Helix Ultimate Starter: $itemSelected in $INSTANCE_FOLDER/www/"
-    sudo cp -rfp $itemSelected/*  $INSTANCE_FOLDER/www/
+    echo "Inix Joomla5 Starter: $joomla_base in $INSTANCE_FOLDER/www/"
+    sudo cp -rfp $joomla_base/*  $INSTANCE_FOLDER/www/
     sudo chmod -R a+w $INSTANCE_FOLDER/www/
 
 }
 
-function initJoomla5Starter(){
+function setJoomla5Base(){
     INSTANCE_FOLDER=""
     if [ $? -ne 1 ]; then
         INSTANCE_FOLDER="$1"
@@ -77,12 +105,4 @@ function initJoomla5Starter(){
     menu_from_array2 $(ls -1d $JOOMLA_STARTER_FOLDER)
 
     echo "Version selected: $itemSelected"
-
-    echo "Remove $INSTANCE_FOLDER/www/*"
-    sudo rm -rf $INSTANCE_FOLDER/www/*
-
-    echo "Inix Joomla5 Starter: $itemSelected in $INSTANCE_FOLDER/www/"
-    sudo cp -rfp $itemSelected/*  $INSTANCE_FOLDER/www/
-    sudo chmod -R a+w $INSTANCE_FOLDER/www/
-
 }
