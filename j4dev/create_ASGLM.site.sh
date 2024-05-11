@@ -24,10 +24,12 @@ if [ "$configuration_ok" == "yes" ]; then
 
     if [ "$import_site_backup" == "yes" ]; then
         importSiteBackup $instance_name
-    fi
-
-    if [ "$import_site_backup" == "no" -a "$init_helix" == "yes" ]; then
-        initHelixStarter $instance_name
+    else
+        if [ "$init_helix" == "yes" ]; then
+            initHelixStarter $instance_name
+        else
+            initJoomla5Starter $instance_name
+        fi
     fi
 
     if [ "$set_permission" == "yes" ]; then

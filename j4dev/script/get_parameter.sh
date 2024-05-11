@@ -5,8 +5,10 @@ function setParameter() {
     instance_name=${instance_name:-ASGLM_INSTANCE}
     docker_compose_path="$instance_name/docker-compose.yml"
 
-    read -p "Version de joomal de base joomla(3/4) [3]: " joomla_version
-    joomla_version=${joomla_version:-3}
+
+    # TODO a deplacer
+    read -p "Version de joomal de base joomla(3/4) [4]: " joomla_version
+    joomla_version=${joomla_version:-4}
 
     read -p "Enter the externla port for Joomla [80]: " external_port_joomla
     external_port_joomla=${external_port_joomla:-80}
@@ -20,6 +22,11 @@ function setParameter() {
     if [ "$import_site_backup" == "no" ]; then
         read -p "Init Helix Starter site [no|yes] [yes]: " init_helix
         init_helix=${init_helix:-yes}
+        if [ "$init_helix" == "no" ]; then
+            read -p "Init Joomla 5 Starter site [no|yes] [yes]: " ininit_joomla5it_helix
+            init_joomla5=${init_joomla5:-yes}
+            joomla_version=5
+        fi
     fi
 
     read -p "Set permission [no|yes] [no]: " set_permission
@@ -36,7 +43,7 @@ function setConfiguration() {
     context_name="$(pwd)/$instance_name/"
     volumes_uploads_ini="${context_name}uploads.ini"
     volumes_www="${context_name}www"
-    volumes_db="${context_name}db"    
+    volumes_db="${context_name}db"
 }
 
 function showConfiguration() {
@@ -53,6 +60,7 @@ function showConfiguration() {
     echo -e "  Set Folder permission  : $set_permission"
     echo -e "  Import site backup     : $import_site_backup"
     echo -e "  Init Helix Starter     : $init_helix"
+    echo -e "  Init Joomla 5          : $init_joomla5"
     echo -e ""
 
     read -p "Configuration ok [yes|no] [yes]:" configuration_ok
