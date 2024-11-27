@@ -10,7 +10,7 @@ services:
     links:
       - joomladb:mysql
     ports:
-      - 9681:80
+      - 8180:80
     volumes:
       #- ./uploads.ini:/usr/local/etc/php/conf.d/upload-limit.ini
       - /home/joffroy/vhost/j4dev/NEW_joomla3_default/www:/var/www/html:rw
@@ -36,6 +36,6 @@ services:
     links:
       - joomladb
     ports:
-      - "9681:80"
+      - "82:80"
     environment:
       PMA_HOST: joomladb

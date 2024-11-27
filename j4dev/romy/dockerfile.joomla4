@@ -1,0 +1,8 @@
+FROM joomla:4.0.6-php8.0
+
+# Install Xdebug
+#RUN pecl install -f xdebug && docker-php-ext-enable xdebug
+#RUN echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini;
+
+#clean joomla isntallation
+#RUN rm -rf /var/www/html/*
